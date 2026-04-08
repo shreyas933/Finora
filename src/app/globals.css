@@ -1,0 +1,1131 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  /* Dark mode palette - premium deep blue */
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
+  --radius: 0.75rem;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* Base custom utility styles for modern look */
+@layer utilities {
+  .glass {
+    @apply bg-card/40 backdrop-blur-xl border border-white/10;
+  }
+}
+
+/* ─── AI Insights Section ─────────────────────────────────────────── */
+.ai-insights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ai-insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-insights-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-insights-sparkle {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: #a78bfa;
+}
+
+.ai-insights-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.01em;
+}
+
+.ai-insights-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ai-insights-refresh-btn:hover:not(:disabled) {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+.ai-insights-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-insights-refresh-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  transition: transform 0.3s;
+}
+
+.ai-insights-refresh-icon.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-insights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Individual insight card */
+.ai-insight-card {
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  transition: box-shadow 0.2s;
+}
+
+.ai-insight-card:hover {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+.ai-insight-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.ai-insight-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.ai-insight-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-insight-message {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  line-height: 1.5;
+}
+
+.ai-insight-link {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #60a5fa;
+  text-decoration: none;
+  transition: color 0.15s;
+  width: fit-content;
+}
+
+.ai-insight-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.ai-insight-dismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.ai-insight-dismiss:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Skeleton */
+.ai-insight-skeleton {
+  height: 3.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    90deg,
+    var(--secondary) 0%,
+    rgba(255,255,255,0.04) 50%,
+    var(--secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error / empty states */
+.ai-insight-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.ai-insight-error-retry {
+  color: #60a5fa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: underline;
+}
+
+.ai-insight-empty {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--border);
+}
+
+
+/* ─── Credit Card Visual ──────────────────────────────────────────────── */
+.credit-card-visual {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  width: 240px;
+  height: 148px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  transition: box-shadow 0.25s;
+  outline: 3px solid transparent;
+  outline-offset: 3px;
+}
+
+.credit-card-visual.selected {
+  outline-color: rgba(255,255,255,0.4);
+}
+
+.cc-chip {
+  width: 2rem;
+  height: 1.4rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(135deg, #d4af37, #ffe08a);
+  opacity: 0.9;
+}
+
+.cc-network {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.75);
+}
+
+.cc-number {
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.85);
+}
+
+.cc-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.cc-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+}
+
+.cc-value {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+/* ─── Cards Grid ─────────────────────────────────────────────────────── */
+.cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.add-card-slot {
+  width: 240px;
+  height: 148px;
+  border-radius: 1rem;
+  border: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.add-card-slot:hover {
+  border-color: var(--primary);
+  background: rgba(59,130,246,0.05);
+}
+
+/* ─── Empty Cards State ──────────────────────────────────────────────── */
+.empty-cards-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  border: 2px dashed var(--border);
+  border-radius: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+  gap: 0.5rem;
+}
+
+.empty-cards-state:hover {
+  border-color: var(--primary);
+  background: rgba(59,130,246,0.03);
+}
+
+.empty-cards-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  background: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ─── Add Card Inline Button ─────────────────────────────────────────── */
+.add-card-inline-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--primary);
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.add-card-inline-btn:hover {
+  background: rgba(59,130,246,0.18);
+}
+
+/* ─── Modal ──────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.modal-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  margin-top: 0.15rem;
+}
+
+.modal-close {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--secondary);
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.modal-close:hover { background: var(--accent); }
+
+.modal-progress-track {
+  height: 3px;
+  background: var(--secondary);
+  margin: 0 1.5rem;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.modal-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.modal-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ─── Form Elements ──────────────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.form-hint {
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.form-select {
+  width: 100%;
+  background: var(--input);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--foreground);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-select:focus {
+  border-color: var(--primary);
+}
+
+/* ─── Color Picker ───────────────────────────────────────────────────── */
+.color-picker {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.color-dot {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.color-dot:hover { transform: scale(1.15); }
+.color-dot.active { border-color: rgba(255,255,255,0.8); transform: scale(1.2); }
+
+/* ─── Perk Chips ─────────────────────────────────────────────────────── */
+.perk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.perk-chip {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  text-transform: capitalize;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.perk-chip:hover { background: var(--accent); color: var(--foreground); }
+.perk-chip.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
+
+/* ─── Benefits Grid ──────────────────────────────────────────────────── */
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.benefit-card {
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  padding: 1rem;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.benefit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.benefit-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.benefit-icon-wrap {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.benefit-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.benefit-category {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.benefit-desc {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+
+.benefit-perk {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-top: 0.25rem;
+}
+
+/* ─── Benefits Footer Tip ────────────────────────────────────────────── */
+.benefit-footer-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.875rem 1rem;
+  background: rgba(251,191,36,0.07);
+  border: 1px solid rgba(251,191,36,0.15);
+  border-radius: 0.75rem;
+}
+
+/* ─── Tax Tip Cards ───────────────────────────────────────────────────── */
+.tax-tip-card {
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.tax-tip-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+
+.tax-tip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+  gap: 0.75rem;
+}
+
+.tax-tip-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.tax-tip-icon-wrap {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tax-tip-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+.tax-tip-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.tax-tip-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+.tax-tip-chevron {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.tax-tip-chevron.rotated {
+  transform: rotate(90deg);
+}
+
+.tax-tip-body {
+  padding: 0 1rem 1rem 1rem;
+  overflow: hidden;
+}
+
+.tax-tip-desc {
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.tax-tip-saving {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--foreground);
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* ─── Pay Tax Modal Extras ───────────────────────────────────────────── */
+.pay-amount-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04));
+  border-top: 1px solid rgba(16,185,129,0.2);
+  border-bottom: 1px solid rgba(16,185,129,0.2);
+  gap: 0.2rem;
+}
+
+.pay-amount-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+}
+
+.pay-amount-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #10b981;
+  letter-spacing: -0.02em;
+}
+
+.pay-amount-note {
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+}
+
+.pay-secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  background: rgba(16,185,129,0.06);
+  border: 1px solid rgba(16,185,129,0.15);
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.otp-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.pay-challan-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  background: rgba(251,191,36,0.06);
+  border: 1px solid rgba(251,191,36,0.15);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  line-height: 1.5;
+}
+
+/* ── Processing ── */
+.pay-processing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 2rem;
+  gap: 0.75rem;
+}
+
+.pay-spinner {
+  width: 3rem;
+  height: 3rem;
+  color: var(--primary);
+  animation: spin 0.8s linear infinite;
+}
+
+.pay-processing-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.pay-processing-sub {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.pay-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+.pay-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+/* ── Success ── */
+.pay-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 2rem;
+  gap: 0.6rem;
+  text-align: center;
+}
+
+.pay-success-icon {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: rgba(16,185,129,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.pay-success-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.pay-success-amount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #10b981;
+  margin-bottom: 0.5rem;
+}
+
+.pay-receipt {
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.pay-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--border);
+}
+
+.pay-receipt-row:last-child {
+  border-bottom: none;
+}
+
+.pay-receipt-row span:first-child {
+  color: var(--muted-foreground);
+}
+
+/* ─── Select Card Prompt ─────────────────────────────────────────────── */
+.select-card-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.875rem;
+}
+
+/* ─── Smart Spend Optimizer ───────────────────────────────────────────── */
+.spend-optimizer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.spend-optimizer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.875rem;
+  text-align: center;
+}
+
+.spend-opt-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  background: var(--card);
+  transition: box-shadow 0.2s;
+}
+
+.spend-opt-row:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.spend-opt-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.spend-opt-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.spend-opt-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.spend-opt-top-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.spend-opt-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.spend-opt-match-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #10b981;
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.25);
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+}
+
+/* Spend bar */
+.spend-bar-track {
+  height: 4px;
+  background: var(--secondary);
+  border-radius: 9999px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 200px;
+}
+
+.spend-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+
+/* Platform chips */
+.spend-opt-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.platform-chip {
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+}
+
+/* Right column */
+.spend-opt-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.spend-opt-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.spend-opt-points {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.points-multiplier {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.points-label {
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+}
+
+.spend-opt-perk {
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+  max-width: 140px;
+  text-align: right;
+  line-height: 1.3;
+}
+
+/* Footer */
+.spend-opt-footer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.6rem 0.875rem;
+  background: rgba(16,185,129,0.06);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 0.75rem;
+}
+
+/* ─── Investments Dashboard ───────────────────────────────────────────── */
+.inv-card {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.inv-card:hover {
+  border-color: #333;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.inv-label {
+  color: #a3a3a3;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.inv-value {
+  color: #ffffff;
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
