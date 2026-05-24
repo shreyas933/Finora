@@ -15,15 +15,47 @@ type Message = {
 };
 
 export default function ChatPage() {
-  const { balance, monthlyIncome, monthlyExpenses, savingsRate } = useFinance();
+  const { balance, monthlyIncome, monthlyExpenses, savingsRate, investments, goals, transactions } = useFinance();
+  const [financialContext, setFinancialContext] = useState("");
 
-  const financialContext = `
+  useEffect(() => {
+    // Safely load local storage data
+    const budgetsRaw = localStorage.getItem("finora_budgets");
+    const cardsRaw = localStorage.getItem("finora_credit_cards");
+    
+    const budgets = budgetsRaw ? JSON.parse(budgetsRaw) : [];
+    const cards = cardsRaw ? JSON.parse(cardsRaw) : [];
+
+    // Format top 5 recent transactions
+    const recentTx = transactions.slice(0, 5).map(t => 
+      `${t.date}: ${t.name} - ${formatCurrency(t.amount)} (${t.category})`
+    ).join("\n      ");
+
+    const contextStr = `
     User Financial Context:
     - Current Balance: ${formatCurrency(balance)}
     - Monthly Income: ${formatCurrency(monthlyIncome)}
     - Monthly Expenses: ${formatCurrency(monthlyExpenses)}
     - Savings Rate: ${savingsRate.toFixed(2)}%
-  `;
+
+    Budgets:
+    ${budgets.map((b: any) => `- ${b.category}: ${formatCurrency(b.spent)} / ${formatCurrency(b.limit)}`).join("\n    ") || "None set"}
+
+    Credit Cards:
+    ${cards.map((c: any) => `- ${c.name} (${c.network}, ${c.color}): Limit ${formatCurrency(parseInt(c.limit.replace(/,/g, '')) || 0)}, Perks: ${c.perks.join(", ")}`).join("\n    ") || "None added"}
+
+    Investments:
+    ${investments.map(i => `- ${i.name} (${i.type}): Value ${formatCurrency(i.current_value)}`).join("\n    ") || "None"}
+
+    Goals:
+    ${goals.map(g => `- ${g.name}: ${formatCurrency(g.current_amount)} / ${formatCurrency(g.target_amount)}`).join("\n    ") || "None"}
+
+    Recent Transactions:
+    ${recentTx || "None"}
+    `;
+
+    setFinancialContext(contextStr);
+  }, [balance, monthlyIncome, monthlyExpenses, savingsRate, investments, goals, transactions]);
 
   const [messages, setMessages] = useState<Message[]>([
     {

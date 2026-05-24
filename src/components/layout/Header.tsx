@@ -1,11 +1,12 @@
 "use client";
 
-import { Bell, UserCircle, LogOut, ChevronDown } from "lucide-react";
+import { Bell, UserCircle, LogOut, ChevronDown, Trash2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/context/CurrencyContext";
 import { CURRENCIES } from "@/lib/utils";
+import { useFinance } from "@/context/FinanceContext";
 
 export function Header() {
   const [email, setEmail] = useState<string | null>("Loading...");
@@ -13,7 +14,18 @@ export function Header() {
   const supabase = createClient();
   const router = useRouter();
   const { currency, setCurrency, currencySymbol } = useCurrency();
+  const { clearAllData } = useFinance();
+  const [isClearing, setIsClearing] = useState(false);
   const currencyMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleClearData = async () => {
+    if (confirm("Are you SURE you want to permanently delete all your transactions, goals, credit cards, and investments? This cannot be undone.")) {
+      setIsClearing(true);
+      await clearAllData();
+      setIsClearing(false);
+      alert("All account data has been completely erased.");
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -55,11 +67,12 @@ export function Header() {
   const selectedCurrency = CURRENCIES.find(c => c.code === currency);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-card/50 px-6 backdrop-blur-xl z-10 sticky top-0">
+    <header className="flex h-16 items-center justify-between border-b border-white/5 bg-[#0a0f18]/40 px-6 backdrop-blur-2xl z-20 sticky top-0 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
       <div className="flex items-center">
         {/* Mobile menu toggle could go here */}
       </div>
       <div className="flex items-center gap-4">
+        
         
         {/* ── Currency Switcher ── */}
         <div className="relative" ref={currencyMenuRef}>
@@ -96,17 +109,28 @@ export function Header() {
         <button className="text-muted-foreground hover:text-foreground">
           <Bell className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2 relative group">
+        <div className="flex items-center gap-2 relative group py-2 cursor-pointer">
           <UserCircle className="h-8 w-8 text-primary" />
           <div className="hidden md:block">
             <p className="text-sm font-medium">{email}</p>
           </div>
-          <button 
-            onClick={handleLogout}
-            className="absolute -bottom-8 right-0 bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
-          >
-            <LogOut className="h-3 w-3" /> Logout
-          </button>
+          
+          <div className="absolute top-full right-0 mt-1 w-52 bg-card border border-border rounded-xl shadow-2xl py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all z-50 translate-y-[-5px] group-hover:translate-y-0">
+            <button 
+              onClick={handleClearData}
+              disabled={isClearing}
+              className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 flex items-center gap-2.5 transition-colors disabled:opacity-50 font-medium"
+            >
+              <Trash2 className="h-4 w-4" /> {isClearing ? "Clearing..." : "Clear Account Data"}
+            </button>
+            <div className="h-px bg-border my-1" />
+            <button 
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+            >
+              <LogOut className="h-4 w-4" /> Logout
+            </button>
+          </div>
         </div>
       </div>
     </header>

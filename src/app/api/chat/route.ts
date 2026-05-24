@@ -27,17 +27,34 @@ function generateMockResponse(userMessage: string, financialContext: string): st
     return `**Savings Analysis**\n\nYour current savings rate is **${savingsRate.toFixed(1)}%** — here's how to improve it:\n\n**Quick Wins:**\n- 🍽️ Reduce dining out by ₹2,000/month → saves ₹24,000/year\n- 📱 Review subscriptions and cancel unused ones\n- 🛒 Switch to weekly grocery budgeting\n\n**Smart Strategies:**\n- Set up auto-transfer of ₹${Math.round(income * 0.05).toLocaleString("en-IN")} on salary day\n- Use the 24-hour rule before any purchase over ₹2,000\n- Target: push savings rate to **30%** for faster goal achievement`;
   }
 
-  if (msg.includes("afford") || msg.includes("buy") || msg.includes("purchase")) {
+  if (msg.includes("afford") || msg.includes("buy") || msg.includes("purchase") || msg.includes("iphone") || /\bcar\b/.test(msg)) {
     const amountMatch = msg.match(/[₹]?\s?([0-9,]+(?:k|lakh|l)?)/i);
-    const amount = amountMatch ? parseInt(amountMatch[1].replace(/[k,]/g, "")) * (amountMatch[1].toLowerCase().includes("k") ? 1000 : 1) : 10000;
+    const amount = amountMatch ? parseInt(amountMatch[1].replace(/[k,]/g, "")) * (amountMatch[1].toLowerCase().includes("k") ? 1000 : 1) : 80000;
     const canAfford = balance > amount * 1.5;
-    return `**Purchase Analysis: ₹${amount.toLocaleString("en-IN")}**\n\n${canAfford
-      ? `✅ **Yes, you can afford this.**\n\nYour balance is ₹${balance.toLocaleString("en-IN")} — this purchase would bring it to ₹${(balance - amount).toLocaleString("en-IN")}.\n\n**Consider:** This would delay your savings goal by ~${Math.ceil(amount / (income - expenses))} month(s).`
-      : `⚠️ **Caution advised.**\n\nThis would leave you with only ₹${(balance - amount).toLocaleString("en-IN")}.\n\n**Better Option:** Save ₹${Math.round(amount / 3).toLocaleString("en-IN")}/month for 3 months and buy with cash — no financial stress!`}`;
+    
+    if (msg.includes("emi") || msg.includes("loan")) {
+       return `**EMI / Recurring Liability Analysis**\n\nIf you take an EMI of ₹${amount.toLocaleString("en-IN")}/month:\n- **New Monthly Expenses:** ₹${(expenses + amount).toLocaleString("en-IN")}\n- **New Savings Rate:** ${(((income - (expenses + amount)) / income) * 100).toFixed(1)}%\n\n**Verdict:** ${(expenses + amount) > (income * 0.5) ? '⚠️ This breaks the 50/30/20 rule. Your fixed obligations will be too high.' : '✅ This fits within your 50% needs limit.'}`;
+    }
+
+    return `**Large Purchase Analysis: ₹${amount.toLocaleString("en-IN")}**\n\n${canAfford
+      ? `✅ **Yes, you can afford this.**\n\nYour balance is ₹${balance.toLocaleString("en-IN")} — this purchase would bring it to ₹${(balance - amount).toLocaleString("en-IN")}.\n\n**Optimal Financing:**\n- Use a credit card with high reward multipliers for this category.\n- Pay off the card immediately using liquid savings to avoid interest.`
+      : `⚠️ **Caution advised.**\n\nThis would severely deplete your liquid cash.\n\n**Alternative Strategy:**\n- **Save:** Put away ₹${Math.round(amount / 3).toLocaleString("en-IN")}/month for 3 months.\n- **Investments:** Do not liquidate high-yield Index Funds for a depreciating asset.`}`;
   }
 
-  if (msg.includes("budget") || msg.includes("spending")) {
-    return `**Budget Breakdown**\n\nBased on your ₹${income.toLocaleString("en-IN")} income:\n\n| Category | Current | Recommended |\n|---|---|---|\n| Essentials (50%) | ₹${expenses.toLocaleString("en-IN")} | ₹${Math.round(income * 0.5).toLocaleString("en-IN")} |\n| Lifestyle (30%) | — | ₹${Math.round(income * 0.3).toLocaleString("en-IN")} |\n| Savings (20%) | ₹${(income - expenses).toLocaleString("en-IN")} | ₹${Math.round(income * 0.2).toLocaleString("en-IN")} |\n\n**Action:** Your savings of ₹${(income - expenses).toLocaleString("en-IN")}/month is excellent at ${savingsRate.toFixed(1)}%!`;
+  if (msg.includes("hotel") || msg.includes("card to use") || msg.includes("which card")) {
+    return `**Credit Card Optimization**\n\nSince you are booking a hotel/travel, I checked your active credit cards in the FINORA system.\n\n**Recommendation:**\n- Use your **HDFC Regalia** or travel-focused card.\n- Why? It offers accelerated reward points on hotel bookings and free lounge access if you are flying.\n\nEnjoy your stay!`;
+  }
+
+  if (msg.includes("budget") || msg.includes("spending") || msg.includes("treat") || msg.includes("splurge")) {
+    return `**Discretionary Spending Analysis**\n\nIf you spend ₹5,000 on a treat:\n- **Impact:** Checks against your "Food & Dining" or "Entertainment" budget.\n- **Payment Strategy:** Use your dining-focused credit card (e.g., HDFC Swiggy) to get 10% cashback on this bill.\n- **Overall Budget:** Your total expenses are ₹${expenses.toLocaleString("en-IN")}, leaving you with ₹${(income - expenses).toLocaleString("en-IN")} to save. Enjoy the treat, you've earned it!`;
+  }
+
+  if (msg.includes("emergency") || msg.includes("hospital") || msg.includes("mechanic") || msg.includes("broke down")) {
+    return `**Emergency Expense Protocol**\n\n**Immediate Action:**\n- **Credit:** Use your highest limit credit card to pay the bill now. This gives you a 45-day interest-free buffer.\n- **Liquidation:** Pull the required amount from your **Emergency Liquid** fund or a low-yield savings account.\n- **Warning:** Do NOT sell your long-term equity mutual funds or stocks for this.`;
+  }
+
+  if (msg.includes("bonus") || msg.includes("windfall") || msg.includes("lottery")) {
+    return `**Windfall Allocation Strategy**\n\nCongratulations on the extra cash! Here is how to deploy it:\n1. **Debt:** Clear any outstanding high-interest credit card balances immediately.\n2. **Goals:** Put 40% towards your most urgent financial goal (e.g., House Downpayment).\n3. **Invest:** Deploy 40% into your Index Funds.\n4. **Guilt-free:** Keep 20% to treat yourself!`;
   }
 
   if (msg.includes("invest") || msg.includes("investment")) {
@@ -60,8 +77,35 @@ export async function POST(req: Request) {
 
     // ── Try real Gemini AI if API key provided ─────────────────────────────
     if (apiKey && apiKey !== "PASTE_YOUR_KEY_HERE") {
-      const systemPrompt = `You are FINORA, a highly intelligent Personal AI CFO.
-Give concise, actionable financial advice. Use bullet points for clarity.
+      const systemPrompt = `You are FINORA, a highly intelligent, proactive Personal AI CFO.
+You have access to the user's complete financial profile, including their balances, income, expenses, budgets, credit cards, investments, and goals.
+
+YOUR ROLE:
+Act as a strict, highly analytical financial advisor. Do not just spit back numbers. Analyze "what-if" scenarios, calculate impacts on budgets, and provide actionable decisions.
+
+SCENARIO INSTRUCTIONS:
+1. Discretionary Splurges (e.g., "Can I spend 5k on a treat?"): 
+   - Check their specific budget categories (e.g., Food & Dining). Will this push them over the limit?
+   - Suggest which of their specific Credit Cards to use based on the perks (e.g., dining rewards).
+2. Large Asset Purchases (e.g., "How do I afford an iPhone?"):
+   - Do NOT just say "save up". Look at their Investments. Suggest which low-yield assets (like FDs or liquid funds) they could liquidate, but warn against selling high-yield Index Funds.
+   - Suggest splitting the cost using a specific credit card for points, and paying it off using their Monthly Savings rate over X months.
+3. Recurring Liabilities (e.g., "Can I take a 15k EMI?"):
+   - Calculate their new Monthly Expenses (Current Expenses + EMI).
+   - Check if this breaks the 50/30/20 rule (Fixed expenses > 50% of Income).
+   - Tell them exactly how much it will drop their current Savings Rate.
+4. Emergency Expenses (e.g., "Car broke down, need 25k"):
+   - Tell them to put it on a credit card for the 45-day interest-free buffer.
+   - Instruct them exactly which liquid asset or balance to use to pay the bill when it arrives.
+5. Windfalls (e.g., "Got a 1 lakh bonus"):
+   - Tell them to clear high-interest debt first.
+   - Distribute the rest specifically to their active Goals and Investments.
+
+FORMATTING:
+- Use markdown, bullet points, and emojis for clarity.
+- Always provide a "Verdict" or "Action Plan" at the end.
+- Be concise and direct.
+
 Financial context: ${financialContext ?? "No context provided."}`;
 
       const priorMessages: { role: string; content: string }[] = messages.slice(0, -1);

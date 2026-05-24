@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useFinance, Transaction } from "@/context/FinanceContext";
 import { formatCurrency, cn } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -8,9 +8,12 @@ import { format } from "date-fns";
 import {
   Upload, Download, Plus, Filter, Pencil, Check, X,
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
-  Briefcase, Wallet, ArrowUpRight, ArrowDownRight
+  Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
+  RefreshCw, AlertCircle
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
+import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
+import { Sparkles } from "lucide-react";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
 type BudgetCategory = {
@@ -22,12 +25,12 @@ type BudgetCategory = {
 };
 
 const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { name: "Groceries",       budget: 8000,  color: "#22c55e", ringColor: "#22c55e", txCategories: ["Food", "Groceries"] },
-  { name: "Dining & Out",    budget: 5000,  color: "#f97316", ringColor: "#f97316", txCategories: ["Lifestyle", "Dining Out", "Entertainment"] },
-  { name: "Transport",       budget: 3000,  color: "#a855f7", ringColor: "#a855f7", txCategories: ["Transport"] },
-  { name: "Rent & Utilities",budget: 20000, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Housing", "Utilities"] },
-  { name: "Healthcare",      budget: 2000,  color: "#ef4444", ringColor: "#ef4444", txCategories: ["Healthcare", "Medical"] },
-  { name: "Savings",         budget: 30000, color: "#eab308", ringColor: "#eab308", txCategories: ["Savings", "Investment"] },
+  { name: "Food & Dining",    budget: 1200, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
+  { name: "Shopping",         budget: 800,  color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle"] },
+  { name: "Entertainment",    budget: 400,  color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment"] },
+  { name: "Transportation",   budget: 300,  color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Transportation", "Transport"] },
+  { name: "Health",           budget: 500,  color: "#ef4444", ringColor: "#ef4444", txCategories: ["Health", "Healthcare", "Medical"] },
+  { name: "Travel",           budget: 2000, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel"] },
 ];
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -151,15 +154,42 @@ export default function TransactionsPage() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [budgetOverrides, setBudgetOverrides] = useState<Record<string, number>>({});
-
+  const [showAiModal, setShowAiModal] = useState(false);
   const [newTx, setNewTx] = useState({ name: "", amount: "", category: "Food", type: "expense" as "income" | "expense" });
+  const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(BUDGET_CATEGORIES);
 
-  // Merge budget overrides
-  const budgetCategories = BUDGET_CATEGORIES.map(cat => ({
-    ...cat,
-    budget: budgetOverrides[cat.name] ?? cat.budget,
-  }));
+  useEffect(() => {
+    const loadBudgets = () => {
+      const saved = localStorage.getItem("finora_budgets");
+      if (saved) {
+        try {
+          const parsed: { name: string; limit?: number; budget?: number }[] = JSON.parse(saved);
+          // Merge saved limits with canonical defaults so txCategories / colors always exist
+          const merged = BUDGET_CATEGORIES.map(def => {
+            const match = parsed.find(p => p.name === def.name);
+            return match ? { ...def, budget: match.limit ?? match.budget ?? def.budget } : def;
+          });
+          setBudgetCategories(merged);
+        } catch (e) {
+          setBudgetCategories(BUDGET_CATEGORIES);
+        }
+      } else {
+        setBudgetCategories(BUDGET_CATEGORIES);
+      }
+    };
+    
+    loadBudgets();
+    window.addEventListener("finora_budget_update", loadBudgets);
+    return () => window.removeEventListener("finora_budget_update", loadBudgets);
+  }, []);
+
+  const handleEditBudget = (name: string, val: number) => {
+    setBudgetCategories(prev => {
+      const updated = prev.map(c => c.name === name ? { ...c, budget: val } : c);
+      localStorage.setItem("finora_budgets", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   // Calculate spent per budget category
   const spentByBudgetCat = useMemo(() => {
@@ -185,6 +215,33 @@ export default function TransactionsPage() {
     });
   }, [transactions, filterType, filterCategory]);
 
+  const SUB_KEYWORDS = ["netflix", "amazon", "prime", "spotify", "hulu", "disney", "youtube", "apple", "gym", "membership", "internet", "dewa", "broadband", "mobile", "telecom", "utility", "insurance"];
+  const upcomingBills = useMemo(() => {
+    const expenses = transactions.filter(t => t.type === "expense");
+    const grouped: Record<string, number[]> = {};
+    expenses.forEach(e => {
+      // Clean string and strip dates if present to group accurately
+      const nm = e.name.toLowerCase().replace(/\d/g, '').trim();
+      
+      // Match against known subscription keywords deeply
+      if (SUB_KEYWORDS.some(k => nm.includes(k))) {
+        if (!grouped[nm]) grouped[nm] = [];
+        grouped[nm].push(e.amount);
+      }
+    });
+
+    // If it matched a known service, we guarantee it's a structural recurrence, so we pull its most recent value
+    const recurring = Object.entries(grouped)
+      .map(([name, amounts]) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1) || "Unknown Provider",
+        amount: amounts[0] // Using their most recent charge
+      }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 4);
+
+    return recurring;
+  }, [transactions]);
+
   const handleAddTransaction = () => {
     if (!newTx.name || !newTx.amount) return;
     addTransaction({
@@ -208,6 +265,12 @@ export default function TransactionsPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button 
+            onClick={() => setShowAiModal(true)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors"
+          >
+            <Sparkles className="h-4 w-4 text-violet-400" /> AI Limits
+          </button>
+          <button 
             onClick={() => setShowImportModal(true)}
             className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
           >
@@ -224,6 +287,7 @@ export default function TransactionsPage() {
           </button>
         </div>
       </div>
+
 
       {/* ── Add Transaction Form ── */}
       {showAddForm && (
@@ -299,7 +363,7 @@ export default function TransactionsPage() {
               cat={cat}
               spent={spentByBudgetCat[cat.name] ?? 0}
               currency={currency}
-              onEditBudget={(name, val) => setBudgetOverrides(p => ({ ...p, [name]: val }))}
+              onEditBudget={handleEditBudget}
             />
           ))}
         </div>
@@ -371,10 +435,62 @@ export default function TransactionsPage() {
         </div>
       </div>
 
+      {/* Feature 2: Predictive Bills Radar (Moved to Bottom) */}
+      <div className="mt-12 bg-[#0f172a]/80 border border-violet-500/20 rounded-3xl p-8 relative overflow-hidden backdrop-blur-xl shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-violet-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-white/5 pb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-violet-500/20 rounded-lg">
+                <RefreshCw className="h-5 w-5 text-violet-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-white tracking-tight">Active Subscriptions</h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 tracking-wider border border-violet-500/20 uppercase">Valid AI Target</span>
+            </div>
+            <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
+              Targeted digital vendor analysis. Expect these static charges against your ongoing balance. By strictly tracing exact entities like Netflix or Amazon, we eliminate noise and calculate true recurring outlays.
+            </p>
+          </div>
+          
+          <div className="flex flex-col items-start md:items-end bg-violet-900/20 p-4 rounded-xl border border-violet-500/30 min-w-[200px]">
+            <span className="text-xs font-bold text-violet-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <AlertCircle className="h-3.5 w-3.5" /> Upcoming Draft
+            </span>
+            <span className="text-3xl font-bold font-mono text-violet-300 drop-shadow-md">
+              {formatCurrency(upcomingBills.reduce((acc, b) => acc + b.amount, 0), currency)}
+            </span>
+          </div>
+        </div>
+
+        {upcomingBills.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
+            {upcomingBills.map((bill, idx) => (
+              <div key={idx} className="bg-[#1e293b]/60 p-5 rounded-2xl border border-white/5 flex flex-col justify-between hover:bg-[#1e293b] transition-all hover:-translate-y-1 hover:shadow-xl hover:border-violet-500/30 group">
+                <span className="text-sm font-semibold text-slate-300 truncate mb-3 group-hover:text-white transition-colors">{bill.name}</span>
+                <span className="text-xl font-bold font-mono text-violet-300">{formatCurrency(bill.amount, currency)}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-[#1e293b]/40 border border-white/5 p-8 rounded-2xl text-center relative z-10">
+            <p className="text-base text-slate-300 font-medium">Zero recognized subscription drafts.</p>
+            <p className="text-sm text-slate-500 mt-2">Check back later or import more rich CSV data to reliably trace digital vendors.</p>
+          </div>
+        )}
+      </div>
+
       {showImportModal && (
         <CsvImportModal 
           onClose={() => setShowImportModal(false)}
           onImport={(rows) => bulkAddTransactions(rows)}
+        />
+      )}
+
+      {showAiModal && (
+        <AiBudgetModal
+          onClose={() => setShowAiModal(false)}
+          onBudgetSet={(budgets) => setBudgetCategories(budgets)}
         />
       )}
     </div>

@@ -2,235 +2,178 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Star, ArrowUpRight, Home, Wallet, ShieldCheck, Zap, Globe } from "lucide-react";
+import { ArrowRight, Activity, Wallet, PieChart, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#060b0e] text-white selection:bg-emerald-500/30 overflow-hidden relative">
-      
-      {/* ── Background Elements ── */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[-10%] w-[30%] h-[50%] rounded-full bg-emerald-600/5 blur-[150px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
-
-      {/* ── Navbar ── */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto md:px-12">
-        <div className="flex items-center gap-2">
-          <div className="bg-emerald-500 p-1.5 rounded-lg">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold tracking-tight">FINORA</span>
-        </div>
+    <div className="min-h-screen bg-[#F0F2F5] p-3 sm:p-6 font-sans">
+      {/* ── Main White Container ── */}
+      <div className="bg-white rounded-[2.5rem] sm:rounded-[3rem] w-full min-h-[95vh] relative overflow-hidden shadow-2xl border border-slate-100 flex flex-col">
         
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-          <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-          <Link href="#about" className="hover:text-white transition-colors">About Us</Link>
-          <Link href="#testimonials" className="hover:text-white transition-colors">Testimonials</Link>
-          <Link href="#download" className="hover:text-white transition-colors">Download</Link>
+        {/* ── Floating Navbar ── */}
+        <div className="pt-8 px-6 sm:px-10 max-w-7xl mx-auto w-full flex justify-center z-50">
+          <nav className="bg-[#111111] text-white rounded-full py-2.5 px-3 sm:px-4 flex items-center justify-between w-full shadow-xl">
+            {/* Logo */}
+            <div className="flex items-center gap-2 pl-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#a3e635"/>
+                <path d="M2 17L12 22L22 17" stroke="#a3e635" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#a3e635" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="text-lg font-bold tracking-widest uppercase">FINORA</span>
+            </div>
+
+            {/* Links */}
+            <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-300">
+              <Link href="#features" className="hover:text-white transition-colors">Features</Link>
+              <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+              <Link href="#business" className="hover:text-white transition-colors">For Business</Link>
+              <Link href="#help" className="hover:text-white transition-colors">Help Center</Link>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 pr-1">
+              <Link href="/login">
+                <Button variant="ghost" className="hidden sm:inline-flex text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-full px-5 h-10">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button className="bg-[#a3e635] hover:bg-[#84cc16] text-black font-semibold rounded-full px-6 h-10 border border-[#a3e635]/20 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all">
+                  Create Account
+                </Button>
+              </Link>
+            </div>
+          </nav>
         </div>
 
-        <div>
-          <Link href="/login">
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-full px-6">
-              Contact Us
-            </Button>
-          </Link>
-        </div>
-      </nav>
-
-      {/* ── Hero Section ── */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-12 lg:pt-20 pb-24 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center min-h-[85vh]">
-        
-        {/* Left Copy */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="space-y-8"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-emerald-400 text-sm font-medium">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            Finora version 1.0 is Live
-          </div>
-
-          <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1]">
-            Stay in control <br className="hidden md:block" />
-            of your financial <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">flow with us</span>
-          </h1>
-
-          <p className="text-slate-400 text-lg sm:text-xl max-w-lg leading-relaxed">
-            Application that provides complete information about your finances and has principles to make it easier for you to manage finances.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4">
-            <Link href="/login">
-              <Button className="h-14 px-8 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-lg transition-transform hover:scale-105 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+        {/* ── Hero Content ── */}
+        <main className="flex-1 flex flex-col items-center pt-20 sm:pt-28 px-4 relative z-10 w-full max-w-5xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center space-y-6 max-w-4xl"
+          >
+            <h1 className="text-5xl sm:text-6xl md:text-[5rem] font-bold tracking-tight text-slate-900 leading-[1.05]">
+              Revolutionizing finance for a better tomorrow. Today.
+            </h1>
+            <p className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium">
+              Fintech services leverage technology to enhance financial processes, offering innovative AI solutions for banking and budget pacing.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+              <Button className="bg-[#111111] hover:bg-black text-white rounded-full px-8 h-14 text-base font-semibold w-full sm:w-auto shadow-xl">
                 Get Started
               </Button>
-            </Link>
-            <Button variant="outline" className="h-14 px-8 rounded-full border-slate-700 text-white hover:bg-slate-800 font-semibold text-lg">
-              Learn More
-            </Button>
-          </div>
-
-          <div className="flex gap-12 pt-8 items-center">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <Star className="h-4 w-4 fill-emerald-400" />
-                <Star className="h-4 w-4 fill-emerald-400" />
-                <Star className="h-4 w-4 fill-emerald-400" />
-                <Star className="h-4 w-4 fill-emerald-400" />
-                <Star className="h-4 w-4 fill-emerald-400" />
-              </div>
-              <p className="text-sm text-slate-400"><strong className="text-white">4.9</strong> / 5.0 Rating</p>
+              <Button className="bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 rounded-full px-8 h-14 text-base font-semibold w-full sm:w-auto shadow-sm">
+                Learn more
+              </Button>
             </div>
-            
-            <div className="w-px h-10 bg-slate-800" />
-
-            <div className="space-y-2">
-              <div className="flex -space-x-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className={`w-8 h-8 rounded-full border-2 border-[#060b0e] bg-slate-700 flex items-center justify-center text-xs overflow-hidden`}>
-                    <img src={`https://i.pravatar.cc/100?img=${i+40}`} alt="user" />
-                  </div>
-                ))}
-              </div>
-              <p className="text-sm text-slate-400"><strong className="text-white">100k+</strong> Active Users</p>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-slate-800/50">
-            <p className="text-sm text-slate-500 font-medium mb-4">Our Support Partners</p>
-            <div className="flex flex-wrap items-center gap-8 opacity-60 invert-[0.8]">
-              {/* Dummy logos utilizing a free text approach for now */}
-              <div className="text-xl font-bold tracking-tighter">PayPal</div>
-              <div className="text-xl font-black italic">Wise</div>
-              <div className="text-xl font-bold">stripe</div>
-              <div className="text-xl font-mono border-2 border-white px-1">Square</div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Right Phone Mockup */}
-        <div className="relative h-[600px] lg:h-[700px] w-full flex justify-center lg:justify-end items-center">
-          
-          {/* Abstract Green Shape Behind Phone */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] lg:w-[450px] h-[500px] lg:h-[650px] bg-emerald-500 rounded-full blur-[100px] opacity-20"
-          />
-
-          <motion.div 
-            initial={{ opacity: 0, y: 50, rotateX: 10 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative z-10 w-[320px] lg:w-[350px] h-[650px] lg:h-[700px] bg-[#1a1f26] rounded-[48px] border-[8px] border-slate-800 shadow-2xl overflow-hidden flex flex-col"
-          >
-            {/* Phone Notch */}
-            <div className="absolute top-0 w-full flex justify-center z-20">
-              <div className="w-[120px] h-[24px] bg-slate-800 rounded-b-xl" />
-            </div>
-
-            {/* Mock App UI inside Phone */}
-            <div className="flex-1 overflow-hidden p-6 pt-12 flex flex-col bg-[#0b0f14]">
-              
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <p className="text-xs text-slate-400">Hello,</p>
-                  <p className="font-semibold text-white">Ali Husni</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center relative">
-                  <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#1a1f26]" />
-                  <img src="https://i.pravatar.cc/100?img=11" className="w-full h-full rounded-full" alt="avatar"/>
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <p className="text-sm text-slate-400">Available Balance</p>
-                <h2 className="text-4xl font-bold text-white mt-1">$45,123.70</h2>
-                <div className="flex gap-2 items-center mt-3 text-xs text-slate-400">
-                  <div className="flex -space-x-1">
-                    <div className="w-4 h-4 rounded-full bg-red-500 opacity-80" />
-                    <div className="w-4 h-4 rounded-full bg-yellow-500 opacity-80" />
-                  </div>
-                  <span>**** **** 3241</span>
-                </div>
-              </div>
-
-              <div className="flex gap-6 border-b border-slate-800 pb-3 mb-6">
-                <span className="text-sm font-semibold text-emerald-400 border-b-2 border-emerald-400 pb-3 -mb-[14px]">Spending Status</span>
-                <span className="text-sm font-medium text-slate-500">Saving Plans</span>
-              </div>
-
-              <div className="flex justify-between items-end mb-6">
-                <div>
-                  <p className="text-xs text-slate-400">My Spending</p>
-                  <p className="text-xl font-bold text-white">$6,234.00</p>
-                  <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3" /> 3.2% from last week
-                  </p>
-                </div>
-                {/* Mock Chart Bars */}
-                <div className="flex gap-1.5 items-end h-12">
-                  {[40, 60, 30, 80, 50, 90, 70].map((h, i) => (
-                    <div key={i} className="w-1.5 rounded-t-sm bg-emerald-500" style={{ height: `${h}%` }} />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex-1">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-semibold">Last Transactions</h3>
-                  <ArrowRight className="h-4 w-4 text-slate-500" />
-                </div>
-                
-                <div className="space-y-4">
-                  {[
-                    { n: "Fiverr International", a: "+$100.00", in: true },
-                    { n: "Annie Leonhart", a: "-$60.00", in: false },
-                    { n: "Eren Yeager", a: "+$60.00", in: true }
-                  ].map((tx, i) => (
-                    <div key={i} className="flex justify-between items-center bg-slate-800/40 p-3 rounded-xl border border-white/5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-700 font-bold flex items-center justify-center text-xs">
-                          {tx.n[0]}
-                        </div>
-                        <div>
-                          <p className="text-xs text-slate-400">{tx.in ? "Receive" : "Transfer"}</p>
-                          <p className="text-sm font-medium">{tx.n}</p>
-                        </div>
-                      </div>
-                      <p className={`text-sm font-bold ${tx.in ? 'text-white' : 'text-slate-400'}`}>{tx.a}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* App Nav Bar */}
-            <div className="h-16 bg-[#12161c] border-t border-slate-800 flex justify-between items-center px-8 z-20">
-              <Home className="h-5 w-5 text-slate-500" />
-              <Wallet className="h-5 w-5 text-slate-500" />
-              <div className="h-12 w-12 bg-emerald-500 rounded-full flex items-center justify-center -mt-6 border-4 border-[#12161c] shadow-lg shadow-emerald-500/20">
-                <Globe className="h-5 w-5 text-white" />
-              </div>
-              <ShieldCheck className="h-5 w-5 text-slate-500" />
-              <div className="h-5 w-5 rounded-full border-2 border-slate-500 flex items-center justify-center">
-                <div className="w-2.5 h-2.5 bg-slate-500 rounded-full" />
-              </div>
-            </div>
-
           </motion.div>
 
-        </div>
-      </main>
+          {/* ── Floating Mockup Cluster ── */}
+          <div className="mt-20 w-full max-w-5xl relative h-[400px] sm:h-[500px]">
+            {/* Main Application Tablet Box */}
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90%] sm:w-[800px] h-[350px] sm:h-[450px] bg-[#f8fafc] border-[8px] border-[#111111] rounded-t-[2rem] shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="p-6 sm:p-8 bg-white border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-100 rounded-full"></div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">Welcome back, William 👋</h3>
+                    <p className="text-sm text-slate-400">Personal CFO Active</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 sm:p-8 flex-1 grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm col-span-2 sm:col-span-1">
+                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Available Balance</p>
+                   <p className="text-2xl font-bold text-slate-900">$12,480.50</p>
+                   <div className="w-full h-12 mt-4 bg-emerald-100/50 rounded-lg relative overflow-hidden">
+                     <svg className="absolute w-full h-full text-emerald-400" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,30 L0,20 Q20,10 40,25 T80,15 T100,5 L100,30 Z" fill="currentColor"/></svg>
+                   </div>
+                </div>
+                <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hidden sm:block">
+                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">This Month Volume</p>
+                   <p className="text-2xl font-bold text-slate-900">$48,320.00</p>
+                   <div className="w-full h-12 mt-4 bg-purple-100/50 rounded-lg relative overflow-hidden">
+                     <svg className="absolute w-full h-full text-purple-400" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,30 L0,25 Q20,15 40,20 T80,10 T100,20 L100,30 Z" fill="currentColor"/></svg>
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Left Floating Card - Transfer */}
+            <motion.div 
+              animate={{ y: [0, -10, 0] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="absolute bottom-20 left-[0%] sm:left-[5%] z-20 w-64 bg-white rounded-3xl p-5 shadow-[0_20px_40px_rgba(0,0,0,0.08)] border border-slate-100 hidden md:block"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white"><ShieldCheck className="w-6 h-6"/></div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Jhon Barrel</p>
+                  <p className="text-xs text-slate-400">Personal account</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-4 p-3 bg-slate-50 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-[#a3e635] rounded-full flex items-center justify-center"><ArrowRight className="w-3 h-3 text-emerald-900"/></div>
+                  <span className="text-sm font-semibold">Transfer</span>
+                </div>
+                <span className="text-xs font-bold font-mono">VISA</span>
+              </div>
+            </motion.div>
+
+            {/* Top Left Floating Pill */}
+            <motion.div 
+              animate={{ y: [0, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: 1 }}
+              className="absolute top-20 sm:top-10 left-[8%] sm:left-[22%] z-30 bg-white rounded-full px-4 py-2 shadow-lg border border-slate-100 flex items-center gap-2"
+            >
+              <div className="w-5 h-5 bg-[#a3e635] rounded-full"></div>
+              <span className="font-bold text-sm">+$347.23</span>
+            </motion.div>
+
+            {/* Right Floating Card - Bar Chart */}
+            <motion.div 
+              animate={{ y: [0, -12, 0] }}
+              transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 0.5 }}
+              className="absolute bottom-32 right-[-2%] sm:right-[10%] z-20 w-56 bg-white rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-100 hidden lg:block"
+            >
+              <p className="text-[10px] font-semibold text-slate-400 uppercase text-center mb-4">Average spend in half a year</p>
+              <div className="flex items-end justify-between h-24 gap-2">
+                {[40, 70, 50, 100, 80, 50].map((h, i) => (
+                  <div key={i} className="w-full bg-[#8b5cf6] rounded-full" style={{ height: `${h}%` }}></div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-2 px-1">
+                {['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                  <span key={m} className="text-[8px] font-bold text-slate-400">{m}</span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Bottom Right Floating Share */}
+            <motion.div 
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: 1.5 }}
+              className="absolute bottom-10 right-[5%] sm:right-[20%] z-30 bg-white rounded-2xl p-4 shadow-xl border border-slate-100 hidden sm:flex items-center justify-between w-48"
+            >
+              <span className="text-sm font-semibold text-slate-700">Share spendings</span>
+              <div className="w-6 h-6 bg-[#a3e635] rounded-full flex items-center justify-center cursor-pointer">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 8L22 12L18 16M2 12H22" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            </motion.div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

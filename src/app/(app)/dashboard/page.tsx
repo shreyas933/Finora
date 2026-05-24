@@ -7,14 +7,51 @@ import { Button } from "@/components/ui/Button";
 import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Link from "next/link";
-import { format, subDays } from "date-fns";
+import { format, subDays, getDaysInMonth } from "date-fns";
 import { motion } from "framer-motion";
 import { AIInsights } from "@/components/dashboard/AIInsights";
+import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
 import { useCurrency } from "@/context/CurrencyContext";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { balance, monthlyIncome, monthlyExpenses, healthScore, transactions } = useFinance();
   const { currency } = useCurrency();
+  const [safeToSpend, setSafeToSpend] = useState<number>(0);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+
+  useEffect(() => {
+    // Determine discretionary budget targets
+    const saved = localStorage.getItem("finora_budgets");
+    let target = 0;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const discretionary = parsed.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings"].includes(b.name));
+      target = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget), 0);
+    } else {
+      target = (monthlyIncome * 0.3) > 0 ? (monthlyIncome * 0.3) : 5000;
+    }
+
+    // Tally current month discretionary spend
+    const currentMonth = new Date().getMonth();
+    let discretionarySpent = 0;
+    transactions.forEach(t => {
+      if (t.type === "expense") {
+        const txDate = new Date(t.date);
+        if (txDate.getMonth() === currentMonth) {
+          const isFixed = ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].some(k => t.category.includes(k));
+          if (!isFixed) discretionarySpent += t.amount;
+        }
+      }
+    });
+
+    const remaining = Math.max(0, target - discretionarySpent);
+    const now = new Date();
+    const daysInMonth = getDaysInMonth(now);
+    const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
+
+    setSafeToSpend(Math.round(remaining / daysLeft));
+  }, [transactions, monthlyIncome]);
 
   // Create some dummy chart data based on recent transactions or just mock trend
   const chartData = Array.from({ length: 7 }).map((_, i) => ({
@@ -32,6 +69,21 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Here&apos;s a summary of your financial health.</p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowSyncModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border"
+            style={{
+              background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))",
+              borderColor: "rgba(139,92,246,0.4)",
+              color: "#a78bfa",
+            }}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-400" />
+            </span>
+            Connect
+          </button>
           <Link href="/transactions">
             <Button className="gap-2">
               <Plus className="h-4 w-4" /> Add Transaction
@@ -40,12 +92,38 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {showSyncModal && <PaymentSyncModal onClose={() => setShowSyncModal(false)} />}
+
       {healthScore < 70 && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive-foreground flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive" />
           <p className="text-sm font-medium">You might overspend by ₹12,000 this month based on your current trajectory. Consider reducing lifestyle expenses.</p>
         </motion.div>
       )}
+
+      {/* Feature 1: Safe-To-Spend Pacer */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-900/40 via-[#0f172a] to-emerald-900/20 border border-emerald-500/30 rounded-2xl p-8 shadow-[0_0_40px_rgba(16,185,129,0.1)] flex flex-col md:flex-row items-start md:items-center justify-between"
+      >
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full"></div>
+        <div className="relative z-10 z-10 max-w-xl">
+          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/20 block w-max mb-3">
+            Dialy CFO Pacer
+          </span>
+          <h3 className="text-3xl font-bold text-white mb-2">Safe-To-Spend Today</h3>
+          <p className="text-sm text-slate-300">
+            Based on your rigid math boundaries and days left in the month, if you spend exactly this much today, you will flawlessly land on your budget goals. Zero guesswork.
+          </p>
+        </div>
+        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-end">
+          <div className="text-6xl font-mono font-bold text-emerald-400 tracking-tighter drop-shadow-lg">
+            {formatCurrency(safeToSpend, currency)}
+          </div>
+          <p className="text-xs font-semibold text-emerald-500 mt-2 uppercase tracking-widest">Resets at midnight</p>
+        </div>
+      </motion.div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

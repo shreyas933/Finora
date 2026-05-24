@@ -47,6 +47,9 @@ type FinanceContextType = {
   updateInvestment: (id: string, updates: Partial<Investment>) => Promise<void>;
   deleteInvestment: (id: string) => Promise<void>;
 
+  clearAllData: () => Promise<void>;
+  seedInvestorDemo: (data: any) => Promise<void>;
+
   balance: number;
   monthlyIncome: number;
   monthlyExpenses: number;
@@ -157,6 +160,54 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (!error) setInvestments(prev => prev.filter(i => i.id !== id));
   };
 
+  const clearAllData = async () => {
+    if (!userId) return;
+    await Promise.all([
+      supabase.from("transactions").delete().eq("user_id", userId),
+      supabase.from("goals").delete().eq("user_id", userId),
+      supabase.from("investments").delete().eq("user_id", userId)
+    ]);
+    localStorage.removeItem("finora_credit_cards");
+    localStorage.removeItem("finora_budgets");
+    localStorage.removeItem("finora_onboarding_done");
+    window.dispatchEvent(new Event("finora_budget_update"));
+    setTransactions([]);
+    setGoals([]);
+    setInvestments([]);
+  };
+
+  const seedInvestorDemo = async (data: any) => {
+    if (!userId) return;
+    await clearAllData();
+
+    // 1. Seed Transactions
+    await bulkAddTransactions(data.transactions);
+
+    // 2. Seed Goals
+    const goalsPayload = data.goals.map((g: any) => ({ ...g, user_id: userId }));
+    const { data: gData } = await supabase.from("goals").insert(goalsPayload).select();
+    if (gData) setGoals(gData.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
+    // 3. Seed Investments
+    const invPayload = data.investments.map((i: any) => ({ ...i, user_id: userId }));
+    const { data: iData } = await supabase.from("investments").insert(invPayload).select();
+    if (iData) setInvestments(iData.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
+    // 4. Seed LocalStorage Wealth & Budgets 
+    localStorage.setItem("finora_wealth", JSON.stringify(data.wealthHistory));
+    localStorage.setItem("finora_budgets", JSON.stringify(data.budgets));
+    
+    // Simulate credit cards for /credit view
+    localStorage.setItem("finora_credit_cards", JSON.stringify([
+      { id: "1", name: "Amex Platinum", balance: 2450, mappedTransactions: [data.transactions[0].id] },
+      { id: "2", name: "Chase Sapphire Reserve", balance: 1200, mappedTransactions: [] }
+    ]));
+    
+    // Trigger global UI re-renders for storage-based graphs
+    window.dispatchEvent(new Event("finora_wealth_update"));
+    window.dispatchEvent(new Event("finora_budget_update"));
+  };
+
   // ── COMPUTED METRICS ──
   const monthlyIncome = transactions.filter(t => t.type === "income").reduce((acc, t) => acc + Number(t.amount), 0);
   const monthlyExpenses = transactions.filter(t => t.type === "expense").reduce((acc, t) => acc + Number(t.amount), 0);
@@ -170,6 +221,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction,
       goals, addGoal, updateGoal, deleteGoal,
       investments, addInvestment, updateInvestment, deleteInvestment,
+      clearAllData, seedInvestorDemo,
       balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore
     }}>
       {children}

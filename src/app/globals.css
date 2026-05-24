@@ -272,13 +272,25 @@ body {
   flex-direction: column;
   justify-content: space-between;
   flex-shrink: 0;
-  transition: box-shadow 0.25s;
+  transition: box-shadow 0.25s, transform 0.2s;
   outline: 3px solid transparent;
   outline-offset: 3px;
 }
 
 .credit-card-visual.selected {
-  outline-color: rgba(255,255,255,0.4);
+  outline-color: rgba(255,255,255,0.45);
+}
+
+/* Debit card styling override */
+.credit-card-visual.debit {
+  background-blend-mode: overlay;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* UPI app styling override */
+.credit-card-visual.upi {
+  border: 1.5px dashed rgba(255, 255, 255, 0.25);
+  background-blend-mode: multiply;
 }
 
 .cc-chip {
@@ -288,6 +300,18 @@ body {
   background: linear-gradient(135deg, #d4af37, #ffe08a);
   opacity: 0.9;
 }
+
+/* SVG Credit Dial Gauge centering */
+.score-circle-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+  margin: 1rem auto 0;
+}
+
 
 .cc-network {
   position: absolute;

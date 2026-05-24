@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { Plus, TrendingUp, TrendingDown, ExternalLink, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useFinance } from "@/context/FinanceContext";
+import { useCurrency } from "@/context/CurrencyContext";
 
 // ─── Mock Data matching user screenshots ─────────────────────────────────────
 
@@ -56,6 +57,7 @@ const POPULAR_STOCKS = [
 
 export default function InvestmentsPage() {
   const { investments } = useFinance();
+  const { currency } = useCurrency();
   const [showConnectModal, setShowConnectModal] = useState(false);
 
   // Computed metrics based on the real user's investments
@@ -84,16 +86,16 @@ export default function InvestmentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="inv-card">
           <p className="inv-label">Total Invested</p>
-          <p className="inv-value">₹{totalInvested.toLocaleString("en-IN")}</p>
+          <p className="inv-value">{formatCurrency(totalInvested, currency)}</p>
         </div>
         <div className="inv-card">
           <p className="inv-label">Current Value</p>
-          <p className="inv-value">₹{currentValue.toLocaleString("en-IN")}</p>
+          <p className="inv-value">{formatCurrency(currentValue, currency)}</p>
         </div>
         <div className="inv-card">
           <p className="inv-label">Total Returns</p>
           <p className={cn("inv-value font-bold", totalReturns >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
-            {totalReturns >= 0 ? "+" : ""}₹{Math.abs(totalReturns).toLocaleString("en-IN")} ({totalReturns >= 0 ? "+" : ""}{returnsPct}%)
+            {totalReturns >= 0 ? "+" : ""}{formatCurrency(Math.abs(totalReturns), currency)} ({totalReturns >= 0 ? "+" : ""}{returnsPct}%)
           </p>
         </div>
       </div>
@@ -125,19 +127,19 @@ export default function InvestmentsPage() {
                   </div>
                   <div className="mb-6">
                     <p className="text-sm text-gray-400 mb-1">Current Value</p>
-                    <p className="text-2xl font-bold">₹{Number(asset.current_value).toLocaleString("en-IN")}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(Number(asset.current_value), currency)}</p>
                   </div>
                 </div>
                 <div className="flex justify-between items-end border-t border-[#2a2a2a] pt-4">
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Invested</p>
-                    <p className="text-sm font-semibold">₹{Number(asset.invested).toLocaleString("en-IN")}</p>
+                    <p className="text-sm font-semibold">{formatCurrency(Number(asset.invested), currency)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-400 mb-1">Returns</p>
                     <p className={isUp ? "text-[#22c55e] text-sm font-semibold flex items-center justify-end gap-1" : "text-[#ef4444] text-sm font-semibold flex items-center justify-end gap-1"}>
                       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {isUp ? "+" : "-"}₹{Math.abs(returns).toLocaleString("en-IN")} ({isUp ? "+" : ""}{percent}%)
+                      {isUp ? "+" : "-"}{formatCurrency(Math.abs(returns), currency)} ({isUp ? "+" : ""}{percent}%)
                     </p>
                   </div>
                 </div>
@@ -212,12 +214,12 @@ export default function InvestmentsPage() {
                   </div>
                 </div>
                 
-                <p className="text-2xl font-bold mb-6">₹{stock.price.toLocaleString("en-IN")}</p>
+                <p className="text-2xl font-bold mb-6">{formatCurrency(stock.price, currency)}</p>
                 
                 <div className="flex justify-between text-sm mb-6 pb-6 border-b border-[#2a2a2a]">
                   <div>
                     <span className="text-gray-400 block mb-1 text-xs">Market Cap</span>
-                    <span className="font-medium">₹{stock.marketCap}</span>
+                    <span className="font-medium">{currency} {stock.marketCap}</span>
                   </div>
                   <div>
                     <span className="text-gray-400 block mb-1 text-xs">Volume</span>

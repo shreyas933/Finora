@@ -121,17 +121,18 @@ export function CsvImportModal({
           let txType: "income" | "expense" = "expense";
 
           // Format: separate Debit/Credit columns (ADCB, HDFC style)
-          const rawType = (row["Type"] || row["Dr/Cr"] || row["Transaction Type"] || "").toLowerCase().trim();
+          // Format: separate Debit/Credit columns (ADCB, HDFC style)
+          const rawType = (row["Type"] || row["Dr/Cr"] || row["Transaction Type"] || row["Debit/Credit"] || row["Debit/ Credit"] || row["Debit / Credit"] || "").toLowerCase().trim();
           const debitVal = parseFloat((row["Debit"] || "").replace(/,/g, "")) || 0;
           const creditVal = parseFloat((row["Credit"] || "").replace(/,/g, "")) || 0;
           const rawAmount = (row["Amount"] || row["amount"] || "").replace(/,/g, "");
 
-          if (rawType === "credit" || rawType === "cr") {
-            // The "Type" column says Credit
+          if (rawType === "credit" || rawType === "cr" || rawType === "income") {
+            // The "Type" column strictly says Credit or Income
             amount = parseFloat(rawAmount) || creditVal;
             txType = "income";
-          } else if (rawType === "debit" || rawType === "dr") {
-            // The "Type" column says Debit
+          } else if (rawType === "debit" || rawType === "dr" || rawType === "expense") {
+            // The "Type" column strictly says Debit or Expense
             amount = parseFloat(rawAmount) || debitVal;
             txType = "expense";
           } else if (creditVal > 0 && debitVal === 0) {
@@ -148,14 +149,27 @@ export function CsvImportModal({
 
           if (amount <= 0 || isNaN(amount)) return;
 
-          const cat = autoCategorize(desc, txType);
+          // If the CSV provides an explicit Category column, attempt to respect and standardize it
+          const rawCategory = row["Category"] || row["category"] || "";
+          let finalCategory = "";
+
+          if (rawCategory && rawCategory.trim().toLowerCase() !== "other") {
+            const c = rawCategory.trim();
+            if (c.includes("Food")) finalCategory = "Food";
+            else if (c.includes("Rent") || c.includes("Utilit")) finalCategory = "Housing";
+            else if (c.includes("Health")) finalCategory = "Healthcare";
+            else if (c.includes("Invest")) finalCategory = "Savings";
+            else finalCategory = c;
+          } else {
+            finalCategory = autoCategorize(desc, txType).category;
+          }
 
           rows.push({
             date,
-            name: desc,       // ← uses the actual description, not "Unknown"
+            name: desc,       // ← uses the actual description
             amount,
             type: txType,
-            category: cat.category,
+            category: finalCategory,
           });
         });
 

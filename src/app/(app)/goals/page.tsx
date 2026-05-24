@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFinance } from "@/context/FinanceContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +12,7 @@ import { differenceInMonths } from "date-fns";
 
 export default function GoalsPage() {
   const { goals, addGoal, monthlyIncome, savingsRate } = useFinance();
+  const { currency } = useCurrency();
   const [isAdding, setIsAdding] = useState(false);
   const [newGoal, setNewGoal] = useState({ name: "", targetAmount: "", targetDate: "" });
 
@@ -54,7 +56,7 @@ export default function GoalsPage() {
                 <Input placeholder="e.g. New Car" value={newGoal.name} onChange={e => setNewGoal({...newGoal, name: e.target.value})} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Target Amount (₹)</label>
+                <label className="text-sm font-medium">Target Amount ({currency})</label>
                 <Input type="number" placeholder="500000" value={newGoal.targetAmount} onChange={e => setNewGoal({...newGoal, targetAmount: e.target.value})} />
               </div>
               <div className="space-y-2">
@@ -99,8 +101,8 @@ export default function GoalsPage() {
                 </div>
                 <CardTitle className="text-xl mt-4">{goal.name}</CardTitle>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-bold">{formatCurrency(goal.current_amount)}</span>
-                  <span className="text-sm text-muted-foreground">/ {formatCurrency(goal.target_amount)}</span>
+                  <span className="text-2xl font-bold">{formatCurrency(goal.current_amount, currency)}</span>
+                  <span className="text-sm text-muted-foreground">/ {formatCurrency(goal.target_amount, currency)}</span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -125,7 +127,7 @@ export default function GoalsPage() {
                   {progress < 100 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">To save monthly</span>
-                      <span className={cn("font-medium", isOffTrack ? "text-amber-500" : "")}>{formatCurrency(requiredMonthly)}</span>
+                      <span className={cn("font-medium", isOffTrack ? "text-amber-500" : "")}>{formatCurrency(requiredMonthly, currency)}</span>
                     </div>
                   )}
                 </div>
