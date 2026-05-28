@@ -45,4 +45,41 @@ class UserIdBridgePlugin : Plugin() {
             .getString("user_id", null)
         call.resolve(JSObject().put("userId", userId))
     }
+
+    @PluginMethod
+    fun checkSmsPermission(call: PluginCall) {
+        val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.RECEIVE_SMS
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        
+        call.resolve(JSObject().put("granted", hasPermission))
+    }
+
+    @PluginMethod
+    fun requestSmsPermission(call: PluginCall) {
+        val activity = bridge.activity
+        if (activity == null) {
+            call.reject("Activity not available")
+            return
+        }
+
+        val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.RECEIVE_SMS
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            call.resolve(JSObject().put("granted", true))
+            return
+        }
+
+        androidx.core.app.ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(android.Manifest.permission.RECEIVE_SMS),
+            102
+        )
+
+        call.resolve(JSObject().put("requested", true))
+    }
 }

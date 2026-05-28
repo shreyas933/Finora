@@ -266,9 +266,9 @@ export default function TransactionsPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button 
             onClick={() => setShowAiModal(true)}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
           >
-            <Sparkles className="h-4 w-4 text-violet-400" /> AI Limits
+            <Sparkles className="h-4 w-4 text-emerald-400" /> AI Budget Profiler
           </button>
           <button 
             onClick={() => setShowImportModal(true)}

@@ -63,7 +63,7 @@ function LoginForm() {
   const handleGoogleLogin = async () => {
     if (!googleAuthEnabled) {
       setError(
-        "Google sign-in is not configured yet. Use email login or enable the Google provider in Supabase.",
+        "Google sign-in is not enabled yet. Turn on the Google provider in Supabase, then set NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true.",
       );
       return;
     }
@@ -121,10 +121,11 @@ function LoginForm() {
           )}
 
           <Button
+            type="button"
             variant="outline"
             className="w-full h-12 text-base font-medium relative hover:bg-white/5 border-white/10"
             onClick={handleGoogleLogin}
-            disabled={isLoading}
+            disabled={isLoading || !googleAuthEnabled}
           >
             <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -216,8 +217,8 @@ function LoginForm() {
         </CardContent>
         <CardFooter className="flex justify-center border-t border-border/40 p-4">
           <p className="text-sm text-muted-foreground">
-            Make sure to configure real Google Auth in your Supabase dashboard
-            later.
+            Google sign-in needs to be enabled in Supabase before this button
+            will open the account chooser.
           </p>
         </CardFooter>
       </Card>

@@ -16,6 +16,14 @@ const SAMPLE_NOTIFICATIONS = [
   "\u20B9550 paid to Myntra via UPI. Ref: 934812039. ICICI Bank",
 ];
 
+const SAMPLE_SMS = [
+  "Dear Customer, your A/c XX1293 has been debited by Rs. 850.00 on 2026-05-28 for UPI Ref 610928374829 paid to Swiggy. - HDFC Bank",
+  "Union Bank SMS: Rs. 140.00 debited from A/c XX9021. Ref: UPI/6102983746/Zomato. Charges nil.",
+  "SBI SMS: Your A/c XX3829 debited by Rs. 2,500.00. UPI Ref 6102837465 paid to MakeMyTrip.",
+  "ICICI Bank: Alert! Rs. 120.00 spent on A/c XX902. Ref: UPI/6109283/Chaayos. Avl Bal: Rs. 24,150.00.",
+  "Axis Bank: Rs. 500.00 debited from A/c XX482. Info: UPI/61028374/Amazon India. 28-05-26 14:15."
+];
+
 type SyncedTx = {
   id: string;
   name: string;
@@ -33,7 +41,9 @@ export function PaymentSyncModal({ onClose }: Props) {
   const [simulating, setSimulating] = useState(false);
   const [simStatus, setSimStatus] = useState<"idle" | "parsing" | "saving" | "done" | "error">("idle");
   const [simMessage, setSimMessage] = useState("");
-  const [androidConnected] = useState(true); // demo: show as connected
+  const [hasCapacitor, setHasCapacitor] = useState(false);
+  const [smsPermissionGranted, setSmsPermissionGranted] = useState(false);
+
   const supabase = createClient();
   const logEndRef = useRef<HTMLDivElement>(null);
 
@@ -41,13 +51,55 @@ export function PaymentSyncModal({ onClose }: Props) {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [syncLog]);
 
-  const runSimulation = async () => {
+  useEffect(() => {
+    const checkPermission = async () => {
+      if (typeof window !== "undefined" && (window as any).Capacitor) {
+        setHasCapacitor(true);
+        try {
+          const { registerPlugin } = await import("@capacitor/core");
+          const UserIdBridge = registerPlugin<any>("UserIdBridge");
+          const result = await UserIdBridge.checkSmsPermission();
+          setSmsPermissionGranted(!!result.granted);
+        } catch (e) {
+          console.error("Failed to check SMS permission state:", e);
+        }
+      } else {
+        // Fallback for browser testing
+        setSmsPermissionGranted(true);
+      }
+    };
+    checkPermission();
+  }, []);
+
+  const handleConnectAndroid = async () => {
+    if (typeof window !== "undefined" && (window as any).Capacitor) {
+      try {
+        const { registerPlugin } = await import("@capacitor/core");
+        const UserIdBridge = registerPlugin<any>("UserIdBridge");
+        await UserIdBridge.requestSmsPermission();
+        
+        setTimeout(async () => {
+          const result = await UserIdBridge.checkSmsPermission();
+          setSmsPermissionGranted(!!result.granted);
+        }, 1000);
+      } catch (e) {
+        console.error("Failed to request SMS permission:", e);
+      }
+    } else {
+      setSmsPermissionGranted(prev => !prev);
+    }
+  };
+
+  const runSimulation = async (type: "notification" | "sms" = "notification") => {
     if (simulating) return;
     setSimulating(true);
     setSimStatus("parsing");
 
-    const raw = SAMPLE_NOTIFICATIONS[Math.floor(Math.random() * SAMPLE_NOTIFICATIONS.length)];
-    setSimMessage(`Intercepted: "${raw}"`);
+    const raw = type === "notification"
+      ? SAMPLE_NOTIFICATIONS[Math.floor(Math.random() * SAMPLE_NOTIFICATIONS.length)]
+      : SAMPLE_SMS[Math.floor(Math.random() * SAMPLE_SMS.length)];
+
+    setSimMessage(`Intercepted ${type === "notification" ? "Notification" : "SMS"}: "${raw}"`);
 
     try {
       // Step 1: Categorize via Gemini
@@ -161,20 +213,25 @@ export function PaymentSyncModal({ onClose }: Props) {
             {activeTab === "android" && (
               <div className="space-y-4">
                 {/* Status */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <div 
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-violet-500/30 cursor-pointer transition-all duration-200"
+                  onClick={handleConnectAndroid}
+                >
                   <div className="flex items-center gap-3">
-                    <div className={`w-2.5 h-2.5 rounded-full ${androidConnected ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
+                    <div className={`w-2.5 h-2.5 rounded-full ${smsPermissionGranted ? "bg-emerald-400 animate-pulse" : "bg-red-400 animate-pulse"}`} />
                     <div>
                       <p className="text-sm font-semibold text-white">
-                        {androidConnected ? "Google Pay — Listening" : "Not Connected"}
+                        {smsPermissionGranted ? "GPay & UPI SMS — Active" : "SMS Sync — Disconnected"}
                       </p>
-                      <p className="text-xs text-slate-400">Notification listener active</p>
+                      <p className="text-xs text-slate-400">
+                        {smsPermissionGranted ? "Listening to notifications & UPI text alerts" : "Click to authorize RECEIVE_SMS permissions"}
+                      </p>
                     </div>
                   </div>
-                  {androidConnected ? (
+                  {smsPermissionGranted ? (
                     <Wifi className="h-4 w-4 text-emerald-400" />
                   ) : (
-                    <WifiOff className="h-4 w-4 text-slate-500" />
+                    <WifiOff className="h-4 w-4 text-red-400" />
                   )}
                 </div>
 
@@ -182,9 +239,9 @@ export function PaymentSyncModal({ onClose }: Props) {
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">How It Works</p>
                   {[
-                    { icon: BellRing, label: "FINORA reads your Google Pay notification", sub: "e.g. \u20B9450 paid to Zomato via UPI" },
-                    { icon: Zap, label: "Gemini AI extracts merchant, amount & category", sub: "100% on-server, no data stored" },
-                    { icon: CheckCircle2, label: "Transaction auto-logged in your dashboard", sub: "Budget rings & Safe-to-Spend update instantly" },
+                    { icon: BellRing, label: "FINORA captures SMS alerts & notifications", sub: "Auto-intercepts official GPay, PhonePe, and UPI text patterns" },
+                    { icon: Zap, label: "Gemini AI extracts merchant, amount & category", sub: "Advanced context parsing directly to clean transaction structures" },
+                    { icon: CheckCircle2, label: "Transaction auto-logged in your dashboard", sub: "Budget rings, Safe-to-Spend, and analytics update instantly" },
                   ].map(({ icon: Icon, label, sub }, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-white/5">
                       <div className="p-1.5 rounded-lg bg-violet-500/20 mt-0.5 shrink-0">
@@ -198,20 +255,34 @@ export function PaymentSyncModal({ onClose }: Props) {
                   ))}
                 </div>
 
-                {/* Simulate button */}
-                <div className="space-y-2">
-                  <button
-                    onClick={runSimulation}
-                    disabled={simulating}
-                    className="w-full py-3 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-lg shadow-violet-500/30"
-                  >
-                    {simulating ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    {simulating ? "Processing..." : "⚡ Simulate a Google Pay Transaction"}
-                  </button>
+                {/* Simulate buttons */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={() => runSimulation("notification")}
+                      disabled={simulating || !smsPermissionGranted}
+                      className="py-3 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 shadow-lg shadow-violet-500/20"
+                    >
+                      {simulating ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <BellRing className="h-3.5 w-3.5" />
+                      )}
+                      ⚡ Simulate GPay Notif
+                    </button>
+                    <button
+                      onClick={() => runSimulation("sms")}
+                      disabled={simulating || !smsPermissionGranted}
+                      className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 shadow-lg shadow-indigo-500/20"
+                    >
+                      {simulating ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Smartphone className="h-3.5 w-3.5" />
+                      )}
+                      💬 Simulate Bank UPI SMS
+                    </button>
+                  </div>
                   {simMessage && (
                     <p className={`text-xs text-center font-medium ${statusColors[simStatus]}`}>
                       {simMessage}
@@ -308,7 +379,7 @@ export function PaymentSyncModal({ onClose }: Props) {
                 {/* Simulate for iOS too */}
                 <div className="space-y-2">
                   <button
-                    onClick={runSimulation}
+                    onClick={() => runSimulation("notification")}
                     disabled={simulating}
                     className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-lg shadow-blue-500/30"
                   >

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, TrendingUp, TrendingDown, ExternalLink, Star } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, ExternalLink, Star, Sparkles } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useFinance } from "@/context/FinanceContext";
 import { useCurrency } from "@/context/CurrencyContext";
+import { AiPortfolioModal } from "@/components/dashboard/AiPortfolioModal";
 
 // ─── Mock Data matching user screenshots ─────────────────────────────────────
 
@@ -59,6 +60,7 @@ export default function InvestmentsPage() {
   const { investments } = useFinance();
   const { currency } = useCurrency();
   const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showAiUploadModal, setShowAiUploadModal] = useState(false);
 
   // Computed metrics based on the real user's investments
   const totalInvested = investments.reduce((acc, inv) => acc + Number(inv.invested), 0);
@@ -74,12 +76,20 @@ export default function InvestmentsPage() {
           <h1 className="text-3xl font-bold tracking-tight mb-2">Investments</h1>
           <p className="text-gray-400">Track your portfolio performance</p>
         </div>
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold flex items-center gap-2 transition-colors"
-          onClick={() => setShowConnectModal(true)}
-        >
-          <Plus className="h-4 w-4" /> Add Investment
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button 
+            onClick={() => setShowAiUploadModal(true)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
+          >
+            <Sparkles className="h-4 w-4 text-emerald-400" /> AI Statement Upload
+          </button>
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold flex items-center gap-2 transition-colors"
+            onClick={() => setShowConnectModal(true)}
+          >
+            <Plus className="h-4 w-4" /> Add Investment
+          </button>
+        </div>
       </div>
 
       {/* ── Top KPIs ── */}
@@ -275,7 +285,7 @@ export default function InvestmentsPage() {
                   Cancel
                 </button>
                 <button 
-                  onClick={() => setShowConnectModal(false)}
+                  onClick={() => { setShowConnectModal(false); setShowAiUploadModal(true); }}
                   className="px-4 py-2 text-sm font-semibold bg-[#2a2a2a] hover:bg-[#333] rounded-md transition-colors text-white"
                 >
                   Import Manually Instead
@@ -283,6 +293,12 @@ export default function InvestmentsPage() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAiUploadModal && (
+          <AiPortfolioModal onClose={() => setShowAiUploadModal(false)} />
         )}
       </AnimatePresence>
     </div>

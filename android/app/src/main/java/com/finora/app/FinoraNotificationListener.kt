@@ -32,7 +32,7 @@ class FinoraNotificationListener : NotificationListenerService() {
         // ─── Server URL ───────────────────────────────────────────────────────
         // Dev:  your PC's LAN IP while running `npm run dev`
         // Prod: your deployed Vercel/Railway URL
-        private const val API_BASE = "http://192.168.1.101:3000"
+        private const val API_BASE = "http://10.55.128.169:3000"
         private const val CATEGORIZE_URL = "$API_BASE/api/sync/categorize"
         private const val INGEST_URL     = "$API_BASE/api/sync/ingest"
 
