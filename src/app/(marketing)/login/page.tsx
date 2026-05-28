@@ -3,7 +3,14 @@
 import { Suspense, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Wallet, LogIn } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -14,10 +21,12 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  
+  const googleAuthEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
+
   const searchParams = useSearchParams();
   const authError = searchParams?.get("error");
-  
+
   const supabase = createClient();
 
   const handleEmailLogin = async (e: React.FormEvent, isSignUp = false) => {
@@ -26,35 +35,49 @@ function LoginForm() {
     setError(null);
     setMessage(null);
 
-    const { error, data } = isSignUp 
+    const { error, data } = isSignUp
       ? await supabase.auth.signUp({ email, password })
       : await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError(error.message);
-    } else if (isSignUp && data.user && data.user.identities && data.user.identities.length === 0) {
+    } else if (
+      isSignUp &&
+      data.user &&
+      data.user.identities &&
+      data.user.identities.length === 0
+    ) {
       setError("This email is already in use.");
     } else if (isSignUp) {
-      setMessage("Success! Check your email to verify your account, or just login if verification is disabled.");
+      setMessage(
+        "Success! Check your email to verify your account, or just login if verification is disabled.",
+      );
     } else {
       // Login successful, route directly to dashboard
       window.location.href = "/dashboard";
     }
-    
+
     setIsLoading(false);
   };
 
   const handleGoogleLogin = async () => {
+    if (!googleAuthEnabled) {
+      setError(
+        "Google sign-in is not configured yet. Use email login or enable the Google provider in Supabase.",
+      );
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-    
+
     if (error) {
       setError(error.message);
       setIsLoading(false);
@@ -66,13 +89,15 @@ function LoginForm() {
       {/* Abstract Background Effects */}
       <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-primary/20 blur-[128px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-[128px] pointer-events-none" />
-      
+
       <Card className="w-full max-w-md border-primary/20 shadow-2xl relative z-10 bg-card/80 backdrop-blur-xl">
         <CardHeader className="space-y-3 pb-6 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mb-2">
             <Wallet className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight">Welcome to FINORA</CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Welcome to FINORA
+          </CardTitle>
           <CardDescription className="text-base">
             Log in to manage your AI Personal CFO
           </CardDescription>
@@ -95,8 +120,8 @@ function LoginForm() {
             </div>
           )}
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full h-12 text-base font-medium relative hover:bg-white/5 border-white/10"
             onClick={handleGoogleLogin}
             disabled={isLoading}
@@ -127,47 +152,60 @@ function LoginForm() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              <span className="bg-card px-2 text-muted-foreground">
+                Or continue with email
+              </span>
             </div>
           </div>
 
-          <form onSubmit={(e) => handleEmailLogin(e, false)} className="space-y-4">
+          <form
+            onSubmit={(e) => handleEmailLogin(e, false)}
+            className="space-y-4"
+            autoComplete="on"
+          >
             <div className="space-y-2">
-              <Input 
-                id="email" 
-                type="email" 
+              <Input
+                id="email"
+                name="email"
+                type="email"
                 required
-                placeholder="m@example.com" 
+                placeholder="m@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 className="h-12 bg-background border-white/10"
               />
             </div>
             <div className="space-y-2">
-              <Input 
-                id="password" 
-                type="password" 
+              <Input
+                id="password"
+                name="password"
+                type="password"
                 required
-                placeholder="Password" 
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 className="h-12 bg-background border-white/10"
               />
             </div>
-            
+
             <div className="flex gap-3 pt-2">
-              <Button 
-                type="submit" 
-                className="flex-1 h-12 text-base font-medium" 
+              <Button
+                type="submit"
+                className="flex-1 h-12 text-base font-medium"
                 disabled={isLoading}
               >
                 <LogIn className="w-4 h-4 mr-2" />
                 Login
               </Button>
-              <Button 
+              <Button
                 type="button"
                 variant="secondary"
-                className="flex-1 h-12 text-base font-medium" 
+                className="flex-1 h-12 text-base font-medium"
                 disabled={isLoading}
                 onClick={(e) => handleEmailLogin(e, true)}
               >
@@ -178,7 +216,8 @@ function LoginForm() {
         </CardContent>
         <CardFooter className="flex justify-center border-t border-border/40 p-4">
           <p className="text-sm text-muted-foreground">
-            Make sure to configure real Google Auth in your Supabase dashboard later.
+            Make sure to configure real Google Auth in your Supabase dashboard
+            later.
           </p>
         </CardFooter>
       </Card>
@@ -188,7 +227,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );
