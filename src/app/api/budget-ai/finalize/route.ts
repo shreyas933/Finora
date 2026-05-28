@@ -2,12 +2,78 @@ import { NextResponse } from "next/server";
 
 export const maxDuration = 30;
 
+// ── Shared AI caller: Groq → Gemini ──────────────────────────────────────────
+async function callAI(systemPrompt: string, userPrompt: string): Promise<string | null> {
+  const groqKey = process.env.GROQ_API_KEY;
+  const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+  // 1. Groq (fastest free)
+  if (groqKey && groqKey !== "PASTE_YOUR_GROQ_KEY_HERE") {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.2,
+          max_tokens: 512,
+          stream: false,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const text = json?.choices?.[0]?.message?.content ?? "";
+        if (text) {
+          console.log("[FINORA Budget-Finalize] Using Groq LLaMA 3.3 70B");
+          return text;
+        }
+      }
+    } catch (e) {
+      console.log("[FINORA Budget-Finalize] Groq failed:", e);
+    }
+  }
+
+  // 2. Gemini fallback
+  if (geminiKey && geminiKey !== "PASTE_YOUR_KEY_HERE") {
+    const models = ["gemini-2.5-flash-preview-05-20", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              { role: "user", parts: [{ text: systemPrompt }] },
+              { role: "model", parts: [{ text: "Understood. Synthesizing data into strict JSON CFO limits." }] },
+              { role: "user", parts: [{ text: userPrompt }] },
+            ],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 512 },
+          }),
+        });
+        if (r.ok) {
+          const json = await r.json();
+          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+          if (text) {
+            console.log(`[FINORA Budget-Finalize] Using Gemini: ${model}`);
+            return text;
+          }
+        }
+      } catch { continue; }
+    }
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const { aggregatedSpending, questionnaireData } = await req.json();
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-    // Strict system prompt for Stage 2
     const systemPrompt = `You are FINORA, a strict, quant-driven Personal AI CFO.
 The user is providing two things:
 1. Their historical average monthly spending across categories (based on their CSVs).
@@ -34,53 +100,31 @@ Example output:
   "Savings": 23000
 }`;
 
-    const promptMessage = `Historical Average Monthly Spending:
-${JSON.stringify(aggregatedSpending, null, 2)}
+    const userPrompt = `Historical Average Monthly Spending:\n${JSON.stringify(aggregatedSpending, null, 2)}\n\nUser's Answers to Interrogation:\n${JSON.stringify(questionnaireData, null, 2)}\n\nProvide my final rigid budget constraints in the exact JSON format requested based strictly on my answers.`;
 
-User's Answers to Interrogation:
-${JSON.stringify(questionnaireData, null, 2)}
-
-Provide my final rigid budget constraints in the exact JSON format requested based strictly on my answers.`;
-
-    if (apiKey && apiKey !== "PASTE_YOUR_KEY_HERE") {
-      const contents = [
-        { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Understood. Synthesizing historical data with Q&A responses into strict JSON CFO limits." }] },
-        { role: "user", parts: [{ text: promptMessage }] },
-      ];
-
-      const modelName = "gemini-2.0-flash";
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-      
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents }),
-      });
-
-      if (r.ok) {
-        const json = await r.json();
-        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        
-        const cleanJsonString = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        
+    const raw = await callAI(systemPrompt, userPrompt);
+    if (raw) {
+      const cleaned = raw.replace(/```json|```/g, "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace !== -1) {
         try {
-          const parsed = JSON.parse(cleanJsonString);
+          const parsed = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
           return NextResponse.json(parsed);
         } catch (e) {
-          console.error("Failed to parse LLM Final JSON:", cleanJsonString);
+          console.error("[FINORA Budget-Finalize] JSON parse failed");
         }
       }
     }
 
-    // ── Fallback ──
+    // Fallback budgets
     const fallbackBudgets: Record<string, number> = {
       "Groceries": 5000,
       "Dining & Out": 1500,
       "Transport": 3000,
       "Rent & Utilities": 12000,
       "Healthcare": 2000,
-      "Savings": Math.max(15000, (aggregatedSpending["Income"] ?? 0) * 0.3)
+      "Savings": Math.max(15000, (aggregatedSpending["Income"] ?? 0) * 0.3),
     };
 
     return NextResponse.json(fallbackBudgets);

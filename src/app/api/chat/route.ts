@@ -1,11 +1,10 @@
+import { NextResponse } from "next/server";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
-// Smart mock responses for when real AI is unavailable
+// ── Smart mock responses for total offline fallback ──────────────────────────
 function generateMockResponse(userMessage: string, financialContext: string): string {
   const msg = userMessage.toLowerCase();
-
-  // Parse financial context
   const balanceMatch = financialContext.match(/Balance[:\s₹]+([0-9,]+)/i);
   const incomeMatch = financialContext.match(/Income[:\s₹]+([0-9,]+)/i);
   const expensesMatch = financialContext.match(/Expenses[:\s₹]+([0-9,]+)/i);
@@ -17,97 +16,195 @@ function generateMockResponse(userMessage: string, financialContext: string): st
   const savingsRate = savingsMatch ? parseFloat(savingsMatch[1]) : 74.2;
 
   if (msg.includes("trip") || msg.includes("travel") || msg.includes("vacation")) {
-    const canAfford = balance > 50000;
-    return `**Travel Affordability Check**\n\n${canAfford
-      ? `✅ Based on your current balance of ₹${balance.toLocaleString("en-IN")}, you can afford a moderate trip.\n\n**My Recommendations:**\n- Keep at least ₹${Math.round(balance * 0.3).toLocaleString("en-IN")} as emergency reserve\n- Budget your trip within ₹${Math.round(balance * 0.4).toLocaleString("en-IN")} to stay comfortable\n- Consider booking 2-3 months ahead for better deals`
-      : `⚠️ Your current balance of ₹${balance.toLocaleString("en-IN")} is a bit low for a trip right now.\n\n**Suggested Plan:**\n- Save for 2-3 months at your current rate\n- You save ~₹${(income - expenses).toLocaleString("en-IN")} monthly\n- In 2 months you'll have ~₹${(balance + (income - expenses) * 2).toLocaleString("en-IN")} available`}`;
+    return `### 🌏 Travel Plan Analysis
+
+Here are **3 different ways** we can implement funding this travel plan based on your balance of **₹${balance.toLocaleString("en-IN")}**:
+
+* **🚀 Option A: Aggressive Budget Reallocation (Cash Only)**
+  - **Strategy**: Slash discretionary expenditures (dining, entertainment) by 50% over the next 2 months. 
+  - **Trade-off**: High lifestyle impact, but 0% debt. You save an extra ₹${Math.round((income - expenses) * 0.25).toLocaleString("en-IN")} monthly to fund the trip instantly.
+  
+* **💳 Option B: Smart Leverage (Card Rewards Optimization)**
+  - **Strategy**: Book through **HDFC Regalia** to accelerate air miles & secure free hotel upgrades. Pay the entire bill 3 days before statement generation using your savings.
+  - **Trade-off**: Reports ~10% card utilization temporarily, but maximizes points.
+
+* **🏦 Option C: Emergency Surplus Redirection**
+  - **Strategy**: Temporarily divert 20% of your active savings targets for 1 month.
+  - **Trade-off**: Delays other goals by ~15 days, but keeps your everyday lifestyle untouched.
+
+**💡 CFO Verdict:** Option B is highly recommended if you have savings ready, as it optimizes card points. Otherwise, implement Option A to protect your credit profile.`;
   }
 
   if (msg.includes("save") || msg.includes("saving") || msg.includes("savings")) {
-    return `**Savings Analysis**\n\nYour current savings rate is **${savingsRate.toFixed(1)}%** — here's how to improve it:\n\n**Quick Wins:**\n- 🍽️ Reduce dining out by ₹2,000/month → saves ₹24,000/year\n- 📱 Review subscriptions and cancel unused ones\n- 🛒 Switch to weekly grocery budgeting\n\n**Smart Strategies:**\n- Set up auto-transfer of ₹${Math.round(income * 0.05).toLocaleString("en-IN")} on salary day\n- Use the 24-hour rule before any purchase over ₹2,000\n- Target: push savings rate to **30%** for faster goal achievement`;
+    return `### 📈 Savings Acceleration Strategy
+
+Your current savings rate is **${savingsRate.toFixed(1)}%**. To optimize this, here are **3 implementation options**:
+
+* **🥗 Option A: Daily Micro-savings (High Effort, Low Risk)**
+  - **Action**: Direct ₹2,000/month from dining budgets to savings targets by cooking at home 4 days a week.
+  
+* **📑 Option B: Subscription Auditing (Low Effort, Direct Yield)**
+  - **Action**: Terminate unused OTT plans to immediately recover ₹1,500/month in cashflow.
+  
+* **🤖 Option C: Salary Day Auto-Sweep (Zero Discretion)**
+  - **Action**: Set up auto-transfer of 15% (₹${Math.round(income * 0.15).toLocaleString("en-IN")}) directly to mutual funds on salary day.
+
+**💡 CFO Verdict:** Combine Option B (instant cash retrieval) with Option C for automatic wealth-building.`;
   }
 
   if (msg.includes("afford") || msg.includes("buy") || msg.includes("purchase") || msg.includes("iphone") || /\bcar\b/.test(msg)) {
     const amountMatch = msg.match(/[₹]?\s?([0-9,]+(?:k|lakh|l)?)/i);
     const amount = amountMatch ? parseInt(amountMatch[1].replace(/[k,]/g, "")) * (amountMatch[1].toLowerCase().includes("k") ? 1000 : 1) : 80000;
-    const canAfford = balance > amount * 1.5;
     
-    if (msg.includes("emi") || msg.includes("loan")) {
-       return `**EMI / Recurring Liability Analysis**\n\nIf you take an EMI of ₹${amount.toLocaleString("en-IN")}/month:\n- **New Monthly Expenses:** ₹${(expenses + amount).toLocaleString("en-IN")}\n- **New Savings Rate:** ${(((income - (expenses + amount)) / income) * 100).toFixed(1)}%\n\n**Verdict:** ${(expenses + amount) > (income * 0.5) ? '⚠️ This breaks the 50/30/20 rule. Your fixed obligations will be too high.' : '✅ This fits within your 50% needs limit.'}`;
-    }
+    return `### 🛍️ Large Purchase Analysis: ₹${amount.toLocaleString("en-IN")}
 
-    return `**Large Purchase Analysis: ₹${amount.toLocaleString("en-IN")}**\n\n${canAfford
-      ? `✅ **Yes, you can afford this.**\n\nYour balance is ₹${balance.toLocaleString("en-IN")} — this purchase would bring it to ₹${(balance - amount).toLocaleString("en-IN")}.\n\n**Optimal Financing:**\n- Use a credit card with high reward multipliers for this category.\n- Pay off the card immediately using liquid savings to avoid interest.`
-      : `⚠️ **Caution advised.**\n\nThis would severely deplete your liquid cash.\n\n**Alternative Strategy:**\n- **Save:** Put away ₹${Math.round(amount / 3).toLocaleString("en-IN")}/month for 3 months.\n- **Investments:** Do not liquidate high-yield Index Funds for a depreciating asset.`}`;
+To fund this purchase cleanly without breaking your cashflow stability, here are **3 implementation options**:
+
+* **💵 Option A: The Cash-flow Accumulator**
+  - **Plan**: Put away ₹${Math.round(amount / 3).toLocaleString("en-IN")}/month for 3 months from your monthly surplus of ₹${(income - expenses).toLocaleString("en-IN")}.
+  - **Trade-off**: Delays purchase by 90 days, but maintains perfect financial safety.
+  
+* **💳 Option B: Card Optimization + 3-Month Grace Buffer**
+  - **Plan**: Swipe your optimized credit card to earn points, then pay 1/3 of the balance mid-cycle across 3 billing cycles.
+  - **Trade-off**: Safe card utilization remains below 20%, zero interest charges.
+
+* **📉 Option C: Asset Realization (Not Recommended)**
+  - **Plan**: Liquidate index fund holdings to purchase today.
+  - **Trade-off**: Heavy long-term opportunity cost (losing 12%+ compounded yields).
+
+**💡 CFO Verdict:** Implement **Option A** to completely secure your funds before swiping, or route via **Option B** only if you have liquid buffer backstops.`;
   }
 
-  if (msg.includes("hotel") || msg.includes("card to use") || msg.includes("which card")) {
-    return `**Credit Card Optimization**\n\nSince you are booking a hotel/travel, I checked your active credit cards in the FINORA system.\n\n**Recommendation:**\n- Use your **HDFC Regalia** or travel-focused card.\n- Why? It offers accelerated reward points on hotel bookings and free lounge access if you are flying.\n\nEnjoy your stay!`;
-  }
+  return `### 👨‍💼 FINORA AI CFO Financial Audit
 
-  if (msg.includes("budget") || msg.includes("spending") || msg.includes("treat") || msg.includes("splurge")) {
-    return `**Discretionary Spending Analysis**\n\nIf you spend ₹5,000 on a treat:\n- **Impact:** Checks against your "Food & Dining" or "Entertainment" budget.\n- **Payment Strategy:** Use your dining-focused credit card (e.g., HDFC Swiggy) to get 10% cashback on this bill.\n- **Overall Budget:** Your total expenses are ₹${expenses.toLocaleString("en-IN")}, leaving you with ₹${(income - expenses).toLocaleString("en-IN")} to save. Enjoy the treat, you've earned it!`;
-  }
+Here is your current financial snapshot:
+* 💰 **Liquid Balance:** ₹${balance.toLocaleString("en-IN")}
+* 📈 **Monthly Cashflow In:** ₹${income.toLocaleString("en-IN")}
+* 📉 **Active Outlays:** ₹${expenses.toLocaleString("en-IN")}
+* 💎 **Savings Ratio:** ${savingsRate.toFixed(1)}%
 
-  if (msg.includes("emergency") || msg.includes("hospital") || msg.includes("mechanic") || msg.includes("broke down")) {
-    return `**Emergency Expense Protocol**\n\n**Immediate Action:**\n- **Credit:** Use your highest limit credit card to pay the bill now. This gives you a 45-day interest-free buffer.\n- **Liquidation:** Pull the required amount from your **Emergency Liquid** fund or a low-yield savings account.\n- **Warning:** Do NOT sell your long-term equity mutual funds or stocks for this.`;
-  }
+Ask me specific purchase checkout checks, card vs UPI optimizations, or goals timetables, and I will outline **multiple tailored execution paths** for you!`;
+}
 
-  if (msg.includes("bonus") || msg.includes("windfall") || msg.includes("lottery")) {
-    return `**Windfall Allocation Strategy**\n\nCongratulations on the extra cash! Here is how to deploy it:\n1. **Debt:** Clear any outstanding high-interest credit card balances immediately.\n2. **Goals:** Put 40% towards your most urgent financial goal (e.g., House Downpayment).\n3. **Invest:** Deploy 40% into your Index Funds.\n4. **Guilt-free:** Keep 20% to treat yourself!`;
-  }
+// ── Build the full system prompt ─────────────────────────────────────────────
+function buildSystemPrompt(financialContext: string): string {
+  return `You are FINORA, a highly intelligent, proactive, and strict Personal AI CFO.
+You have access to the user's complete financial profile, including their balances, income, expenses, budgets, credit cards, investments, and goals.
 
-  if (msg.includes("invest") || msg.includes("investment")) {
-    return `**Investment Guidance**\n\nWith your savings of ~₹${(income - expenses).toLocaleString("en-IN")}/month:\n\n**Recommended Allocation:**\n- 💼 **ELSS Mutual Funds** (40%) — ₹${Math.round((income - expenses) * 0.4).toLocaleString("en-IN")}/month — Tax-saving under 80C\n- 📊 **Index Funds** (35%) — ₹${Math.round((income - expenses) * 0.35).toLocaleString("en-IN")}/month — Long-term wealth\n- 🏦 **PPF** (15%) — ₹${Math.round((income - expenses) * 0.15).toLocaleString("en-IN")}/month — Safe + tax-free\n- 💵 **Emergency Liquid** (10%) — ₹${Math.round((income - expenses) * 0.1).toLocaleString("en-IN")}/month\n\n**Goal:** Build a 6-month emergency fund (₹${(expenses * 6).toLocaleString("en-IN")}) first!`;
-  }
+YOUR ROLE:
+Act as a strict, quant-driven financial advisor. Do not just spit back numbers. Analyze "what-if" scenarios, calculate math boundaries, and provide highly optimized, smart pathways for their financial decisions.
 
-  if (msg.includes("tax") || msg.includes("80c") || msg.includes("deduction")) {
-    return `**Tax Optimization Tips**\n\nBased on your income of ₹${income.toLocaleString("en-IN")}/month (₹${(income * 12).toLocaleString("en-IN")}/year):\n\n**Key Deductions:**\n- 📋 **Section 80C** — Invest up to ₹1,50,000 in ELSS/PPF/FD → Save ~₹46,800 in taxes\n- 🏠 **HRA** — Claim rent if you pay rent\n- 💊 **80D** — Health insurance premium up to ₹25,000\n- 📚 **80E** — Education loan interest (no limit)\n\n**Quick Win:** Contribute ₹12,500/month to ELSS to max out 80C!`;
-  }
+YOUR DECISION ENGINE (MANDATORY PURCHASE & SPLURGE ANALYSIS):
+For any purchase, splurge, or expense inquiry (e.g., "Can I buy a ₹15,000 gadget?", "Can I afford X?", "Should I buy Y?"):
+You MUST calculate and explicitly display:
+1. **Safe Spend Fit**: Check if the amount exceeds their "Today's Safe-To-Spend Limit" listed in the context.
+2. **Budget Category Exhaustion**: Tally what percentage of the relevant category budget limit (under Budgets) the purchase consumes.
+3. **Savings Rate Impact**: Calculate how much it drops their monthly savings rate:
+   - New Savings Capacity = Monthly Savings Capacity - Purchase Amount
+   - New Savings Rate = (New Savings Capacity / Monthly Income) * 100
+4. **Goal Timeline Delay**: Calculate exactly how many days the splurge delays their active goals (under Goals):
+   - Daily Savings Capacity = (Monthly Income * Savings Rate) / 3000
+   - Days Delayed = Purchase Amount / Daily Savings Capacity
+   - For EACH active goal, state: "Delays [Goal Name] by [Days] days."
+5. **CFO Guidance & Alternative Strategy**:
+   - If safe: Give a solid green verification: "✓ CFO Safe Decision: Safely within discretionary limits."
+   - If risky: Warn them and recommend a cooling-off wait time.
 
-  // Default response
-  return `**Hello! I'm your FINORA AI CFO** 👋\n\nHere's your current financial snapshot:\n\n- 💰 **Balance:** ₹${balance.toLocaleString("en-IN")}\n- 📈 **Monthly Income:** ₹${income.toLocaleString("en-IN")}\n- 📉 **Monthly Expenses:** ₹${expenses.toLocaleString("en-IN")}\n- 💎 **Savings Rate:** ${savingsRate.toFixed(1)}%\n\nYou're doing **great**! Your savings rate is healthy. I can help you with:\n- 🌏 "Can I afford a trip?"\n- 💡 "How can I save more?"\n- 📊 "How should I invest?"\n- 🏷️ "How can I reduce taxes?"\n\nWhat would you like to know?`;
+GOAL CONFLICT AUDITING (MANDATORY):
+If the user asks about their goals or financial track:
+1. Sum all required monthly goal contributions.
+2. Compare this total with their Monthly Savings Capacity.
+3. If total required monthly > monthly savings capacity, declare a Savings Conflict.
+
+RULES OF OPTIONS (MULTI-PATH ANALYSIS):
+For any request regarding purchases, splurges, EMIs, or savings:
+1. NEVER suggest a single rigid answer. Always provide exactly 2 to 3 different ways (options) the user can implement the decision.
+2. Outline clear trade-offs for each option.
+   - Option A (Aggressive/Direct Cashflow): Slashed discretionary spending, direct bank drafts, zero debt.
+   - Option B (Smart Leverage/Card Optimizer): Swiping a specific credit card to lock in cashbacks/points.
+   - Option C (Asset Allocation/Savings Redirection): Liquidating low-yield margins or temporarily pausing goals.
+3. Finish with a clear, concise "CFO Verdict" advising which option fits their long-term health score best.
+
+Always format with clean markdown, bullet points, and emojis. Be concise and direct.
+
+Financial context:
+${financialContext ?? "No context provided."}`;
 }
 
 export async function POST(req: Request) {
   try {
     const { messages, financialContext } = await req.json();
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const lastMessage = messages[messages.length - 1];
+    const systemPrompt = buildSystemPrompt(financialContext);
 
-    // ── Try real Gemini AI if API key provided ─────────────────────────────
-    if (apiKey && apiKey !== "PASTE_YOUR_KEY_HERE") {
-      const systemPrompt = `You are FINORA, a highly intelligent, proactive Personal AI CFO.
-You have access to the user's complete financial profile, including their balances, income, expenses, budgets, credit cards, investments, and goals.
+    // ── 1. GROQ (Fastest — LLaMA 3.3 70B, ~300 tokens/sec) ──────────────────
+    const groqKey = process.env.GROQ_API_KEY;
+    if (groqKey && groqKey !== "PASTE_YOUR_GROQ_KEY_HERE") {
+      try {
+        console.log("[FINORA] Attempting Groq (LLaMA 3.3 70B)...");
+        const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...messages.map((m: any) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }))
+            ],
+            stream: true,
+            temperature: 0.7,
+            max_tokens: 1024,
+          }),
+        });
 
-YOUR ROLE:
-Act as a strict, highly analytical financial advisor. Do not just spit back numbers. Analyze "what-if" scenarios, calculate impacts on budgets, and provide actionable decisions.
+        if (groqRes.ok && groqRes.body) {
+          console.log("[FINORA] Streaming from Groq LLaMA 3.3 70B...");
+          const body = groqRes.body;
+          const stream = new ReadableStream({
+            async start(controller) {
+              const reader = body.getReader();
+              const encoder = new TextEncoder();
+              const decoder = new TextDecoder();
+              let buffer = "";
+              try {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  buffer += decoder.decode(value, { stream: true });
+                  const lines = buffer.split("\n");
+                  buffer = lines.pop() ?? "";
+                  for (const line of lines) {
+                    if (!line.startsWith("data: ")) continue;
+                    const data = line.slice(6).trim();
+                    if (!data || data === "[DONE]") continue;
+                    try {
+                      const json = JSON.parse(data);
+                      const text = json?.choices?.[0]?.delta?.content ?? "";
+                      if (text) controller.enqueue(encoder.encode(text));
+                    } catch { /* skip */ }
+                  }
+                }
+              } finally {
+                controller.close();
+                reader.releaseLock();
+              }
+            },
+          });
+          return new Response(stream, {
+            headers: { "Content-Type": "text/plain; charset=utf-8", "X-Content-Type-Options": "nosniff" },
+          });
+        }
+      } catch (e) {
+        console.log("[FINORA] Groq failed, falling back...", e);
+      }
+    }
 
-SCENARIO INSTRUCTIONS:
-1. Discretionary Splurges (e.g., "Can I spend 5k on a treat?"): 
-   - Check their specific budget categories (e.g., Food & Dining). Will this push them over the limit?
-   - Suggest which of their specific Credit Cards to use based on the perks (e.g., dining rewards).
-2. Large Asset Purchases (e.g., "How do I afford an iPhone?"):
-   - Do NOT just say "save up". Look at their Investments. Suggest which low-yield assets (like FDs or liquid funds) they could liquidate, but warn against selling high-yield Index Funds.
-   - Suggest splitting the cost using a specific credit card for points, and paying it off using their Monthly Savings rate over X months.
-3. Recurring Liabilities (e.g., "Can I take a 15k EMI?"):
-   - Calculate their new Monthly Expenses (Current Expenses + EMI).
-   - Check if this breaks the 50/30/20 rule (Fixed expenses > 50% of Income).
-   - Tell them exactly how much it will drop their current Savings Rate.
-4. Emergency Expenses (e.g., "Car broke down, need 25k"):
-   - Tell them to put it on a credit card for the 45-day interest-free buffer.
-   - Instruct them exactly which liquid asset or balance to use to pay the bill when it arrives.
-5. Windfalls (e.g., "Got a 1 lakh bonus"):
-   - Tell them to clear high-interest debt first.
-   - Distribute the rest specifically to their active Goals and Investments.
-
-FORMATTING:
-- Use markdown, bullet points, and emojis for clarity.
-- Always provide a "Verdict" or "Action Plan" at the end.
-- Be concise and direct.
-
-Financial context: ${financialContext ?? "No context provided."}`;
-
+    // ── 2. GEMINI (Google AI — 1500 req/day free) ────────────────────────────
+    const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (geminiKey && geminiKey !== "PASTE_YOUR_KEY_HERE") {
       const priorMessages: { role: string; content: string }[] = messages.slice(0, -1);
       const geminiHistory: { role: string; parts: { text: string }[] }[] = [];
       let lastRole: string | null = null;
@@ -121,82 +218,150 @@ Financial context: ${financialContext ?? "No context provided."}`;
 
       const contents = [
         { role: "user",  parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Understood. I am FINORA, your AI CFO." }] },
+        { role: "model", parts: [{ text: "Understood. I am FINORA, your AI CFO. I will provide tailored, multi-path options outlining financial trade-offs." }] },
         ...geminiHistory,
         { role: "user",  parts: [{ text: lastMessage.content }] },
       ];
 
-      // Try all available models — includes flash-lite free tier
+      // Try newest models first — all free on Google AI Studio
       const modelsToTry = [
-        "gemini-2.0-flash-lite",
+        "gemini-2.5-flash-preview-05-20",
         "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
         "gemini-1.5-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-pro-latest",
-        "gemini-1.5-pro",
-        "gemini-pro",
       ];
 
       for (const modelName of modelsToTry) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?alt=sse&key=${apiKey}`;
-        const r = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents }),
-        });
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              contents,
+              generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+            }),
+          });
 
-        if (!r.ok) {
-          const errText = await r.text();
-          console.error(`[FINORA] ${modelName} failed (${r.status}):`, errText.slice(0, 150));
+          if (!r.ok) {
+            console.log(`[FINORA] Gemini ${modelName} failed (${r.status})`);
+            continue;
+          }
+
+          console.log(`[FINORA] Streaming from Gemini: ${modelName}`);
+          const body = r.body!;
+          const stream = new ReadableStream({
+            async start(controller) {
+              const reader = body.getReader();
+              const encoder = new TextEncoder();
+              const decoder = new TextDecoder();
+              let buffer = "";
+              try {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  buffer += decoder.decode(value, { stream: true });
+                  const lines = buffer.split("\n");
+                  buffer = lines.pop() ?? "";
+                  for (const line of lines) {
+                    if (!line.startsWith("data: ")) continue;
+                    const data = line.slice(6).trim();
+                    if (!data || data === "[DONE]") continue;
+                    try {
+                      const json = JSON.parse(data);
+                      const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+                      if (text) controller.enqueue(encoder.encode(text));
+                    } catch { /* skip incomplete chunks */ }
+                  }
+                }
+              } finally {
+                controller.close();
+                reader.releaseLock();
+              }
+            },
+          });
+          return new Response(stream, {
+            headers: { "Content-Type": "text/plain; charset=utf-8", "X-Content-Type-Options": "nosniff" },
+          });
+        } catch (e) {
+          console.log(`[FINORA] Gemini ${modelName} error:`, e);
           continue;
         }
-
-        console.log(`[FINORA] Using model: ${modelName}`);
-        const body = r.body!;
-        const stream = new ReadableStream({
-          async start(controller) {
-            const reader = body.getReader();
-            const encoder = new TextEncoder();
-            const decoder = new TextDecoder();
-            let buffer = "";
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() ?? "";
-                for (const line of lines) {
-                  if (!line.startsWith("data: ")) continue;
-                  const data = line.slice(6).trim();
-                  if (!data || data === "[DONE]") continue;
-                  try {
-                    const json = JSON.parse(data);
-                    const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-                    if (text) controller.enqueue(encoder.encode(text));
-                  } catch { /* skip bad chunks */ }
-                }
-              }
-            } finally {
-              controller.close();
-              reader.releaseLock();
-            }
-          },
-        });
-        return new Response(stream, {
-          headers: { "Content-Type": "text/plain; charset=utf-8", "X-Content-Type-Options": "nosniff" },
-        });
       }
-      
-      console.warn("[FINORA] All Gemini models failed — falling back to smart mock.");
     }
 
-    // ── Smart mock fallback (works without any API key) ───────────────────
+    // ── 3. LOCAL OLLAMA (Fallback) ────────────────────────────────────────────
+    const OLLAMA_HOST = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const pingRes = await fetch(`${OLLAMA_HOST}/api/tags`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (pingRes.ok) {
+        console.log("[FINORA] Ollama detected. Streaming local model...");
+        const chatRes = await fetch(`${OLLAMA_HOST}/api/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "finora",
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...messages.map((m: any) => ({
+                role: m.role === "assistant" ? "assistant" : "user",
+                content: m.content
+              }))
+            ],
+            stream: true
+          })
+        });
+
+        if (chatRes.ok && chatRes.body) {
+          const body = chatRes.body;
+          const stream = new ReadableStream({
+            async start(controller) {
+              const reader = body.getReader();
+              const encoder = new TextEncoder();
+              const decoder = new TextDecoder();
+              let buffer = "";
+              try {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  buffer += decoder.decode(value, { stream: true });
+                  const lines = buffer.split("\n");
+                  buffer = lines.pop() ?? "";
+                  for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+                    try {
+                      const parsed = JSON.parse(trimmed);
+                      const text = parsed?.message?.content ?? "";
+                      if (text) controller.enqueue(encoder.encode(text));
+                    } catch { /* skip */ }
+                  }
+                }
+              } finally {
+                controller.close();
+                reader.releaseLock();
+              }
+            }
+          });
+          return new Response(stream, {
+            headers: { "Content-Type": "text/plain; charset=utf-8", "X-Content-Type-Options": "nosniff" },
+          });
+        }
+      }
+    } catch (e) {
+      console.log("[FINORA] Ollama offline. Using smart mock fallback.");
+    }
+
+    // ── 4. SMART MOCK FALLBACK ────────────────────────────────────────────────
+    console.log("[FINORA] All AI providers unavailable — using smart mock.");
     const mockText = generateMockResponse(lastMessage.content, financialContext ?? "");
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {
-        // Stream the mock response word-by-word for a realistic typing effect
         const words = mockText.split(" ");
         let idx = 0;
         const interval = setInterval(() => {
@@ -207,7 +372,7 @@ Financial context: ${financialContext ?? "No context provided."}`;
           }
           controller.enqueue(encoder.encode((idx > 0 ? " " : "") + words[idx]));
           idx++;
-        }, 30);
+        }, 25);
       },
     });
     return new Response(stream, {

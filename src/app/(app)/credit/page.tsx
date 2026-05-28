@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/Input";
 import {
   CreditCard, TrendingUp, AlertCircle, ShieldCheck, Plus, X,
   Plane, Hotel, ShoppingBag, Utensils, Fuel, Wifi, Gift, Star,
-  ChevronRight, Sparkles, Zap, TrendingDown, Home, Car, Dumbbell,
-  Tv, Stethoscope, GraduationCap, BarChart3, Wallet, Smartphone,
-  Landmark, Coins, Trash2, CheckCircle2, Bell
+  ChevronRight, ChevronDown, Sparkles, Zap, TrendingDown, Home, Car, Dumbbell,
+  Tv, Stethoscope, GraduationCap, BarChart3, Wallet,
+  Landmark, Coins, Trash2, CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -43,12 +43,7 @@ interface BenefitScenario {
   tagColor: string;
 }
 
-interface SimulatedNotification {
-  id: string;
-  title: string;
-  message: string;
-  type: "perk" | "none";
-}
+
 
 // ─── Static benefit suggestions per perk keywords ────────────────────────────
 const PERK_BENEFITS: Record<string, BenefitScenario[]> = {
@@ -663,11 +658,8 @@ export default function CreditPage() {
   const [selectedItem, setSelectedItem] = useState<WalletItem | null>(null);
   const [filterTab, setFilterTab] = useState<"all" | "credit" | "debit">("all");
 
-  // Notification Toast states
-  const [activeNotification, setActiveNotification] = useState<SimulatedNotification | null>(null);
-
-  // Shopping Simulator State
-  const [selectedShoppingApp, setSelectedShoppingApp] = useState("Domino's");
+  // Collapsible state for active card perks section
+  const [isPerksExpanded, setIsPerksExpanded] = useState(true);
 
   // Load and migrate state
   useEffect(() => {
@@ -803,43 +795,7 @@ export default function CreditPage() {
     generatedInsights.push("Maintain old credit accounts active. A longer credit duration history signals reliability to financial agencies.");
   }
 
-  // Simulated Shopping Checkout Launcher for Cards
-  const simulateShoppingLaunch = () => {
-    let bestRoutingItem: WalletItem | null = null;
-    let matchingPerk = "";
 
-    if (selectedShoppingApp === "Domino's" || selectedShoppingApp === "Swiggy") {
-      bestRoutingItem = items.find(i => i.perks.some(p => p.toLowerCase().includes("dining"))) || null;
-      matchingPerk = "dining benefits (up to 20% discount & accelerated reward points)";
-    } else if (selectedShoppingApp === "Amazon") {
-      bestRoutingItem = items.find(i => i.perks.some(p => p.toLowerCase().includes("shopping"))) || null;
-      matchingPerk = "shopping perk (5x accelerated reward points / 5% cashback)";
-    } else if (selectedShoppingApp === "MakeMyTrip") {
-      bestRoutingItem = items.find(i => i.perks.some(p => p.toLowerCase().includes("travel"))) || null;
-      matchingPerk = "travel lounge & airline miles multipliers";
-    } else if (selectedShoppingApp === "HPCL Petrol Pump") {
-      bestRoutingItem = items.find(i => i.perks.some(p => p.toLowerCase().includes("fuel"))) || null;
-      matchingPerk = "1% fuel surcharge waiver & fuel points acceleration";
-    }
-
-    if (bestRoutingItem) {
-      setActiveNotification({
-        id: Date.now().toString(),
-        title: `💡 Card Perk Alert!`,
-        message: `We noticed you are checking out at ${selectedShoppingApp}. Swipe your ${bestRoutingItem.name} ${bestRoutingItem.type === "credit" ? "Credit Card" : "Debit Card"} to activate your ${matchingPerk}!`,
-        type: "perk"
-      });
-      return;
-    }
-
-    // Fallback information
-    setActiveNotification({
-      id: Date.now().toString(),
-      title: `🛍️ Shopping Assistant Live`,
-      message: `Scanning complete for ${selectedShoppingApp}. No specific cards in your wallet have active perks for this store. Pay using your preferred method.`,
-      type: "none"
-    });
-  };
 
   const addWalletItem = (item: WalletItem) => {
     setItems(prev => {
@@ -872,37 +828,6 @@ export default function CreditPage() {
 
   return (
     <div className="space-y-8 pb-8 relative">
-      {/* ── Dynamic Floating Notification Toast ───────────────────────────────── */}
-      <AnimatePresence>
-        {activeNotification && (
-          <motion.div
-            initial={{ opacity: 0, y: -70, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] w-[90%] max-w-[420px] p-4 rounded-2xl bg-slate-950/80 border border-primary/30 shadow-2xl backdrop-blur-xl flex flex-col gap-3"
-          >
-            <div className="flex justify-between items-start">
-              <div className="flex gap-2.5 items-start">
-                <div className={cn("p-2 rounded-lg mt-0.5", 
-                  activeNotification.type === "perk" ? "bg-violet-500/10 text-violet-400" : "bg-slate-800 text-muted-foreground"
-                )}>
-                  <Bell className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-extrabold text-white">{activeNotification.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{activeNotification.message}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActiveNotification(null)}
-                className="p-1 rounded bg-white/5 hover:bg-white/10 text-white/50 cursor-pointer"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Header and Add Action */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -948,7 +873,7 @@ export default function CreditPage() {
             </div>
 
             <div className="score-circle-container py-4 flex flex-col items-center justify-center relative">
-              <svg className="h-40 w-40 transform -rotate-90">
+              <svg width="160" height="160" viewBox="0 0 160 160" className="h-40 w-40 transform -rotate-90 overflow-visible">
                 <circle cx="80" cy="80" r="70" stroke="var(--border)" strokeWidth="6" fill="transparent" />
                 <motion.circle 
                   cx="80" cy="80" r="70" 
@@ -1101,116 +1026,98 @@ export default function CreditPage() {
       {/* ── Active Card Perks and Smart Suggestions ────────────────────────────── */}
       {selectedItem && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <Card className="border-primary/15 bg-card/60 backdrop-blur-xl">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-violet-400" />
-                <CardTitle>Where to use your {selectedItem.name}</CardTitle>
+          <Card className="border-primary/15 bg-card/60 backdrop-blur-xl overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer select-none" 
+              onClick={() => setIsPerksExpanded(!isPerksExpanded)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-violet-400" />
+                  <CardTitle>Where to use your {selectedItem.name}</CardTitle>
+                </div>
+                <motion.div
+                  animate={{ rotate: isPerksExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                </motion.div>
               </div>
-              <CardDescription>
+              <CardDescription className="mt-1">
                 Points multiplier mappings &amp; premium benefits associated with this {selectedItem.type === "credit" ? "Credit Card" : "Debit Card"}.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="benefits-grid">
-                {benefits.map((b, i) => {
-                  const Icon = b.icon;
-                  const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
-                  return (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: i * 0.05 }}
-                      className="benefit-card"
-                      style={{ borderColor: `${color}22` }}
-                    >
-                      <div className="benefit-card-top">
-                        <div className="benefit-icon-wrap" style={{ background: `${color}18`, color }}>
-                          <Icon className="h-5 w-5" />
+            <AnimatePresence initial={false}>
+              {isPerksExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <CardContent className="border-t border-white/5 pt-6">
+                    <div className="benefits-grid">
+                      {benefits.map((b, i) => {
+                        const Icon = b.icon;
+                        const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2, delay: i * 0.05 }}
+                            className="benefit-card"
+                            style={{ borderColor: `${color}22` }}
+                          >
+                            <div className="benefit-card-top">
+                              <div className="benefit-icon-wrap" style={{ background: `${color}18`, color }}>
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <span className="benefit-tag" style={{ background: `${color}20`, color }}>{b.tag}</span>
+                            </div>
+                            <h4 className="benefit-category">{b.category}</h4>
+                            <p className="benefit-desc">{b.description}</p>
+                            <div className="benefit-perk font-semibold">
+                              <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+                              <span>{b.benefit}</span>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {selectedItem.type === "credit" && selectedItem.billingDate && (
+                      <div className="mt-4 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
+                        <div>
+                          <h5 className="text-xs font-bold text-white uppercase tracking-wider">Statement Schedule</h5>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            This card's billing cycle closes on the <strong>{selectedItem.billingDate}th</strong> of the month. Clearing outstanding balances 3 days before safeguards utilization records sent to bureaus.
+                          </p>
                         </div>
-                        <span className="benefit-tag" style={{ background: `${color}20`, color }}>{b.tag}</span>
                       </div>
-                      <h4 className="benefit-category">{b.category}</h4>
-                      <p className="benefit-desc">{b.description}</p>
-                      <div className="benefit-perk font-semibold">
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color }} />
-                        <span>{b.benefit}</span>
+                    )}
+
+                    {selectedItem.type === "debit" && selectedItem.linkedAccount && (
+                      <div className="mt-4 p-4 rounded-xl border border-teal-500/20 bg-teal-500/5 flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-teal-400 shrink-0 mt-0.5" />
+                        <div>
+                          <h5 className="text-xs font-bold text-white uppercase tracking-wider">Debit Source Status</h5>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Linked to account <strong>{selectedItem.linkedAccount}</strong>. Transactions using this card will draw directly from liquid capital, ensuring zero interest charges and keeping utilization ratios clean.
+                          </p>
+                        </div>
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {selectedItem.type === "credit" && selectedItem.billingDate && (
-                <div className="mt-4 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="text-xs font-bold text-white uppercase tracking-wider">Statement Schedule</h5>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      This card's billing cycle closes on the <strong>{selectedItem.billingDate}th</strong> of the month. Clearing outstanding balances 3 days before safeguards utilization records sent to bureaus.
-                    </p>
-                  </div>
-                </div>
+                    )}
+                  </CardContent>
+                </motion.div>
               )}
-
-              {selectedItem.type === "debit" && selectedItem.linkedAccount && (
-                <div className="mt-4 p-4 rounded-xl border border-teal-500/20 bg-teal-500/5 flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-teal-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="text-xs font-bold text-white uppercase tracking-wider">Debit Source Status</h5>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Linked to account <strong>{selectedItem.linkedAccount}</strong>. Transactions using this card will draw directly from liquid capital, ensuring zero interest charges and keeping utilization ratios clean.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
+            </AnimatePresence>
           </Card>
         </motion.div>
       )}
 
-      {/* ── Live Shopping Assistant Simulator Panel ─────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}>
-        <Card className="border-primary/10 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-white/5">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-primary" />
-              <CardTitle>Live Shopping Assistant Simulator</CardTitle>
-            </div>
-            <CardDescription>
-              Simulate checkout at online stores. Finora reviews your wallet and notifies you which card contains the highest perks to maximize savings!
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center p-4 rounded-xl bg-slate-950/50 border border-slate-800">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Where are you shopping?</label>
-                <select
-                  value={selectedShoppingApp}
-                  onChange={(e) => setSelectedShoppingApp(e.target.value)}
-                  className="form-select bg-slate-900 text-white border-slate-700 h-10 w-full"
-                >
-                  <option value="Domino's">Domino's Pizza</option>
-                  <option value="Amazon">Amazon India</option>
-                  <option value="Swiggy">Swiggy Food</option>
-                  <option value="MakeMyTrip">MakeMyTrip Flights</option>
-                  <option value="HPCL Petrol Pump">HPCL Petrol Pump</option>
-                </select>
-              </div>
 
-              <div className="flex flex-col gap-2 pt-2 md:pt-6">
-                <Button 
-                  onClick={simulateShoppingLaunch}
-                  className="w-full h-10 font-bold bg-primary hover:bg-primary/95 text-white flex items-center justify-center gap-2 cursor-pointer transition shadow"
-                >
-                  <Smartphone className="h-4 w-4" /> Launch App & Simulate Checkout
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* ── Transaction-Based Card Efficiency Optimizer ───────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>

@@ -26,6 +26,28 @@ export default function ChatPage() {
     const budgets = budgetsRaw ? JSON.parse(budgetsRaw) : [];
     const cards = cardsRaw ? JSON.parse(cardsRaw) : [];
 
+    // Tally current month discretionary safe to spend spendings
+    const discretionary = budgets.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
+    const target = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0) || (monthlyIncome * 0.3 || 5000);
+
+    const currentMonth = new Date().getMonth();
+    let discretionarySpent = 0;
+    transactions.forEach(t => {
+      if (t.type === "expense") {
+        const txDate = new Date(t.date);
+        if (txDate.getMonth() === currentMonth) {
+          const isFixed = ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].some(k => t.category.includes(k));
+          if (!isFixed) discretionarySpent += t.amount;
+        }
+      }
+    });
+
+    const remaining = Math.max(0, target - discretionarySpent);
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
+    const safeToSpendVal = Math.round(remaining / daysLeft);
+
     // Format top 5 recent transactions
     const recentTx = transactions.slice(0, 5).map(t => 
       `${t.date}: ${t.name} - ${formatCurrency(t.amount)} (${t.category})`
@@ -37,12 +59,13 @@ export default function ChatPage() {
     - Monthly Income: ${formatCurrency(monthlyIncome)}
     - Monthly Expenses: ${formatCurrency(monthlyExpenses)}
     - Savings Rate: ${savingsRate.toFixed(2)}%
+    - Today's Safe-To-Spend Limit: ${formatCurrency(safeToSpendVal)}
 
     Budgets:
-    ${budgets.map((b: any) => `- ${b.category}: ${formatCurrency(b.spent)} / ${formatCurrency(b.limit)}`).join("\n    ") || "None set"}
+    ${budgets.map((b: any) => `- ${b.category || b.name}: Spent ${formatCurrency(b.spent || 0)} / Limit ${formatCurrency(b.limit || b.budget || 0)}`).join("\n    ") || "None set"}
 
     Credit Cards:
-    ${cards.map((c: any) => `- ${c.name} (${c.network}, ${c.color}): Limit ${formatCurrency(parseInt(c.limit.replace(/,/g, '')) || 0)}, Perks: ${c.perks.join(", ")}`).join("\n    ") || "None added"}
+    ${cards.map((c: any) => `- ${c.name} (${c.network}, ${c.color}): Limit ${formatCurrency(parseInt(c.limit?.replace(/,/g, '') || '0') || 0)}, Perks: ${c.perks.join(", ")}`).join("\n    ") || "None added"}
 
     Investments:
     ${investments.map(i => `- ${i.name} (${i.type}): Value ${formatCurrency(i.current_value)}`).join("\n    ") || "None"}

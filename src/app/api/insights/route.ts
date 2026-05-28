@@ -1,7 +1,76 @@
+import { NextResponse } from "next/server";
+
 export const maxDuration = 30;
 
-export type InsightType = "warning" | "tip" | "alert";
+// ── Shared helper: call AI with Groq → Gemini fallback chain ─────────────────
+async function callAI(systemPrompt: string, userPrompt: string): Promise<string | null> {
+  const groqKey = process.env.GROQ_API_KEY;
+  const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
+  // 1. Try Groq first (fastest free model)
+  if (groqKey && groqKey !== "PASTE_YOUR_GROQ_KEY_HERE") {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.3,
+          max_tokens: 512,
+          stream: false,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const text = json?.choices?.[0]?.message?.content ?? "";
+        if (text) {
+          console.log("[FINORA Insights] Using Groq LLaMA 3.3 70B");
+          return text;
+        }
+      }
+    } catch (e) {
+      console.log("[FINORA Insights] Groq failed:", e);
+    }
+  }
+
+  // 2. Gemini fallback
+  if (geminiKey && geminiKey !== "PASTE_YOUR_KEY_HERE") {
+    const models = ["gemini-2.5-flash-preview-05-20", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              { role: "user", parts: [{ text: systemPrompt }] },
+              { role: "model", parts: [{ text: "Understood. Returning strict JSON." }] },
+              { role: "user", parts: [{ text: userPrompt }] },
+            ],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+          }),
+        });
+        if (r.ok) {
+          const json = await r.json();
+          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+          if (text) {
+            console.log(`[FINORA Insights] Using Gemini: ${model}`);
+            return text;
+          }
+        }
+      } catch { continue; }
+    }
+  }
+
+  return null;
+}
+
+export type InsightType = "warning" | "tip" | "alert";
 export interface Insight {
   id: string;
   type: InsightType;
@@ -20,18 +89,13 @@ function generateMockInsights(financialContext: string): Insight[] {
   const income = incomeMatch ? parseInt(incomeMatch[1].replace(/,/g, "")) : 150000;
   const savingsRate = savingsMatch ? parseFloat(savingsMatch[1]) : 74.2;
   const hasGoals = goalsMatch && goalsMatch[1].trim().length > 0;
-
   const spending_pct = income > 0 ? Math.round((expenses / income) * 100) : 26;
 
-  const insights: Insight[] = [
+  return [
     {
       id: "1",
       type: "warning",
-      message: `Your spending this month is ${spending_pct}% of your income — ${
-        spending_pct > 50
-          ? "you're spending more than half your income. Consider cutting discretionary expenses."
-          : "you're within a healthy range. Keep it up!"
-      }`,
+      message: `Your spending this month is ${spending_pct}% of your income — ${spending_pct > 50 ? "you're spending more than half your income. Consider cutting discretionary expenses." : "you're within a healthy range. Keep it up!"}`,
     },
     {
       id: "2",
@@ -50,20 +114,13 @@ function generateMockInsights(financialContext: string): Insight[] {
       linkHref: "/budget",
     },
   ];
-
-  return insights;
 }
 
 export async function POST(req: Request) {
   try {
     const { financialContext } = await req.json();
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-    if (apiKey && apiKey !== "PASTE_YOUR_KEY_HERE") {
-      const prompt = `You are FINORA, an AI Personal CFO. Based on this user's financial data, generate exactly 3 concise, personalized insight messages.
-
-Financial context:
-${financialContext}
+    const systemPrompt = `You are FINORA, an AI Personal CFO. Based on this user's financial data, generate exactly 3 concise, personalized insight messages.
 
 Return ONLY a valid JSON array with exactly 3 objects. Each object must have:
 - "id": string ("1", "2", "3")
@@ -75,46 +132,26 @@ Return ONLY a valid JSON array with exactly 3 objects. Each object must have:
 Use "warning" for spending alerts, "tip" for positive/goal insights, "alert" for actionable cautions.
 Return ONLY the JSON array, no markdown, no explanation.`;
 
-      const modelsToTry = [
-        "gemini-2.0-flash-lite",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-flash-latest",
-      ];
+    const userPrompt = `Financial context:\n${financialContext}\n\nGenerate 3 personalized insights as a JSON array.`;
 
-      for (const modelName of modelsToTry) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-        const r = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.4, maxOutputTokens: 512 },
-          }),
-        });
-
-        if (!r.ok) {
-          console.error(`[FINORA Insights] ${modelName} failed (${r.status})`);
-          continue;
-        }
-
-        const json = await r.json();
-        const raw = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        const cleaned = raw.replace(/```json|```/g, "").trim();
-
+    const raw = await callAI(systemPrompt, userPrompt);
+    if (raw) {
+      const cleaned = raw.replace(/```json|```/g, "").trim();
+      const firstBracket = cleaned.indexOf("[");
+      const lastBracket = cleaned.lastIndexOf("]");
+      if (firstBracket !== -1 && lastBracket !== -1) {
         try {
-          const insights: Insight[] = JSON.parse(cleaned);
+          const insights: Insight[] = JSON.parse(cleaned.slice(firstBracket, lastBracket + 1));
           return Response.json({ insights });
         } catch {
-          console.error("[FINORA Insights] JSON parse failed:", cleaned.slice(0, 200));
-          continue;
+          console.error("[FINORA Insights] JSON parse failed");
         }
       }
     }
 
-    // Fallback to smart mock
-    const insights = generateMockInsights(financialContext ?? "");
-    return Response.json({ insights });
+    // Mock fallback
+    return Response.json({ insights: generateMockInsights(financialContext ?? "") });
+
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[FINORA Insights] Error:", msg);

@@ -2,13 +2,72 @@ import { NextResponse } from "next/server";
 
 export const maxDuration = 30;
 
+// ── Shared AI caller: Groq → Gemini ──────────────────────────────────────────
+async function callAI(systemPrompt: string): Promise<string | null> {
+  const groqKey = process.env.GROQ_API_KEY;
+  const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+  // 1. Groq (fastest free)
+  if (groqKey && groqKey !== "PASTE_YOUR_GROQ_KEY_HERE") {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: systemPrompt }],
+          temperature: 0.4,
+          max_tokens: 1024,
+          stream: false,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const text = json?.choices?.[0]?.message?.content ?? "";
+        if (text) {
+          console.log("[FINORA Tax-AI] Using Groq LLaMA 3.3 70B");
+          return text;
+        }
+      }
+    } catch (e) {
+      console.log("[FINORA Tax-AI] Groq failed:", e);
+    }
+  }
+
+  // 2. Gemini fallback
+  if (geminiKey && geminiKey !== "PASTE_YOUR_KEY_HERE") {
+    const models = ["gemini-2.5-flash-preview-05-20", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: systemPrompt }] }],
+            generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
+          }),
+        });
+        if (r.ok) {
+          const json = await r.json();
+          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+          if (text) {
+            console.log(`[FINORA Tax-AI] Using Gemini: ${model}`);
+            return text;
+          }
+        }
+      } catch { continue; }
+    }
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const { payload } = await req.json();
     const { currency, monthlyIncome, expenses, balance, txSummary } = payload;
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-    // Evaluate Liquid Surplus
     const monthlySurplus = Math.max(0, monthlyIncome - expenses);
     const annualSurplus = monthlySurplus * 12;
     const availableLiquid = Math.max(0, balance);
@@ -52,53 +111,39 @@ Return ONLY valid JSON matching this schema exactly:
   ]
 }`;
 
-    if (apiKey && apiKey !== "PASTE_YOUR_KEY_HERE") {
-      const contents = [
-        { role: "user", parts: [{ text: systemPrompt }] },
-      ];
-
-      const modelName = "gemini-2.0-flash";
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-      
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents }),
-      });
-
-      if (r.ok) {
-        const json = await r.json();
-        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        const cleanJsonString = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        
+    const raw = await callAI(systemPrompt);
+    if (raw) {
+      const cleaned = raw.replace(/```json|```/g, "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace !== -1) {
         try {
-          const parsed = JSON.parse(cleanJsonString);
+          const parsed = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
           return NextResponse.json(parsed);
         } catch (e) {
-          console.error("Failed to parse LLM Tax JSON:", cleanJsonString);
+          console.error("[FINORA Tax-AI] JSON parse failed");
         }
       }
     }
 
-    // ── Safe Fallback if API key fails ──
+    // Safe fallback
     let defKey = "genDeductions";
     if (currency === "INR") defKey = "ind80C";
     if (currency === "USD") defKey = "usPreTax";
     if (currency === "GBP") defKey = "ukPension";
 
-    // Safe mathematical cap based on their real data
     const safeOptimal = Math.min(annualSurplus * 0.3, 150000);
 
-    const fallbackResponse = {
+    return NextResponse.json({
       loopholes: [
         {
           id: "fb-1",
           title: "AI Standard Limit Maximization",
-          description: `Based on your cashflow surplus, safely routing funds into your local tax wrapper is highly recommended.`,
+          description: `Based on your cashflow surplus of ₹${monthlySurplus.toLocaleString("en-IN")}/month, safely routing funds into your local tax wrapper is highly recommended.`,
           inputKey: defKey,
           optimalAmount: Math.round(safeOptimal || 10000),
           feasibility: "Validated by active surplus modeling",
-          isSupreme: true
+          isSupreme: true,
         },
         {
           id: "fb-2",
@@ -107,7 +152,7 @@ Return ONLY valid JSON matching this schema exactly:
           inputKey: "genDeductions",
           optimalAmount: 5000,
           feasibility: "Requires active underwater portfolio equity",
-          isSupreme: false
+          isSupreme: false,
         },
         {
           id: "fb-3",
@@ -116,12 +161,10 @@ Return ONLY valid JSON matching this schema exactly:
           inputKey: "genDeductions",
           optimalAmount: 2000,
           feasibility: "Low effort, easy execution",
-          isSupreme: false
-        }
-      ]
-    };
-
-    return NextResponse.json(fallbackResponse);
+          isSupreme: false,
+        },
+      ],
+    });
 
   } catch (error: any) {
     console.error("[FINORA] AI Tax Gen Error:", error);
