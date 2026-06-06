@@ -4,7 +4,7 @@ import { useFinance } from "@/context/FinanceContext";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, Download } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Link from "next/link";
 import { format, subDays, getDaysInMonth } from "date-fns";
@@ -83,6 +83,13 @@ export default function DashboardPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-400" />
             </span>
             Connect
+          </button>
+          <button
+            onClick={() => typeof window !== "undefined" && window.print()}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300"
+          >
+            <Download className="h-4 w-4 text-slate-400" />
+            Export PDF
           </button>
           <Link href="/transactions">
             <Button className="gap-2">

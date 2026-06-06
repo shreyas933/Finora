@@ -26,11 +26,12 @@ export function CapacitorUserBridge() {
         if (!user?.id) return;
 
         const { registerPlugin } = await import("@capacitor/core");
-        const UserIdBridge = registerPlugin<{ setUserId: (opts: { userId: string }) => Promise<void> }>("UserIdBridge");
+        const UserIdBridge = registerPlugin<{ setUserId: (opts: { userId: string; apiBase?: string }) => Promise<void> }>("UserIdBridge");
 
         if (UserIdBridge) {
-          await UserIdBridge.setUserId({ userId: user.id });
-          console.log("[FINORA] UserId synced to Android native layer:", user.id);
+          const apiBase = typeof window !== "undefined" ? window.location.origin : undefined;
+          await UserIdBridge.setUserId({ userId: user.id, apiBase });
+          console.log("[FINORA] UserId & ApiBase synced to Android native layer:", user.id, apiBase);
         }
       } catch (err) {
         // Non-fatal — the notification listener just won't ingest until next launch

@@ -28,12 +28,19 @@ class FinoraSmsReceiver : BroadcastReceiver() {
         // Dev:  your PC's LAN IP while running `npm run dev`
         // Prod: your deployed Vercel/Railway URL
         private const val API_BASE = "http://10.55.128.169:3000"
-        private const val CATEGORIZE_URL = "$API_BASE/api/sync/categorize"
-        private const val INGEST_URL     = "$API_BASE/api/sync/ingest"
     }
 
-
     private val httpClient = OkHttpClient()
+
+    private fun getApiBase(context: Context): String {
+        val prefs = context.getSharedPreferences("finora_prefs", Context.MODE_PRIVATE)
+        val storedBase = prefs.getString("api_base", null)
+        if (!storedBase.isNullOrBlank()) {
+            // Strip trailing slash if present to avoid double-slashes
+            return if (storedBase.endsWith("/")) storedBase.substring(0, storedBase.length - 1) else storedBase
+        }
+        return API_BASE
+    }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
@@ -88,10 +95,14 @@ class FinoraSmsReceiver : BroadcastReceiver() {
     }
 
     private fun sendToFinora(context: Context, rawSmsText: String) {
-        // Step 1: call /api/sync/categorize (Gemini AI parses the SMS text)
+        val base = getApiBase(context)
+        val categorizeUrl = "$base/api/sync/categorize"
+        val ingestUrl = "$base/api/sync/ingest"
+
+        // Step 1: call /api/sync/categorize (AI parses the SMS text)
         val categorizeBody = JSONObject().put("raw", rawSmsText).toString()
         val categorizeRequest = Request.Builder()
-            .url(CATEGORIZE_URL)
+            .url(categorizeUrl)
             .post(categorizeBody.toRequestBody("application/json".toMediaType()))
             .build()
 
@@ -128,7 +139,7 @@ class FinoraSmsReceiver : BroadcastReceiver() {
                         .toString()
 
                     val ingestRequest = Request.Builder()
-                        .url(INGEST_URL)
+                        .url(ingestUrl)
                         .post(ingestPayload.toRequestBody("application/json".toMediaType()))
                         .build()
 

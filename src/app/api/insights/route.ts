@@ -116,11 +116,52 @@ function generateMockInsights(financialContext: string): Insight[] {
   ];
 }
 
+function generateMockBudgetInsights(financialContext: string): Insight[] {
+  return [
+    {
+      id: "1",
+      type: "warning",
+      message: "You have exceeded your Entertainment budget by 24%. Consider scaling back movie/event splurges this week.",
+      linkLabel: "Set Budgets",
+      linkHref: "/transactions",
+    },
+    {
+      id: "2",
+      type: "tip",
+      message: "Excellent discipline on Food & Dining! You have used only 42% of your monthly budget so far.",
+      linkLabel: "View Details",
+      linkHref: "/transactions",
+    },
+    {
+      id: "3",
+      type: "alert",
+      message: "Transportation costs are at 85% of your limit. Suggest walking or public transit to avoid overspending.",
+      linkLabel: "See Details",
+      linkHref: "/transactions",
+    },
+  ];
+}
+
 export async function POST(req: Request) {
   try {
-    const { financialContext } = await req.json();
+    const { financialContext, mode } = await req.json();
 
-    const systemPrompt = `You are FINORA, an AI Personal CFO. Based on this user's financial data, generate exactly 3 concise, personalized insight messages.
+    const isBudgetMode = mode === "budget";
+
+    const systemPrompt = isBudgetMode
+      ? `You are FINORA, an AI Personal CFO. Based on this user's budget data, generate exactly 3 concise, personalized budget insight messages.
+You must analyze which categories are overspent or close to limits, highlight positive budget discipline (where spent is well below limit), and offer actionable budget advice.
+
+Return ONLY a valid JSON array with exactly 3 objects. Each object must have:
+- "id": string ("1", "2", "3")
+- "type": one of "warning" | "tip" | "alert"
+- "message": string (max 120 chars, no markdown, plain text, mention specific currency figures/percents)
+- "linkLabel": optional string (e.g. "View Budget", "See Details")
+- "linkHref": optional string (e.g. "/budget", "/transactions")
+
+Use "warning" for categories over budget (e.g. overspent, red alert), "tip" for categories under control (good job, keep it up), "alert" for caution/warning of categories nearing limit.
+Return ONLY the JSON array, no markdown, no explanation.`
+      : `You are FINORA, an AI Personal CFO. Based on this user's financial data, generate exactly 3 concise, personalized insight messages.
 
 Return ONLY a valid JSON array with exactly 3 objects. Each object must have:
 - "id": string ("1", "2", "3")
@@ -132,7 +173,9 @@ Return ONLY a valid JSON array with exactly 3 objects. Each object must have:
 Use "warning" for spending alerts, "tip" for positive/goal insights, "alert" for actionable cautions.
 Return ONLY the JSON array, no markdown, no explanation.`;
 
-    const userPrompt = `Financial context:\n${financialContext}\n\nGenerate 3 personalized insights as a JSON array.`;
+    const userPrompt = isBudgetMode
+      ? `Budget spent and limit context:\n${financialContext}\n\nGenerate 3 personalized budget insights as a JSON array.`
+      : `Financial context:\n${financialContext}\n\nGenerate 3 personalized insights as a JSON array.`;
 
     const raw = await callAI(systemPrompt, userPrompt);
     if (raw) {
@@ -150,7 +193,11 @@ Return ONLY the JSON array, no markdown, no explanation.`;
     }
 
     // Mock fallback
-    return Response.json({ insights: generateMockInsights(financialContext ?? "") });
+    const fallbackInsights = isBudgetMode
+      ? generateMockBudgetInsights(financialContext ?? "")
+      : generateMockInsights(financialContext ?? "");
+
+    return Response.json({ insights: fallbackInsights });
 
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);

@@ -9,10 +9,11 @@ import {
   Upload, Download, Plus, Filter, Pencil, Check, X,
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
-  RefreshCw, AlertCircle
+  RefreshCw, AlertCircle, Camera, Loader2
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
+import { AIInsights } from "@/components/dashboard/AIInsights";
 import { Sparkles } from "lucide-react";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
@@ -158,6 +159,78 @@ export default function TransactionsPage() {
   const [newTx, setNewTx] = useState({ name: "", amount: "", category: "Food", type: "expense" as "income" | "expense" });
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(BUDGET_CATEGORIES);
 
+  const [scanning, setScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<{ text: string; isError?: boolean } | null>(null);
+
+  const handleBillUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setScanning(true);
+    setScanMessage({ text: "Reading image file..." });
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      if (!base64) {
+        setScanning(false);
+        setScanMessage({ text: "Failed to read image file.", isError: true });
+        setTimeout(() => setScanMessage(null), 4000);
+        return;
+      }
+
+      setScanMessage({ text: "AI is parsing bill contents..." });
+      try {
+        const res = await fetch("/api/sync/scan-bill", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileData: base64, fileName: file.name }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to scan receipt");
+        }
+
+        const data = await res.json();
+        if (data.success && data.transaction) {
+          const tx = data.transaction;
+          
+          addTransaction({
+            date: new Date().toISOString(),
+            amount: Number(tx.amount),
+            category: tx.category,
+            type: tx.type,
+            name: tx.name,
+          });
+
+          setScanMessage({
+            text: `✓ Auto-logged "${tx.name}" (${formatCurrency(tx.amount, currency)}) under ${tx.category}!`,
+          });
+        } else {
+          throw new Error(data.error || "No transaction parsed");
+        }
+      } catch (err: any) {
+        console.error("OCR scan failed:", err);
+        setScanMessage({
+          text: `Error: ${err?.message || "Failed to scan receipt. Verify image quality."}`,
+          isError: true,
+        });
+      } finally {
+        setScanning(false);
+        setTimeout(() => setScanMessage(null), 5000);
+        e.target.value = "";
+      }
+    };
+
+    reader.onerror = () => {
+      setScanning(false);
+      setScanMessage({ text: "Error loading image file.", isError: true });
+      setTimeout(() => setScanMessage(null), 4000);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   useEffect(() => {
     const loadBudgets = () => {
       const saved = localStorage.getItem("finora_budgets");
@@ -264,11 +337,25 @@ export default function TransactionsPage() {
           <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <input
+            type="file"
+            id="bill-image-upload"
+            accept="image/*"
+            className="hidden"
+            onChange={handleBillUpload}
+            disabled={scanning}
+          />
           <button 
-            onClick={() => setShowAiModal(true)}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
+            onClick={() => document.getElementById("bill-image-upload")?.click()}
+            disabled={scanning}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            <Sparkles className="h-4 w-4 text-emerald-400" /> AI Budget Profiler
+            {scanning ? (
+              <Loader2 className="h-4 w-4 animate-spin text-violet-400" />
+            ) : (
+              <Camera className="h-4 w-4 text-violet-400" />
+            )}
+            Scan Bill
           </button>
           <button 
             onClick={() => setShowImportModal(true)}
@@ -276,9 +363,7 @@ export default function TransactionsPage() {
           >
             <Upload className="h-4 w-4" /> Import CSV
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors">
-            <Download className="h-4 w-4" /> Export CSV
-          </button>
+
           <button
             onClick={() => setShowAddForm(v => !v)}
             className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors font-medium"
@@ -287,6 +372,24 @@ export default function TransactionsPage() {
           </button>
         </div>
       </div>
+
+      {scanMessage && (
+        <div className={cn(
+          "flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300",
+          scanMessage.isError 
+            ? "border-red-500/20 bg-red-500/10 text-red-400" 
+            : scanMessage.text.startsWith("✓") 
+              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+              : "border-violet-500/20 bg-violet-500/10 text-violet-300 animate-pulse"
+        )}>
+          {scanning ? (
+            <Loader2 className="h-4 w-4 animate-spin text-violet-400 flex-shrink-0" />
+          ) : scanMessage.isError ? (
+            <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
+          ) : null}
+          <span>{scanMessage.text}</span>
+        </div>
+      )}
 
 
       {/* ── Add Transaction Form ── */}
@@ -352,9 +455,17 @@ export default function TransactionsPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">Budget Tracker</h3>
-          <button className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            <Filter className="h-4 w-4" /> Set Budgets
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowAiModal(true)}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> AI Budget Profiler
+            </button>
+            <button className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors px-2 py-1.5">
+              <Filter className="h-4 w-4" /> Set Budgets
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {budgetCategories.map(cat => (
@@ -368,6 +479,9 @@ export default function TransactionsPage() {
           ))}
         </div>
       </div>
+
+      {/* ── AI Insights ── */}
+      <AIInsights collapsible defaultCollapsed={false} mode="budget" />
 
       {/* ── All Transactions ── */}
       <div>
