@@ -9,7 +9,8 @@ import {
   Upload, Download, Plus, Filter, Pencil, Check, X,
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
-  RefreshCw, AlertCircle, Camera, Loader2
+  RefreshCw, AlertCircle, Camera, Loader2,
+  BrainCircuit, CheckCircle2
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
@@ -162,6 +163,67 @@ export default function TransactionsPage() {
   const [scanning, setScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ text: string; isError?: boolean } | null>(null);
 
+  // Questionnaire Split Budget states
+  const [showCustomBudgetModal, setShowCustomBudgetModal] = useState(false);
+  const [hasCustomBudget, setHasCustomBudget] = useState(false);
+  const [customSalary, setCustomSalary] = useState<number>(50000);
+  const [customBudgetTab, setCustomBudgetTab] = useState<"needs" | "wants">("needs");
+  const [customNeeds, setCustomNeeds] = useState<BudgetCategory[]>([
+    { name: "Rent", budget: 15000, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Rent", "Housing"] },
+    { name: "Utilities", budget: 3000, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Utilities"] },
+    { name: "Groceries", budget: 5000, color: "#eab308", ringColor: "#eab308", txCategories: ["Groceries", "Food", "Food & Dining"] },
+    { name: "Healthcare", budget: 2000, color: "#ef4444", ringColor: "#ef4444", txCategories: ["Healthcare", "Health", "Medical"] },
+    { name: "Insurance", budget: 1500, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Insurance"] },
+    { name: "EMI", budget: 5000, color: "#ec4899", ringColor: "#ec4899", txCategories: ["EMI", "Debt"] },
+  ]);
+  const [customWants, setCustomWants] = useState<BudgetCategory[]>([
+    { name: "Dining / Food", budget: 4000, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Dining Out", "Dining", "Food", "Restaurant", "Cafe", "Zomato", "Swiggy"] },
+    { name: "Shopping", budget: 8000, color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle", "Amazon", "Flipkart", "Clothing", "Apparel"] },
+    { name: "Entertainment", budget: 3000, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment", "Movies", "Cinema", "Hobbies", "Booking", "Event"] },
+    { name: "Travel", budget: 4000, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel", "Flight", "Hotel", "Airbnb", "Trip"] },
+    { name: "Subscriptions", budget: 1500, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Subscription", "Netflix", "Spotify", "Prime", "Youtube Premium", "iCloud", "Google One"] },
+    { name: "Fitness / Hobbies", budget: 2000, color: "#ec4899", ringColor: "#ec4899", txCategories: ["Gym", "Fitness", "Hobbies", "Club", "Sport", "Workout"] },
+    { name: "Personal Care", budget: 1000, color: "#06b6d4", ringColor: "#06b6d4", txCategories: ["Personal Care", "Salon", "Spa", "Grooming", "Haircut", "Cosmetics"] }
+  ]);
+
+  // Calculate spent per custom Needs category
+  const spentByCustomNeeds = useMemo(() => {
+    const map: Record<string, number> = {};
+    customNeeds.forEach(bc => {
+      map[bc.name] = transactions
+        .filter(t => t.type === "expense" && bc.txCategories.some(cat => t.category.toLowerCase().includes(cat.toLowerCase()) || t.name.toLowerCase().includes(cat.toLowerCase())))
+        .reduce((acc, t) => acc + t.amount, 0);
+    });
+    return map;
+  }, [transactions, customNeeds]);
+
+  // Calculate spent per custom Wants category
+  const spentByCustomWants = useMemo(() => {
+    const map: Record<string, number> = {};
+    customWants.forEach(bc => {
+      map[bc.name] = transactions
+        .filter(t => t.type === "expense" && bc.txCategories.some(cat => t.category.toLowerCase().includes(cat.toLowerCase()) || t.name.toLowerCase().includes(cat.toLowerCase())))
+        .reduce((acc, t) => acc + t.amount, 0);
+    });
+    return map;
+  }, [transactions, customWants]);
+
+  // Compute Salary, Needs, and Remaining figures
+  const salaryCredited = useMemo(() => {
+    const salaryTxSum = transactions
+      .filter(t => t.type === "income" && (t.category.toLowerCase().includes("salary") || t.name.toLowerCase().includes("salary")))
+      .reduce((acc, t) => acc + t.amount, 0);
+    return salaryTxSum > 0 ? salaryTxSum : customSalary;
+  }, [transactions, customSalary]);
+
+  const needsDeducted = useMemo(() => {
+    return customNeeds.reduce((acc, c) => acc + c.budget, 0);
+  }, [customNeeds]);
+
+  const remainingSalary = useMemo(() => {
+    return salaryCredited - needsDeducted;
+  }, [salaryCredited, needsDeducted]);
+
   const handleBillUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -251,12 +313,51 @@ export default function TransactionsPage() {
       }
     };
     
+    const loadCustomBudgets = () => {
+      const hasCustom = localStorage.getItem("finora_has_custom_budget");
+      if (hasCustom === "true") {
+        setHasCustomBudget(true);
+        const storedSalary = localStorage.getItem("finora_custom_salary");
+        if (storedSalary) setCustomSalary(Number(storedSalary));
+
+        const storedNeeds = localStorage.getItem("finora_custom_needs");
+        if (storedNeeds) {
+          try { setCustomNeeds(JSON.parse(storedNeeds)); } catch (e) { console.error(e); }
+        }
+        const storedWants = localStorage.getItem("finora_custom_wants");
+        if (storedWants) {
+          try { setCustomWants(JSON.parse(storedWants)); } catch (e) { console.error(e); }
+        }
+      }
+    };
+
     loadBudgets();
+    loadCustomBudgets();
     window.addEventListener("finora_budget_update", loadBudgets);
     return () => window.removeEventListener("finora_budget_update", loadBudgets);
   }, []);
 
   const handleEditBudget = (name: string, val: number) => {
+    if (hasCustomBudget) {
+      let updatedNeeds = [...customNeeds];
+      let updatedWants = [...customWants];
+      let updated = false;
+
+      if (customNeeds.some(c => c.name === name)) {
+        updatedNeeds = customNeeds.map(c => c.name === name ? { ...c, budget: val } : c);
+        setCustomNeeds(updatedNeeds);
+        localStorage.setItem("finora_custom_needs", JSON.stringify(updatedNeeds));
+        updated = true;
+      } else if (customWants.some(c => c.name === name)) {
+        updatedWants = customWants.map(c => c.name === name ? { ...c, budget: val } : c);
+        setCustomWants(updatedWants);
+        localStorage.setItem("finora_custom_wants", JSON.stringify(updatedWants));
+        updated = true;
+      }
+      
+      if (updated) return;
+    }
+
     setBudgetCategories(prev => {
       const updated = prev.map(c => c.name === name ? { ...c, budget: val } : c);
       localStorage.setItem("finora_budgets", JSON.stringify(updated));
@@ -433,26 +534,9 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* ── Summary Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#0f172a] border border-white/5 rounded-xl p-5">
-          <p className="text-sm text-slate-400 mb-2">Total Income</p>
-          <p className="text-2xl font-bold text-emerald-400 font-mono">+{formatCurrency(monthlyIncome, currency)}</p>
-        </div>
-        <div className="bg-[#0f172a] border border-white/5 rounded-xl p-5">
-          <p className="text-sm text-slate-400 mb-2">Total Expenses</p>
-          <p className="text-2xl font-bold text-red-400 font-mono">-{formatCurrency(monthlyExpenses, currency)}</p>
-        </div>
-        <div className="bg-[#0f172a] border border-white/5 rounded-xl p-5">
-          <p className="text-sm text-slate-400 mb-2">Net Balance</p>
-          <p className={cn("text-2xl font-bold font-mono", balance >= 0 ? "text-emerald-400" : "text-red-400")}>
-            {balance >= 0 ? "+" : ""}{formatCurrency(balance, currency)}
-          </p>
-        </div>
-      </div>
 
       {/* ── Budget Tracker ── */}
-      <div>
+      <div className="space-y-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">Budget Tracker</h3>
           <div className="flex items-center gap-2">
@@ -462,22 +546,122 @@ export default function TransactionsPage() {
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> AI Budget Profiler
             </button>
-            <button className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors px-2 py-1.5">
-              <Filter className="h-4 w-4" /> Set Budgets
+            <button 
+              onClick={() => setShowCustomBudgetModal(true)}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5 text-violet-400" /> Add Budget
             </button>
+            {hasCustomBudget && (
+              <button 
+                onClick={() => {
+                  localStorage.removeItem("finora_has_custom_budget");
+                  setHasCustomBudget(false);
+                }}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors"
+              >
+                <X className="h-3.5 w-3.5 text-red-400" /> Reset Custom
+              </button>
+            )}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {budgetCategories.map(cat => (
-            <BudgetCard
-              key={cat.name}
-              cat={cat}
-              spent={spentByBudgetCat[cat.name] ?? 0}
-              currency={currency}
-              onEditBudget={handleEditBudget}
-            />
-          ))}
-        </div>
+
+        {hasCustomBudget ? (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Topmost Salary, Needs & Remaining summary */}
+            <div className="bg-[#0f172a]/75 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-md">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[40px] rounded-full pointer-events-none"></div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
+                <div className="flex flex-col space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Salary Credited</span>
+                  <span className="text-2xl font-black text-emerald-400 font-mono">{formatCurrency(salaryCredited, currency)}</span>
+                </div>
+                <div className="flex flex-col space-y-1 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Needs Deducted</span>
+                  <span className="text-2xl font-black text-red-400 font-mono">-{formatCurrency(needsDeducted, currency)}</span>
+                </div>
+                <div className="flex flex-col space-y-1 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Remaining Salary</span>
+                  <span className={cn("text-2xl font-black font-mono", remainingSalary >= 0 ? "text-emerald-400" : "text-red-400")}>
+                    {formatCurrency(remainingSalary, currency)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Clickable section tabs toggle */}
+            <div className="flex bg-[#0f172a]/85 p-1.5 rounded-2xl border border-white/5 w-fit gap-1 shadow-inner backdrop-blur-md">
+              <button
+                onClick={() => setCustomBudgetTab("needs")}
+                className={cn(
+                  "px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2 relative",
+                  customBudgetTab === "needs"
+                    ? "bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold shadow-md"
+                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                )}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                Essential Needs
+              </button>
+              <button
+                onClick={() => setCustomBudgetTab("wants")}
+                className={cn(
+                  "px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2 relative",
+                  customBudgetTab === "wants"
+                    ? "bg-orange-600/20 border border-orange-500/30 text-orange-300 font-semibold shadow-md"
+                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                )}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                Flexible Wants
+              </button>
+            </div>
+
+            {/* Selected category budget rings display */}
+            {customBudgetTab === "needs" ? (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {customNeeds.map(cat => (
+                    <BudgetCard
+                      key={cat.name}
+                      cat={cat}
+                      spent={spentByCustomNeeds[cat.name] ?? 0}
+                      currency={currency}
+                      onEditBudget={handleEditBudget}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {customWants.map(cat => (
+                    <BudgetCard
+                      key={cat.name}
+                      cat={cat}
+                      spent={spentByCustomWants[cat.name] ?? 0}
+                      currency={currency}
+                      onEditBudget={handleEditBudget}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {budgetCategories.map(cat => (
+              <BudgetCard
+                key={cat.name}
+                cat={cat}
+                spent={spentByBudgetCat[cat.name] ?? 0}
+                currency={currency}
+                onEditBudget={handleEditBudget}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── AI Insights ── */}
@@ -604,9 +788,208 @@ export default function TransactionsPage() {
       {showAiModal && (
         <AiBudgetModal
           onClose={() => setShowAiModal(false)}
-          onBudgetSet={(budgets) => setBudgetCategories(budgets)}
+          currentSalary={customSalary}
+          currentNeeds={customNeeds}
+          currentWants={customWants}
+          onSave={(sal, nds, wnts) => {
+            setCustomSalary(sal);
+            setCustomNeeds(nds);
+            setCustomWants(wnts);
+            setHasCustomBudget(true);
+            localStorage.setItem("finora_custom_salary", sal.toString());
+            localStorage.setItem("finora_custom_needs", JSON.stringify(nds));
+            localStorage.setItem("finora_custom_wants", JSON.stringify(wnts));
+            localStorage.setItem("finora_has_custom_budget", "true");
+            setShowAiModal(false);
+          }}
         />
       )}
+
+      {showCustomBudgetModal && (
+        <CustomBudgetModal
+          onClose={() => setShowCustomBudgetModal(false)}
+          currentSalary={customSalary}
+          currentNeeds={customNeeds}
+          currentWants={customWants}
+          onSave={(sal, nds, wnts) => {
+            setCustomSalary(sal);
+            setCustomNeeds(nds);
+            setCustomWants(wnts);
+            setHasCustomBudget(true);
+            localStorage.setItem("finora_custom_salary", sal.toString());
+            localStorage.setItem("finora_custom_needs", JSON.stringify(nds));
+            localStorage.setItem("finora_custom_wants", JSON.stringify(wnts));
+            localStorage.setItem("finora_has_custom_budget", "true");
+            setShowCustomBudgetModal(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Custom Budget Modal Questionnaire ─────────────────────────────────────────
+interface CustomBudgetModalProps {
+  onClose: () => void;
+  currentSalary: number;
+  currentNeeds: BudgetCategory[];
+  currentWants: BudgetCategory[];
+  onSave: (salary: number, needs: BudgetCategory[], wants: BudgetCategory[]) => void;
+}
+
+function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants, onSave }: CustomBudgetModalProps) {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [salaryInput, setSalaryInput] = useState(currentSalary.toString());
+  const [needsList, setNeedsList] = useState<BudgetCategory[]>(currentNeeds);
+  const [wantsList, setWantsList] = useState<BudgetCategory[]>(currentWants);
+
+  const handleNeedChange = (index: number, val: string) => {
+    const updated = [...needsList];
+    updated[index] = { ...updated[index], budget: Number(val) || 0 };
+    setNeedsList(updated);
+  };
+
+  const handleWantChange = (index: number, val: string) => {
+    const updated = [...wantsList];
+    updated[index] = { ...updated[index], budget: Number(val) || 0 };
+    setWantsList(updated);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={onClose}>
+      <div 
+        className="bg-[#0f172a] w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-5 border-b border-white/10 bg-[#1e293b]/50">
+          <div>
+            <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+              <BrainCircuit className="h-5 w-5 text-violet-400" /> Budget Setup
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 font-semibold">
+              {step === 1 ? "Step 1: Set Income" : step === 2 ? "Step 2: Commit Needs" : "Step 3: Setup Wants"}
+            </p>
+          </div>
+          <button onClick={onClose}><X className="h-5 w-5 text-slate-400 hover:text-white" /></button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">What is your Monthly Income / Salary?</h4>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  We use this baseline to track your automatic committed needs deductions and determine remaining flexible budgets.
+                </p>
+                <div className="relative">
+                  <span className="absolute left-4 top-3.5 text-slate-400 font-semibold text-lg">₹</span>
+                  <input
+                    type="number"
+                    className="w-full bg-[#1e293b] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-lg text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    placeholder="e.g. 50000"
+                    value={salaryInput}
+                    onChange={e => setSalaryInput(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setStep(2)}
+                className="w-full h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-violet-600/10"
+              >
+                Continue to Needs
+              </button>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">Configure Your Essential Needs</h4>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  Enter estimated monthly limits for essential costs. These are automatically deducted from your salary baseline.
+                </p>
+              </div>
+
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1.5 custom-scrollbar">
+                {needsList.map((need, idx) => (
+                  <div key={need.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
+                    <span className="text-sm font-semibold text-white">{need.name}</span>
+                    <div className="relative w-32">
+                      <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                        value={need.budget}
+                        onChange={e => handleNeedChange(idx, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setStep(1)}
+                  className="flex-1 h-12 border border-white/10 text-slate-300 hover:bg-white/5 rounded-xl font-semibold transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setStep(3)}
+                  className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-violet-600/10"
+                >
+                  Continue to Wants
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">Configure Your Flexible Wants</h4>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  Setup limits for shopping, travel, or dining budgets. These represent flexible lifestyle caps.
+                </p>
+              </div>
+
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1.5 custom-scrollbar">
+                {wantsList.map((want, idx) => (
+                  <div key={want.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
+                    <span className="text-sm font-semibold text-white">{want.name}</span>
+                    <div className="relative w-32">
+                      <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                        value={want.budget}
+                        onChange={e => handleWantChange(idx, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setStep(2)}
+                  className="flex-1 h-12 border border-white/10 text-slate-300 hover:bg-white/5 rounded-xl font-semibold transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => onSave(Number(salaryInput) || 50000, needsList, wantsList)}
+                  className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/15"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Save Budget Splits
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
