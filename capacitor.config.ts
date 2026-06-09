@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   // During dev:  http://192.168.1.101:3000  (your PC's LAN IP)
   // Production:  https://finora.vercel.app   (deployed URL)
   server: {
-    url: "http://192.168.1.101:3000",
+    url: "http://192.168.1.6:3000",
     cleartext: true, // allow HTTP (not just HTTPS) for local dev
   },
   android: {

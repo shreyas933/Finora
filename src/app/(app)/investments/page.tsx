@@ -69,22 +69,22 @@ export default function InvestmentsPage() {
   const returnsPct = totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(1) : "0";
 
   return (
-    <div className="space-y-8 pb-8 text-white max-w-[1200px] mx-auto p-4 md:p-6 lg:p-8">
+    <div className="space-y-6 md:space-y-8 pb-8 text-white max-w-[1200px] mx-auto p-4 md:p-6 lg:p-8">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Investments</h1>
-          <p className="text-gray-400">Track your portfolio performance</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1 md:mb-2">Investments</h1>
+          <p className="text-gray-400 text-sm md:text-base">Track your portfolio performance</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto mt-2 sm:mt-0">
           <button 
             onClick={() => setShowAiUploadModal(true)}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
+            className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
           >
-            <Sparkles className="h-4 w-4 text-emerald-400" /> AI Statement Upload
+            <Sparkles className="h-4 w-4 text-emerald-400" /> AI Upload
           </button>
           <button
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold flex items-center gap-2 transition-colors"
+            className="flex-1 sm:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm md:text-base font-semibold flex items-center gap-2 transition-colors"
             onClick={() => setShowConnectModal(true)}
           >
             <Plus className="h-4 w-4" /> Add Investment

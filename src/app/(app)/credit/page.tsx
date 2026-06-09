@@ -700,7 +700,8 @@ function PaymentCalendarSection({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2">
+          <div className="overflow-x-auto pb-4 -mx-2 px-2 sm:mx-0 sm:px-0">
+            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 min-w-[320px]">
             {days.map(day => {
               const statementCards = statementDays[day] || [];
               const dueCards = dueDays[day] || [];
@@ -750,6 +751,7 @@ function PaymentCalendarSection({
                 </div>
               );
             })}
+          </div>
           </div>
 
           <div className="flex gap-4 text-xs font-semibold text-slate-400 justify-center flex-wrap pt-2">

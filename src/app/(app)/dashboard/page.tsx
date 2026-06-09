@@ -62,13 +62,13 @@ export default function DashboardPage() {
   const recentTransactions = transactions.slice(0, 5);
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-6 md:space-y-8 pb-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
-          <p className="text-muted-foreground">Here&apos;s a summary of your financial health.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Overview</h2>
+          <p className="text-muted-foreground text-sm md:text-base mt-1">Here&apos;s a summary of your financial health.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
           <button
             onClick={() => setShowSyncModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border"
@@ -112,20 +112,20 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-50/60 via-card to-emerald-50 border border-emerald-200/60 rounded-2xl p-8 shadow-level-1 flex flex-col md:flex-row items-start md:items-center justify-between"
+        className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-50/60 via-card to-emerald-50 border border-emerald-200/60 rounded-2xl p-6 md:p-8 shadow-level-1 flex flex-col md:flex-row items-start md:items-center justify-between"
       >
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/5 blur-3xl rounded-full"></div>
         <div className="relative z-10 max-w-xl">
-          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 block w-max mb-3">
+          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 block w-max mb-3 mt-2 md:mt-0">
             Daily CFO Pacer
           </span>
-          <h3 className="text-3xl font-bold text-foreground mb-2">Safe-To-Spend Today</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Safe-To-Spend Today</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
             Based on your rigid math boundaries and days left in the month, if you spend exactly this much today, you will flawlessly land on your budget goals. Zero guesswork.
           </p>
         </div>
-        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-end">
-          <div className="text-6xl font-mono font-bold text-emerald-600 tracking-tighter drop-shadow-sm">
+        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-emerald-200/40 pt-4 md:pt-0">
+          <div className="text-5xl md:text-6xl font-mono font-bold text-emerald-600 tracking-tighter drop-shadow-sm break-all">
             {formatCurrency(safeToSpend, currency)}
           </div>
           <p className="text-xs font-semibold text-emerald-600 mt-2 uppercase tracking-widest">Resets at midnight</p>

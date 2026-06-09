@@ -434,10 +434,10 @@ export default function TransactionsPage() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Transactions</h2>
           <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
           <input
             type="file"
             id="bill-image-upload"
@@ -495,7 +495,7 @@ export default function TransactionsPage() {
 
       {/* ── Add Transaction Form ── */}
       {showAddForm && (
-        <div className="grid sm:grid-cols-5 gap-3 bg-[#0f172a] border border-primary/30 rounded-xl p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 bg-[#0f172a] border border-primary/30 rounded-xl p-4">
           <input
             className="sm:col-span-2 bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary"
             placeholder="Description"
@@ -703,14 +703,14 @@ export default function TransactionsPage() {
                 const Icon = () => CATEGORY_ICONS[tx.category] ?? <Wallet className="h-4 w-4" />;
                 const tagClass = CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400";
                 return (
-                  <div key={tx.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors">
+                  <div key={tx.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02] transition-colors">
                     <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-[#1e293b] text-slate-300">
                       <Icon />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{tx.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={cn("text-xs px-2 py-0.5 rounded font-medium", tagClass)}>
+                      <p className="text-sm font-semibold text-white truncate pr-2">{tx.name}</p>
+                      <div className="flex items-center gap-2 mt-1 overflow-hidden">
+                        <span className={cn("text-[10px] md:text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap", tagClass)}>
                           {tx.category}
                         </span>
                         <span className="text-xs text-slate-500">
@@ -718,7 +718,7 @@ export default function TransactionsPage() {
                         </span>
                       </div>
                     </div>
-                    <div className={cn("text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-400" : "text-white")}>
+                    <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1 flex-shrink-0", tx.type === "income" ? "text-emerald-400" : "text-white")}>
                       {tx.type === "income" ? (
                         <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
                       ) : (

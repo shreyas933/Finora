@@ -1,11 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, Wallet, PieChart, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // If the app is running natively on a phone via Capacitor, skip the landing page
+    if (Capacitor.isNativePlatform()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   return (
     <div className="min-h-screen bg-[#F0F2F5] p-3 sm:p-6 font-sans">
       {/* ── Main White Container ── */}

@@ -67,9 +67,10 @@ export function Header() {
   const selectedCurrency = CURRENCIES.find(c => c.code === currency);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-card/85 px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
+    <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-card/85 px-4 md:px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
       <div className="flex items-center">
-        {/* Mobile menu toggle could go here */}
+        {/* Show FINORA branding on mobile (sidebar is hidden) */}
+        <h1 className="md:hidden text-xl font-bold tracking-tight text-primary">FINORA</h1>
       </div>
       <div className="flex items-center gap-4">
         

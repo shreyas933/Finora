@@ -162,7 +162,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
+    <div className="flex flex-col h-[calc(100dvh-13rem)] md:h-[calc(100vh-10rem)] max-w-4xl mx-auto">
       <div className="mb-4">
         <h2 className="text-3xl font-bold tracking-tight">AI CFO Assistant</h2>
         <p className="text-muted-foreground">

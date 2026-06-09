@@ -18,7 +18,7 @@ export default function AppLayout({
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden z-10">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-transparent relative z-10">
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 bg-transparent relative z-10">
             <OnboardingWrapper>
               {children}
             </OnboardingWrapper>
@@ -28,4 +28,5 @@ export default function AppLayout({
     </CurrencyProvider>
   );
 }
+
 
