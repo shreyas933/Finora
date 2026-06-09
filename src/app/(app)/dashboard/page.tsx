@@ -73,14 +73,14 @@ export default function DashboardPage() {
             onClick={() => setShowSyncModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border"
             style={{
-              background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))",
-              borderColor: "rgba(139,92,246,0.4)",
-              color: "#a78bfa",
+              background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.08))",
+              borderColor: "rgba(139,92,246,0.25)",
+              color: "#6d28d9",
             }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-400" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
             </span>
             Connect
           </button>
@@ -102,33 +102,33 @@ export default function DashboardPage() {
       {showSyncModal && <PaymentSyncModal onClose={() => setShowSyncModal(false)} />}
 
       {healthScore < 70 && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive-foreground flex items-center gap-3">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive" />
           <p className="text-sm font-medium">You might overspend by ₹12,000 this month based on your current trajectory. Consider reducing lifestyle expenses.</p>
         </motion.div>
       )}
 
       {/* Feature 1: Safe-To-Spend Pacer */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }} 
-        animate={{ opacity: 1, scale: 1 }} 
-        className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-900/40 via-[#0f172a] to-emerald-900/20 border border-emerald-500/30 rounded-2xl p-8 shadow-[0_0_40px_rgba(16,185,129,0.1)] flex flex-col md:flex-row items-start md:items-center justify-between"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-50/60 via-card to-emerald-50 border border-emerald-200/60 rounded-2xl p-8 shadow-level-1 flex flex-col md:flex-row items-start md:items-center justify-between"
       >
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full"></div>
-        <div className="relative z-10 z-10 max-w-xl">
-          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/20 block w-max mb-3">
-            Dialy CFO Pacer
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/5 blur-3xl rounded-full"></div>
+        <div className="relative z-10 max-w-xl">
+          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 block w-max mb-3">
+            Daily CFO Pacer
           </span>
-          <h3 className="text-3xl font-bold text-white mb-2">Safe-To-Spend Today</h3>
-          <p className="text-sm text-slate-300">
+          <h3 className="text-3xl font-bold text-foreground mb-2">Safe-To-Spend Today</h3>
+          <p className="text-sm text-muted-foreground">
             Based on your rigid math boundaries and days left in the month, if you spend exactly this much today, you will flawlessly land on your budget goals. Zero guesswork.
           </p>
         </div>
         <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-end">
-          <div className="text-6xl font-mono font-bold text-emerald-400 tracking-tighter drop-shadow-lg">
+          <div className="text-6xl font-mono font-bold text-emerald-600 tracking-tighter drop-shadow-sm">
             {formatCurrency(safeToSpend, currency)}
           </div>
-          <p className="text-xs font-semibold text-emerald-500 mt-2 uppercase tracking-widest">Resets at midnight</p>
+          <p className="text-xs font-semibold text-emerald-600 mt-2 uppercase tracking-widest">Resets at midnight</p>
         </div>
       </motion.div>
 
@@ -180,9 +180,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{healthScore.toFixed(0)} / 100</div>
             <div className="mt-2 h-2 w-full bg-secondary rounded-full overflow-hidden">
-              <div 
-                className={cn("h-full transition-all", healthScore > 70 ? "bg-emerald-500" : healthScore > 40 ? "bg-amber-500" : "bg-destructive")} 
-                style={{ width: `${healthScore}%` }} 
+              <div
+                className={cn("h-full transition-all", healthScore > 70 ? "bg-emerald-500" : healthScore > 40 ? "bg-amber-500" : "bg-destructive")}
+                style={{ width: `${healthScore}%` }}
               />
             </div>
           </CardContent>
@@ -202,31 +202,31 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="opacity-10" />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="currentColor" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
+                  <XAxis
+                    dataKey="date"
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
                     className="opacity-50"
                   />
-                  <YAxis 
-                    stroke="currentColor" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
+                  <YAxis
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={(value) => `₹${value / 1000}k`}
                     className="opacity-50"
                   />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
                     itemStyle={{ color: 'var(--color-foreground)' }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="balance" 
-                    stroke="var(--color-primary)" 
-                    strokeWidth={3} 
+                  <Line
+                    type="monotone"
+                    dataKey="balance"
+                    stroke="var(--color-primary)"
+                    strokeWidth={3}
                     dot={false}
                     activeDot={{ r: 6, fill: "var(--color-primary)" }}
                   />
@@ -235,7 +235,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="col-span-3 overflow-hidden flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>

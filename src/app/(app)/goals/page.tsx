@@ -20,14 +20,14 @@ export default function GoalsPage() {
 
   const handleAddGoal = () => {
     if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) return;
-    
+
     addGoal({
       name: newGoal.name,
       target_amount: Number(newGoal.targetAmount),
       current_amount: 0,
       target_date: newGoal.targetDate
     });
-    
+
     setNewGoal({ name: "", targetAmount: "", targetDate: "" });
     setIsAdding(false);
   };
@@ -53,15 +53,15 @@ export default function GoalsPage() {
             <div className="grid gap-4 sm:grid-cols-4 items-end">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Goal Name</label>
-                <Input placeholder="e.g. New Car" value={newGoal.name} onChange={e => setNewGoal({...newGoal, name: e.target.value})} />
+                <Input placeholder="e.g. New Car" value={newGoal.name} onChange={e => setNewGoal({ ...newGoal, name: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Target Amount ({currency})</label>
-                <Input type="number" placeholder="500000" value={newGoal.targetAmount} onChange={e => setNewGoal({...newGoal, targetAmount: e.target.value})} />
+                <Input type="number" placeholder="500000" value={newGoal.targetAmount} onChange={e => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Target Date</label>
-                <Input type="date" value={newGoal.targetDate} onChange={e => setNewGoal({...newGoal, targetDate: e.target.value})} />
+                <Input type="date" value={newGoal.targetDate} onChange={e => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
               </div>
               <Button onClick={handleAddGoal}>Save Goal</Button>
             </div>
@@ -75,26 +75,26 @@ export default function GoalsPage() {
           const monthsLeft = Math.max(1, differenceInMonths(new Date(goal.target_date), new Date()));
           const amountNeeded = goal.target_amount - goal.current_amount;
           const requiredMonthly = amountNeeded / monthsLeft;
-          
+
           const isOffTrack = requiredMonthly > monthlySavingsCapacity && amountNeeded > 0;
 
           return (
-            <Card key={goal.id} className={cn("relative overflow-hidden", isOffTrack ? "border-amber-500/50" : "")}>
+            <Card key={goal.id} className={cn("relative overflow-hidden", isOffTrack ? "border-amber-400" : "")}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <div className="p-2 bg-secondary rounded-lg text-foreground">
                     <Target className="h-5 w-5" />
                   </div>
                   {progress >= 100 ? (
-                    <span className="text-xs font-semibold text-emerald-500 flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded">
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3" /> Reached
                     </span>
                   ) : isOffTrack ? (
-                    <span className="text-xs font-semibold text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded">
+                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" /> Off Track
                     </span>
                   ) : (
-                    <span className="text-xs font-semibold text-emerald-500 flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded">
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
                       On Track
                     </span>
                   )}
@@ -112,9 +112,9 @@ export default function GoalsPage() {
                     <span className="font-medium">{progress.toFixed(1)}%</span>
                   </div>
                   <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                    <div 
-                      className={cn("h-full transition-all", progress >= 100 ? "bg-emerald-500" : "bg-primary")} 
-                      style={{ width: `${progress}%` }} 
+                    <div
+                      className={cn("h-full transition-all", progress >= 100 ? "bg-emerald-500" : "bg-primary")}
+                      style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>
@@ -127,13 +127,13 @@ export default function GoalsPage() {
                   {progress < 100 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">To save monthly</span>
-                      <span className={cn("font-medium", isOffTrack ? "text-amber-500" : "")}>{formatCurrency(requiredMonthly, currency)}</span>
+                      <span className={cn("font-medium", isOffTrack ? "text-amber-700 font-semibold" : "")}>{formatCurrency(requiredMonthly, currency)}</span>
                     </div>
                   )}
                 </div>
 
                 {isOffTrack && progress < 100 && (
-                  <div className="mt-4 p-3 rounded bg-amber-500/10 text-xs text-amber-500">
+                  <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200/50 text-xs text-amber-800">
                     Suggestion: You need to increase your savings rate from {savingsRate.toFixed(1)}% to {((requiredMonthly / monthlyIncome) * 100).toFixed(1)}% to hit this goal on time, or extend the deadline.
                   </div>
                 )}

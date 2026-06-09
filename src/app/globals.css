@@ -19,32 +19,34 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-  --font-sans: var(--font-geist-sans);
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+  --shadow-level-1: 0px 4px 12px rgba(15, 23, 42, 0.05);
+  --shadow-level-2: 0px 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 :root {
-  /* Dark mode palette - premium deep blue */
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --primary: #3b82f6;
+  /* Light mode palette - Modern Pro Finance */
+  --background: #f8f9ff;
+  --foreground: #0b1c30;
+  --card: #ffffff;
+  --card-foreground: #0b1c30;
+  --primary: #0f172a; /* Deep Navy #0F172A */
   --primary-foreground: #ffffff;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #ef4444;
+  --secondary: #eff4ff; /* surface-container-low */
+  --secondary-foreground: #0b1c30;
+  --muted: #eff4ff;
+  --muted-foreground: #64748b; /* Slate Grey #64748B */
+  --accent: #e5eeff; /* surface-container */
+  --accent-foreground: #0b1c30;
+  --destructive: #ba1a1a;
   --destructive-foreground: #ffffff;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #3b82f6;
-  --radius: 0.75rem;
+  --border: #e2e8f0; /* Level 1 card border #E2E8F0 */
+  --input: #ffffff;
+  --ring: #0f172a;
+  --radius: 0.75rem; /* 12px corners */
 }
 
 body {
@@ -53,10 +55,18 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
+.tabular-nums,
+td,
+.amount,
+.balance,
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Base custom utility styles for modern look */
 @layer utilities {
   .glass {
-    @apply bg-card/40 backdrop-blur-xl border border-white/10;
+    @apply bg-card/40 backdrop-blur-xl border border-border/10;
   }
 }
 

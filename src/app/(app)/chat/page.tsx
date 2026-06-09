@@ -22,7 +22,7 @@ export default function ChatPage() {
     // Safely load local storage data
     const budgetsRaw = localStorage.getItem("finora_budgets");
     const cardsRaw = localStorage.getItem("finora_credit_cards");
-    
+
     const budgets = budgetsRaw ? JSON.parse(budgetsRaw) : [];
     const cards = cardsRaw ? JSON.parse(cardsRaw) : [];
 
@@ -49,7 +49,7 @@ export default function ChatPage() {
     const safeToSpendVal = Math.round(remaining / daysLeft);
 
     // Format top 5 recent transactions
-    const recentTx = transactions.slice(0, 5).map(t => 
+    const recentTx = transactions.slice(0, 5).map(t =>
       `${t.date}: ${t.name} - ${formatCurrency(t.amount)} (${t.category})`
     ).join("\n      ");
 
@@ -170,18 +170,18 @@ export default function ChatPage() {
         </p>
       </div>
 
-      <Card className="flex-1 flex flex-col overflow-hidden border-primary/20">
-        <CardHeader className="bg-muted/50 py-3 border-b">
+      <Card className="flex-1 flex flex-col overflow-hidden border-border shadow-level-1">
+        <CardHeader className="bg-secondary/30 py-3 border-b border-border">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Bot className="h-4 w-4 text-primary" /> Active Session
+            <Bot className="h-4 w-4 text-foreground" /> Active Session
             <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground font-normal">
-              <Sparkles className="h-3 w-3 text-primary" /> Powered by Gemini AI
+              <Sparkles className="h-3 w-3 text-violet-600 animate-pulse" /> Powered by Gemini AI
             </span>
           </CardTitle>
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-secondary/15">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -192,10 +192,10 @@ export default function ChatPage() {
               >
                 <div
                   className={cn(
-                    "flex shrink-0 h-8 w-8 items-center justify-center rounded-full",
+                    "flex shrink-0 h-8 w-8 items-center justify-center rounded-full border border-border shadow-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
+                      : "bg-card text-foreground"
                   )}
                 >
                   {message.role === "user" ? (
@@ -206,10 +206,10 @@ export default function ChatPage() {
                 </div>
                 <div
                   className={cn(
-                    "flex flex-col rounded-lg p-3 text-sm",
+                    "flex flex-col rounded-lg p-3 text-sm shadow-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      : "bg-card border border-border text-foreground"
                   )}
                 >
                   {message.content ? (
@@ -228,7 +228,7 @@ export default function ChatPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 bg-background border-t">
+          <div className="p-4 bg-card border-t border-border">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
                 value={input}

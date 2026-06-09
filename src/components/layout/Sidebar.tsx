@@ -19,7 +19,7 @@ const routes = [
   { label: "Transactions", icon: Receipt, href: "/transactions" },
   { label: "Goals", icon: Target, href: "/goals" },
   { label: "Investments", icon: LineChart, href: "/investments" },
-  { label: "Credit Score", icon: CreditCard, href: "/credit" },
+  { label: "Credit Cards", icon: CreditCard, href: "/credit" },
   // { label: "Tax AI", icon: Calculator, href: "/tax" }, /* Kept in memory: uncomment to restore exactly as before */
   { label: "AI CFO Chat", icon: MessageSquare, href: "/chat" },
 ];
@@ -28,7 +28,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-64 flex-col bg-[#0a0f18]/60 backdrop-blur-3xl border-r border-white/5 relative z-20 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+    <div className="flex h-full w-64 flex-col bg-card border-r border-border relative z-20 shadow-level-1">
       <div className="flex h-16 items-center px-6">
         <h1 className="text-2xl font-bold tracking-tight text-primary">FINORA</h1>
       </div>

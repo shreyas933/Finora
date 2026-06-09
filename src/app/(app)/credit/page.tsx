@@ -85,13 +85,13 @@ const DEFAULT_BENEFITS: BenefitScenario[] = [
 
 // ─── Card color themes ────────────────────────────────────────────────────────
 const CARD_COLORS: Record<CardColor, { bg: string; text: string; shadow: string }> = {
-  purple:   { bg: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)", text: "#fff", shadow: "0 8px 32px rgba(124,58,237,0.35)" },
-  blue:     { bg: "linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%)", text: "#fff", shadow: "0 8px 32px rgba(14,165,233,0.35)" },
-  gold:     { bg: "linear-gradient(135deg, #92400e 0%, #d97706 100%)", text: "#fff", shadow: "0 8px 32px rgba(217,119,6,0.35)" },
+  purple: { bg: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)", text: "#fff", shadow: "0 8px 32px rgba(124,58,237,0.35)" },
+  blue: { bg: "linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%)", text: "#fff", shadow: "0 8px 32px rgba(14,165,233,0.35)" },
+  gold: { bg: "linear-gradient(135deg, #92400e 0%, #d97706 100%)", text: "#fff", shadow: "0 8px 32px rgba(217,119,6,0.35)" },
   graphite: { bg: "linear-gradient(135deg, #1e293b 0%, #475569 100%)", text: "#fff", shadow: "0 8px 32px rgba(71,85,105,0.35)" },
-  green:    { bg: "linear-gradient(135deg, #065f46 0%, #10b981 100%)", text: "#fff", shadow: "0 8px 32px rgba(16,185,129,0.35)" },
-  teal:     { bg: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)", text: "#fff", shadow: "0 8px 32px rgba(20,184,166,0.35)" },
-  orange:   { bg: "linear-gradient(135deg, #c2410c 0%, #f97316 100%)", text: "#fff", shadow: "0 8px 32px rgba(249,115,22,0.35)" },
+  green: { bg: "linear-gradient(135deg, #065f46 0%, #10b981 100%)", text: "#fff", shadow: "0 8px 32px rgba(16,185,129,0.35)" },
+  teal: { bg: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)", text: "#fff", shadow: "0 8px 32px rgba(20,184,166,0.35)" },
+  orange: { bg: "linear-gradient(135deg, #c2410c 0%, #f97316 100%)", text: "#fff", shadow: "0 8px 32px rgba(249,115,22,0.35)" },
 };
 
 const TAG_COLORS: Record<string, string> = {
@@ -216,11 +216,11 @@ function findOptimalWalletItemForCategory(category: string, items: WalletItem[])
   if (items.length === 0) return null;
   const tip = CATEGORY_TIPS[category] ?? DEFAULT_TIP;
   const idealPerk = tip.idealPerk.toLowerCase();
-  
+
   // 1. Search credit cards with matching perks first (max rewards)
   const matchCredit = items.find(i => i.type === "credit" && i.perks.some(p => p.toLowerCase().includes(idealPerk)));
   if (matchCredit) return matchCredit;
-  
+
   // 2. Search debit cards with matching perks
   const matchDebit = items.find(i => i.type === "debit" && i.perks.some(p => p.toLowerCase().includes(idealPerk)));
   if (matchDebit) return matchDebit;
@@ -228,7 +228,7 @@ function findOptimalWalletItemForCategory(category: string, items: WalletItem[])
   // 3. Default to first credit card
   const firstCredit = items.find(i => i.type === "credit");
   if (firstCredit) return firstCredit;
-  
+
   // 4. Fallback to first debit or anything else available
   const firstDebit = items.find(i => i.type === "debit");
   if (firstDebit) return firstDebit;
@@ -265,7 +265,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
   topCategories.forEach(([category]) => {
     const tip = CATEGORY_TIPS[category] ?? DEFAULT_TIP;
     const idealPerk = tip.idealPerk.toLowerCase();
-    const hasPerkMatch = items.some(item => 
+    const hasPerkMatch = items.some(item =>
       item.perks.some(p => p.toLowerCase().includes(idealPerk))
     );
     if (hasPerkMatch) matchedCategories++;
@@ -275,18 +275,18 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-5 rounded-2xl bg-slate-900/60 border border-emerald-500/20 backdrop-blur-xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-5 rounded-2xl bg-emerald-50/40 border border-emerald-200/60 shadow-sm">
         <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1">
           <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Card Efficiency</span>
-          <span className="text-3xl font-extrabold text-white flex items-center gap-1.5">
-            {efficiencyScore}% <span className="text-xs font-semibold text-emerald-400">Optimal</span>
+          <span className="text-3xl font-extrabold text-foreground flex items-center gap-1.5">
+            {efficiencyScore}% <span className="text-xs font-semibold text-emerald-600">Optimal</span>
           </span>
           <p className="text-xs text-muted-foreground">Rating how well you route spends to maximize perks.</p>
         </div>
-        
+
         <div className="flex justify-center items-center py-2">
-          <div className="w-full max-w-[200px] h-3 bg-slate-800 rounded-full overflow-hidden border border-white/5 relative">
-            <motion.div 
+          <div className="w-full max-w-[200px] h-3 bg-slate-100 rounded-full overflow-hidden border border-border relative">
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${efficiencyScore}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
@@ -297,7 +297,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
 
         <div className="text-center md:text-right">
           <span className="text-xs text-muted-foreground block font-medium">Estimated Monthly Spends</span>
-          <span className="text-2xl font-bold text-emerald-400">{formatCurrency(totalSpend)}</span>
+          <span className="text-2xl font-bold text-emerald-600">{formatCurrency(totalSpend)}</span>
           <span className="text-[10px] text-muted-foreground block">Mapped across {topCategories.length} main categories</span>
         </div>
       </div>
@@ -307,10 +307,10 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
           const tip = CATEGORY_TIPS[category] ?? DEFAULT_TIP;
           const Icon = tip.icon;
           const pct = totalSpend > 0 ? (amount / totalSpend) * 100 : 0;
-          
+
           const bestItem = findOptimalWalletItemForCategory(category, items);
           const hasIdealPerk = bestItem ? bestItem.perks.some(p => p.toLowerCase().includes(tip.idealPerk.toLowerCase())) : false;
-          
+
           const multiplier = parseFloat(tip.pointsMultiplier) || 1;
           const estimatedPoints = Math.round(amount * multiplier);
 
@@ -320,47 +320,46 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: i * 0.07 }}
-              className="spend-opt-row"
-              style={{ borderColor: `${tip.color}20` }}
+              className="spend-opt-row border border-border bg-card shadow-level-1 hover:shadow-level-2 rounded-xl p-4 flex justify-between items-center transition-all duration-200 mb-3"
             >
-              <div className="spend-opt-left">
-                <div className="spend-opt-icon" style={{ background: `${tip.color}18`, color: tip.color }}>
+              <div className="spend-opt-left flex items-center gap-3">
+                <div className="spend-opt-icon p-2 rounded-lg" style={{ background: `${tip.color}10`, color: tip.color }}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="spend-opt-info">
-                  <div className="spend-opt-top-row">
-                    <span className="spend-opt-label">{tip.label}</span>
+                  <div className="spend-opt-top-row flex items-center gap-2">
+                    <span className="spend-opt-label font-semibold text-sm text-foreground">{tip.label}</span>
                     {hasIdealPerk && (
-                      <span className="spend-opt-match-badge">
+                      <span className="spend-opt-match-badge text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                         <CheckCircle2 className="h-2.5 w-2.5" /> Best Route
                       </span>
                     )}
                   </div>
-                  <div className="spend-bar-track">
-                    <div className="spend-bar-fill" style={{ width: `${Math.min(100, pct)}%`, background: tip.color }} />
+                  <div className="spend-bar-track w-32 h-1.5 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                    <div className="spend-bar-fill h-full rounded-full" style={{ width: `${Math.min(100, pct)}%`, background: tip.color }} />
                   </div>
-                  <div className="spend-opt-platforms">
+                  <div className="spend-opt-platforms flex gap-1 mt-1.5">
                     {tip.platforms.slice(0, 3).map(p => (
-                      <span key={p} className="platform-chip">{p}</span>
+                      <span key={p} className="platform-chip text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground">{p}</span>
                     ))}
                   </div>
                 </div>
               </div>
 
               {bestItem ? (
-                <div className="spend-opt-right">
-                  <span className="spend-opt-amount">{formatCurrency(amount)}</span>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-xs px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/90 flex items-center gap-1">
+                <div className="spend-opt-right text-right">
+                  <span className="spend-opt-amount font-bold text-foreground text-sm">{formatCurrency(amount)}</span>
+                  <div className="flex items-center justify-end gap-1.5 mt-1">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-secondary border border-border text-foreground flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full" style={{ background: CARD_COLORS[bestItem.color].bg }} />
                       {bestItem.name}
                     </span>
                   </div>
-                  <div className="spend-opt-points mt-1">
-                    <span className="points-multiplier" style={{ color: tip.color }}>{tip.pointsMultiplier}</span>
-                    <span className="points-label">≈ {estimatedPoints.toLocaleString("en-IN")} pts</span>
+                  <div className="spend-opt-points mt-1 flex justify-end gap-1 items-center">
+                    <span className="points-multiplier text-xs font-semibold" style={{ color: tip.color }}>{tip.pointsMultiplier}</span>
+                    <span className="points-label text-xs text-muted-foreground">≈ {estimatedPoints.toLocaleString("en-IN")} pts</span>
                   </div>
-                  <span className="spend-opt-perk font-medium text-[10px]" style={{ color: tip.color }}>
+                  <span className="spend-opt-perk font-medium text-[10px] block mt-0.5" style={{ color: tip.color }}>
                     {hasIdealPerk ? `Unlocks: ${tip.perk}` : "Unlocks standard rewards"}
                   </span>
                 </div>
@@ -374,9 +373,9 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
         })}
       </div>
 
-      <div className="spend-opt-footer bg-slate-900/40 border border-slate-800">
-        <TrendingUp className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-normal">
+      <div className="spend-opt-footer bg-emerald-50 text-emerald-800 border border-emerald-200/50 p-4 rounded-xl flex items-start gap-2.5">
+        <TrendingUp className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+        <p className="text-xs leading-normal">
           <strong>Maximize Rewards Tip:</strong> Routing these top spending categories correctly can earn you up to <strong>{Math.round(totalSpend * 3).toLocaleString("en-IN")}</strong> extra reward points every billing cycle. Keep utilization low by clearing the credit outstanding immediately using bank balances!
         </p>
       </div>
@@ -507,12 +506,12 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
         <AnimatePresence mode="wait">
           {step === 1 ? (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="modal-body">
-              <label className="form-label font-semibold text-white/90">What card type would you like to add?</label>
-              
+              <label className="form-label font-semibold text-foreground">What card type would you like to add?</label>
+
               <div className="grid grid-cols-2 gap-4">
                 <button
-                  className={cn("p-6 rounded-xl border flex flex-col items-center justify-center gap-3 cursor-pointer transition-all", 
-                    form.type === "credit" ? "border-primary bg-primary/10 text-white" : "border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
+                  className={cn("p-6 rounded-xl border flex flex-col items-center justify-center gap-3 cursor-pointer transition-all",
+                    form.type === "credit" ? "border-primary bg-primary/5 text-primary" : "border-border bg-background text-muted-foreground hover:bg-secondary/40"
                   )}
                   onClick={() => handle("type", "credit")}
                 >
@@ -521,8 +520,8 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
                 </button>
 
                 <button
-                  className={cn("p-6 rounded-xl border flex flex-col items-center justify-center gap-3 cursor-pointer transition-all", 
-                    form.type === "debit" ? "border-primary bg-primary/10 text-white" : "border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
+                  className={cn("p-6 rounded-xl border flex flex-col items-center justify-center gap-3 cursor-pointer transition-all",
+                    form.type === "debit" ? "border-primary bg-primary/5 text-primary" : "border-border bg-background text-muted-foreground hover:bg-secondary/40"
                   )}
                   onClick={() => handle("type", "debit")}
                 >
@@ -555,11 +554,11 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
 
               <div className="form-group">
                 <label className="form-label">Last 4 Digits *</label>
-                <Input 
-                  placeholder="1234" 
-                  maxLength={4} 
-                  value={form.number} 
-                  onChange={e => handle("number", e.target.value.replace(/\D/g, ""))} 
+                <Input
+                  placeholder="1234"
+                  maxLength={4}
+                  value={form.number}
+                  onChange={e => handle("number", e.target.value.replace(/\D/g, ""))}
                 />
               </div>
 
@@ -645,252 +644,6 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
   );
 }
 
-
-// ─── Payment Calendar Sub-component ──────────────────────────────────────────
-interface PaymentCalendarSectionProps {
-  items: WalletItem[];
-  loggedPayments: Record<string, boolean>;
-  togglePayment: (id: string) => void;
-  formatCurrency: (val: number) => string;
-  monthlyExpenses: number;
-  totalLimit: number;
-  computedUtil: number;
-}
-
-function PaymentCalendarSection({ 
-  items, 
-  loggedPayments, 
-  togglePayment, 
-  formatCurrency, 
-  monthlyExpenses, 
-  totalLimit, 
-  computedUtil 
-}: PaymentCalendarSectionProps) {
-  const days = Array.from({ length: 30 }, (_, i) => i + 1);
-
-  const statementDays: Record<number, WalletItem[]> = {};
-  const dueDays: Record<number, WalletItem[]> = {};
-
-  const creditCards = items.filter(i => i.type === "credit");
-
-  creditCards.forEach(card => {
-    if (card.billingDate) {
-      const bDay = Number(card.billingDate);
-      if (!isNaN(bDay) && bDay >= 1 && bDay <= 30) {
-        if (!statementDays[bDay]) statementDays[bDay] = [];
-        statementDays[bDay].push(card);
-
-        const dDay = ((bDay + 20 - 1) % 30) + 1;
-        if (!dueDays[dDay]) dueDays[dDay] = [];
-        dueDays[dDay].push(card);
-      }
-    }
-  });
-
-  return (
-    <div className="space-y-8">
-      {/* 30-Day Calendar Grid */}
-      <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-emerald-400" /> Payment & Statement Calendar
-          </CardTitle>
-          <CardDescription>
-            Highlighted calendar dates for statements (S) and payment due dates (D) for your credit cards.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2">
-            {days.map(day => {
-              const statementCards = statementDays[day] || [];
-              const dueCards = dueDays[day] || [];
-              const hasEvent = statementCards.length > 0 || dueCards.length > 0;
-
-              return (
-                <div 
-                  key={day} 
-                  className={cn(
-                    "flex flex-col items-center justify-between p-2 rounded-xl border min-h-[70px] transition-all",
-                    hasEvent 
-                      ? "border-emerald-500/20 bg-[#0f172a]" 
-                      : "border-white/5 bg-slate-900/40"
-                  )}
-                >
-                  <span className="text-xs font-bold text-slate-400 self-start">{day}</span>
-                  
-                  <div className="w-full space-y-1 mt-1">
-                    {statementCards.map(c => (
-                      <div 
-                        key={c.id} 
-                        className="text-[9px] px-1.5 py-0.5 rounded text-white font-bold truncate text-center"
-                        style={{ background: CARD_COLORS[c.color].bg }}
-                        title={`${c.name} Statement Date`}
-                      >
-                        S: {c.name.split(" ")[0]}
-                      </div>
-                    ))}
-                    {dueCards.map(c => {
-                      const isPaid = loggedPayments[c.id];
-                      return (
-                        <div 
-                          key={c.id} 
-                          className={cn(
-                            "text-[9px] px-1.5 py-0.5 rounded font-bold truncate text-center border",
-                            isPaid 
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                              : "bg-red-500/10 border-red-500/30 text-red-400 animate-pulse"
-                          )}
-                          title={`${c.name} Payment Due`}
-                        >
-                          D: {c.name.split(" ")[0]}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="flex gap-4 text-xs font-semibold text-slate-400 justify-center flex-wrap pt-2">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-amber-500" />
-              <span>S = Statement Generation Date</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-red-500" />
-              <span>D = Payment Due Date</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Credit Cards Billing Details & Payment Log */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-card/60 backdrop-blur-xl border-white/5">
-          <CardHeader>
-            <CardTitle className="text-lg">Billing Schedules & Payment Tracker</CardTitle>
-            <CardDescription>Track monthly outstanding dues and check off payments.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {creditCards.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-4 text-center">No credit cards added to calculate schedules.</p>
-            ) : (
-              <div className="space-y-3">
-                {creditCards.map(card => {
-                  const isPaid = loggedPayments[card.id];
-                  const bDay = Number(card.billingDate) || 15;
-                  const dDay = ((bDay + 20 - 1) % 30) + 1;
-
-                  return (
-                    <div 
-                      key={card.id} 
-                      className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-slate-900/60"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TAG_COLORS[card.color] || "#8b5cf6" }} />
-                          <h4 className="text-xs font-bold text-white truncate">{card.name}</h4>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
-                            •••• {card.number}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-1 leading-normal">
-                          Statement: <strong className="text-white">{bDay}th</strong> • Due Date: <strong className="text-white">{dDay}th</strong>
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        {isPaid ? (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Paid
-                            </span>
-                            <button 
-                              onClick={() => togglePayment(card.id)} 
-                              className="text-[10px] text-slate-500 hover:text-slate-300 underline font-semibold ml-1.5 cursor-pointer"
-                            >
-                              Undo
-                            </button>
-                          </div>
-                        ) : (
-                          <Button 
-                            size="sm" 
-                            className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs py-1 px-3 h-8 rounded-lg cursor-pointer"
-                            onClick={() => togglePayment(card.id)}
-                          >
-                            Mark Paid
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Credit Utilization Card */}
-        <Card className="bg-card/60 backdrop-blur-xl border-white/5">
-          <CardHeader>
-            <CardTitle className="text-lg">Consolidated Credit Utilization</CardTitle>
-            <CardDescription>Your current revolving debt ratio against total credit limits.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-6 p-4 rounded-xl bg-slate-900/60 border border-white/5">
-              <div className="flex flex-col items-center sm:items-start gap-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Limit</span>
-                <span className="text-xl font-bold text-white font-mono">{formatCurrency(totalLimit)}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Current Utilization</span>
-                <span className="text-xl font-bold text-emerald-400 font-mono">
-                  {formatCurrency(monthlyExpenses)} ({computedUtil}%)
-                </span>
-              </div>
-
-              <div className="relative w-28 h-28 flex items-center justify-center">
-                <svg width="112" height="112" viewBox="0 0 112 112" className="transform -rotate-90">
-                  <circle cx="56" cy="56" r="46" stroke="#1e293b" strokeWidth="6" fill="none" />
-                  <circle 
-                    cx="56" cy="56" r="46" 
-                    stroke={computedUtil > 30 ? "#ef4444" : "#10b981"} 
-                    strokeWidth="8" fill="none"
-                    strokeDasharray="290"
-                    strokeDashoffset={290 - (290 * computedUtil) / 100}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-xl font-black text-white font-mono">{computedUtil}%</span>
-                  <span className={cn("text-[8px] font-black tracking-wider uppercase", computedUtil > 30 ? "text-red-400" : "text-emerald-400")}>
-                    {computedUtil > 30 ? "High Risk" : "Healthy"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs font-semibold">
-                <span className="text-slate-400">Bureau Target Ratio</span>
-                <span className="text-emerald-400">&lt; 30%</span>
-              </div>
-              <div className="h-2 bg-slate-800 rounded-full overflow-hidden border border-white/5">
-                <div 
-                  className={cn("h-full rounded-full transition-all duration-500", computedUtil > 30 ? "bg-red-500" : "bg-emerald-500")}
-                  style={{ width: `${computedUtil}%` }}
-                />
-              </div>
-              <p className="text-[10px] text-slate-400 leading-normal">
-                Keeping your revolving utilization below 30% acts as a critical signal to credit reporting bureaus, proving perfect repayment safety and boosting scores.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CreditPage() {
   const { monthlyIncome, monthlyExpenses, balance, transactions, goals } = useFinance();
@@ -898,19 +651,6 @@ export default function CreditPage() {
   const [utilization, setUtilization] = useState<string>("30");
   const [simulationActive, setSimulationActive] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  
-  // Segmented control tabs: "wallet", "score", "calendar"
-  const [activeSegment, setActiveSegment] = useState<"wallet" | "score" | "calendar">("wallet");
-
-  // Logged statement payments state
-  const [loggedPayments, setLoggedPayments] = useState<Record<string, boolean>>({});
-
-  const togglePayment = (cardId: string) => {
-    setLoggedPayments(prev => ({
-      ...prev,
-      [cardId]: !prev[cardId]
-    }));
-  };
 
   // Wallet states
   const [items, setItems] = useState<WalletItem[]>([]);
@@ -931,7 +671,7 @@ export default function CreditPage() {
         setItems(filtered);
         if (filtered.length > 0) setSelectedItem(filtered[0]);
         return;
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // Default Seed focusing purely on Credit and Debit Cards
@@ -973,24 +713,24 @@ export default function CreditPage() {
     .reduce((acc, i) => acc + Number(i.limit), 0);
 
   const isDynamicUtil = totalLimit > 0;
-  const computedUtil = isDynamicUtil 
+  const computedUtil = isDynamicUtil
     ? Math.min(100, Math.round((monthlyExpenses / totalLimit) * 100))
     : Number(utilization);
 
   let scoreCategory = "Poor";
   let scoreColor = "text-destructive";
   let scoreColorHex = "#ef4444";
-  if (scoreNum >= 750) { 
-    scoreCategory = "Excellent"; 
-    scoreColor = "text-emerald-500"; 
+  if (scoreNum >= 750) {
+    scoreCategory = "Excellent";
+    scoreColor = "text-emerald-500";
     scoreColorHex = "#10b981";
-  } else if (scoreNum >= 700) { 
-    scoreCategory = "Good"; 
-    scoreColor = "text-blue-500"; 
+  } else if (scoreNum >= 700) {
+    scoreCategory = "Good";
+    scoreColor = "text-blue-500";
     scoreColorHex = "#3b82f6";
-  } else if (scoreNum >= 650) { 
-    scoreCategory = "Fair"; 
-    scoreColor = "text-amber-500"; 
+  } else if (scoreNum >= 650) {
+    scoreCategory = "Fair";
+    scoreColor = "text-amber-500";
     scoreColorHex = "#f59e0b";
   }
 
@@ -1099,374 +839,315 @@ export default function CreditPage() {
         </Button>
       </div>
 
-      {/* Segmented Control Selector */}
-      <div className="flex bg-slate-900/80 p-1.5 rounded-2xl border border-white/5 w-full sm:w-fit gap-1 shadow-inner backdrop-blur-md">
-        <button
-          onClick={() => setActiveSegment("wallet")}
-          className={cn(
-            "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
-            activeSegment === "wallet"
-              ? "bg-violet-600/20 border border-violet-500/30 text-violet-300 font-semibold shadow-md"
-              : "text-slate-400 hover:text-slate-200 border border-transparent"
-          )}
-        >
-          <CreditCard className="h-4 w-4" />
-          Cards & Perks
-        </button>
-        <button
-          onClick={() => setActiveSegment("score")}
-          className={cn(
-            "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
-            activeSegment === "score"
-              ? "bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold shadow-md"
-              : "text-slate-400 hover:text-slate-200 border border-transparent"
-          )}
-        >
-          <TrendingUp className="h-4 w-4" />
-          Credit Score
-        </button>
-        <button
-          onClick={() => setActiveSegment("calendar")}
-          className={cn(
-            "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
-            activeSegment === "calendar"
-              ? "bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-semibold shadow-md"
-              : "text-slate-400 hover:text-slate-200 border border-transparent"
-          )}
-        >
-          <Coins className="h-4 w-4" />
-          Payment Calendar
-        </button>
-      </div>
-
-      {/* ── Tab 1: Cards & Perks ── */}
-      {activeSegment === "wallet" && (
-        <div className="space-y-8 animate-fadeIn">
-          {/* Wallet Cards Section */}
-          <div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Wallet className="h-5 w-5 text-primary" /> Wallet Cards
-              </h3>
-              
-              <div className="flex p-1 bg-slate-900 border border-slate-800 rounded-lg">
-                {(["all", "credit", "debit"] as const).map(tab => (
-                  <button
-                    key={tab}
-                    className={cn("px-3 py-1 text-xs font-semibold rounded-md capitalize transition cursor-pointer",
-                      filterTab === tab ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
-                    )}
-                    onClick={() => setFilterTab(tab)}
-                  >
-                    {tab === "all" ? "All Cards" : `${tab} Cards`}
-                  </button>
-                ))}
-              </div>
+      {/* ── Credit Score Radial Checker + Simulator ─────────────────────────── */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="lg:col-span-1 border-border shadow-level-1">
+          <CardHeader>
+            <CardTitle>Credit Profile</CardTitle>
+            <CardDescription>Configure score for personalized analysis.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Credit Score (300–850)</label>
+              <Input type="number" placeholder="720" value={currentScore}
+                onChange={e => { setCurrentScore(e.target.value); setSimulationActive(false); }}
+                min={300} max={850}
+              />
             </div>
 
-            {items.length === 0 ? (
-              <div className="empty-cards-state" onClick={() => setShowModal(true)}>
-                <div className="empty-cards-icon">
-                  <Wallet className="h-8 w-8 text-muted-foreground/50" />
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Credit Utilization (%) {isDynamicUtil && <span className="text-[10px] text-emerald-600 font-semibold">(Calculated)</span>}
+              </label>
+              <Input type="number" placeholder="30" value={computedUtil.toString()}
+                onChange={e => { setUtilization(e.target.value); setSimulationActive(false); }}
+                disabled={isDynamicUtil}
+                className={cn(isDynamicUtil && "bg-emerald-50/50 border-emerald-200 text-emerald-700 font-bold opacity-90 cursor-not-allowed")}
+              />
+              {isDynamicUtil && (
+                <span className="text-[10px] text-muted-foreground block leading-tight">
+                  Auto-calculated from total cards limit (₹{totalLimit.toLocaleString("en-IN")}) and monthly expenses (₹{monthlyExpenses.toLocaleString("en-IN")}).
+                </span>
+              )}
+            </div>
+
+            <div className="score-circle-container py-4 flex flex-col items-center justify-center relative">
+              <svg width="160" height="160" viewBox="0 0 160 160" className="h-40 w-40 transform -rotate-90 overflow-visible">
+                <circle cx="80" cy="80" r="70" stroke="var(--border)" strokeWidth="6" fill="transparent" />
+                <motion.circle
+                  cx="80" cy="80" r="70"
+                  stroke={scoreColorHex} strokeWidth="8" fill="transparent"
+                  strokeDasharray="440"
+                  initial={{ strokeDashoffset: 440 }}
+                  animate={{ strokeDashoffset: targetOffset }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-4xl font-extrabold text-foreground tracking-tight">{scoreNum}</span>
+                <span className={cn("text-[10px] font-bold mt-1 uppercase tracking-widest", scoreColor)}>{scoreCategory}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2 border-border shadow-level-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" /> Profile Simulator & Improvements
+            </CardTitle>
+            <CardDescription>Understand how payment actions and utilization boost your profile.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {computedUtil > 30 ? (
+              <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive flex gap-3">
+                <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-bold">High Card Utilization Detected</h4>
+                  <p className="text-xs mt-1">Your utilization of {computedUtil}% is above the recommended 30%. This flags credit bureaus of potential cash flow constraints and lowers your score.</p>
                 </div>
-                <p className="text-muted-foreground font-medium">Your card wallet is empty</p>
-                <p className="text-xs text-muted-foreground/70">Add your Credit Cards and Debit Cards to start optimizing transaction rewards.</p>
-                <Button variant="outline" size="sm" className="mt-3 gap-1.5 cursor-pointer">
-                  <Plus className="h-3.5 w-3.5" /> Set Up Wallet
-                </Button>
               </div>
             ) : (
-              <div className="cards-grid">
-                {filteredItems.map(item => (
-                  <WalletItemVisual 
-                    key={item.id} 
-                    item={item} 
-                    selected={selectedItem?.id === item.id} 
-                    onClick={() => setSelectedItem(item)}
-                    onDelete={deleteWalletItem}
-                  />
-                ))}
-                
-                <motion.div 
-                  whileHover={{ scale: 1.02 }} 
-                  whileTap={{ scale: 0.97 }} 
-                  onClick={() => setShowModal(true)} 
-                  className="add-card-slot cursor-pointer"
-                >
-                  <Plus className="h-6 w-6 text-muted-foreground/50" />
-                  <span className="text-xs text-muted-foreground/60 mt-1 font-semibold">Add Card</span>
-                </motion.div>
+              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-700 flex gap-3">
+                <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-bold">Healthy Card Utilization</h4>
+                  <p className="text-xs mt-1">Your card utilization is at {computedUtil}%. This pristine tier signals perfect cash flow stability to bureaus.</p>
+                </div>
               </div>
             )}
-          </div>
 
-          {/* Active Card Perks expander */}
-          {selectedItem && (
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <Card className="border-primary/15 bg-card/60 backdrop-blur-xl overflow-hidden">
-                <CardHeader 
-                  className="cursor-pointer select-none" 
-                  onClick={() => setIsPerksExpanded(!isPerksExpanded)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-violet-400" />
-                      <CardTitle>Where to use your {selectedItem.name}</CardTitle>
-                    </div>
-                    <motion.div
-                      animate={{ rotate: isPerksExpanded ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    </motion.div>
+            <Button onClick={() => setSimulationActive(true)} variant="outline" className="w-full cursor-pointer transition">
+              Simulate dropping utilization to 10%
+            </Button>
+
+            {simulationActive && computedUtil > 10 && (
+              <div className="p-6 rounded-xl border border-primary/20 bg-primary/5 space-y-4 animate-in fade-in zoom-in duration-300">
+                <h4 className="font-semibold text-lg text-primary text-center">Simulated Impact Summary</h4>
+                <div className="grid grid-cols-3 gap-4 text-center items-center">
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Current Score</span>
+                    <span className="text-2xl font-bold">{scoreNum}</span>
                   </div>
-                  <CardDescription className="mt-1">
-                    Points multiplier mappings &amp; premium benefits associated with this {selectedItem.type === "credit" ? "Credit Card" : "Debit Card"}.
-                  </CardDescription>
-                </CardHeader>
-                <AnimatePresence initial={false}>
-                  {isPerksExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                    >
-                      <CardContent className="border-t border-white/5 pt-6">
-                        <div className="benefits-grid">
-                          {benefits.map((b, i) => {
-                            const Icon = b.icon;
-                            const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
-                            return (
-                              <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.2, delay: i * 0.05 }}
-                                className="benefit-card"
-                                style={{ borderColor: `${color}22` }}
-                              >
-                                <div className="benefit-card-top">
-                                  <div className="benefit-icon-wrap" style={{ background: `${color}18`, color }}>
-                                    <Icon className="h-5 w-5" />
-                                  </div>
-                                  <span className="benefit-tag" style={{ background: `${color}20`, color }}>{b.tag}</span>
-                                </div>
-                                <h4 className="benefit-category">{b.category}</h4>
-                                <p className="benefit-desc">{b.description}</p>
-                                <div className="benefit-perk font-semibold">
-                                  <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color }} />
-                                  <span>{b.benefit}</span>
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-
-                        {selectedItem.type === "credit" && selectedItem.billingDate && (
-                          <div className="mt-4 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3">
-                            <AlertCircle className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
-                            <div>
-                              <h5 className="text-xs font-bold text-white uppercase tracking-wider">Statement Schedule</h5>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                This card's billing cycle closes on the <strong>{selectedItem.billingDate}th</strong> of the month. Clearing outstanding balances 3 days before safeguards utilization records sent to bureaus.
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedItem.type === "debit" && selectedItem.linkedAccount && (
-                          <div className="mt-4 p-4 rounded-xl border border-teal-500/20 bg-teal-500/5 flex items-start gap-3">
-                            <CheckCircle2 className="h-5 w-5 text-teal-400 shrink-0 mt-0.5" />
-                            <div>
-                              <h5 className="text-xs font-bold text-white uppercase tracking-wider">Debit Source Status</h5>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Linked to account <strong>{selectedItem.linkedAccount}</strong>. Transactions using this card will draw directly from liquid capital, ensuring zero interest charges and keeping utilization ratios clean.
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Efficiency Optimizer */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-            <Card className="border-emerald-500/15 bg-card/60 backdrop-blur-xl">
-              <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-emerald-400" />
-                    <CardTitle>Card Efficiency &amp; Max Rewards Analyzer</CardTitle>
+                  <div>
+                    <span className="text-primary font-bold">+{estimatedImprovement} pts</span>
+                    <hr className="border-t-2 border-primary/50 my-1 mx-4" />
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold uppercase tracking-wider">
-                    Dynamic Transaction Audit
-                  </span>
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Simulated Score</span>
+                    <span className="text-3xl font-extrabold text-emerald-600">{newEstimatedScore}</span>
+                  </div>
                 </div>
-                <CardDescription>
-                  Scans your real spending patterns to recommend exactly which card in your wallet yields the highest points waiver.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <WalletEfficiencyAnalyzer items={items} />
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          {items.length > 0 && !selectedItem && (
-            <div className="select-card-prompt text-muted-foreground">
-              <Wallet className="h-5 w-5 opacity-40" />
-              <p className="text-sm font-medium">Select a card above to view detailed perks, statement dates, and linked accounts.</p>
-            </div>
-          )}
-        </div>
-      )}
+                <div className="pt-4 border-t border-border space-y-3">
+                  <h5 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                    <Sparkles className="h-4 w-4 text-violet-600" />
+                    Actionable Improvement Plan (Based on your financial data):
+                  </h5>
+                  <ul className="space-y-2.5">
+                    {generatedInsights.map((insight, idx) => (
+                      <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2.5">
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
+                        <span>{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-      {/* ── Tab 2: Credit Score ── */}
-      {activeSegment === "score" && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-fadeIn">
-          {/* Radial score card */}
-          <Card className="lg:col-span-1 border-primary/20 bg-card/60 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle>Credit Profile</CardTitle>
-              <CardDescription>Configure score for personalized analysis.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Credit Score (300–850)</label>
-                <Input type="number" placeholder="720" value={currentScore}
-                  onChange={e => { setCurrentScore(e.target.value); setSimulationActive(false); }}
-                  min={300} max={850}
-                />
+                <p className="text-[10px] text-center text-muted-foreground/60 pt-2 pb-1 italic">
+                  *This simulator uses standard models. Actual score outputs are determined by credit bureaus based on consolidated files.
+                </p>
               </div>
-              
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Credit Utilization (%) {isDynamicUtil && <span className="text-[10px] text-emerald-400 font-semibold">(Calculated)</span>}
-                </label>
-                <Input type="number" placeholder="30" value={computedUtil.toString()}
-                  onChange={e => { setUtilization(e.target.value); setSimulationActive(false); }}
-                  disabled={isDynamicUtil}
-                  className={cn(isDynamicUtil && "bg-slate-900 border-emerald-500/30 text-emerald-400 font-bold opacity-90 cursor-not-allowed")}
-                />
-                {isDynamicUtil && (
-                  <span className="text-[10px] text-muted-foreground block leading-tight">
-                    Auto-calculated from total cards limit (₹{totalLimit.toLocaleString("en-IN")}) and monthly expenses (₹{monthlyExpenses.toLocaleString("en-IN")}).
-                  </span>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── My Wallet Slider & Grid ─────────────────────────────────────────── */}
+      <div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-primary" /> Wallet Cards
+          </h3>
+
+          <div className="flex p-1 bg-secondary border border-border rounded-lg">
+            {(["all", "credit", "debit"] as const).map(tab => (
+              <button
+                key={tab}
+                className={cn("px-3 py-1 text-xs font-semibold rounded-md capitalize transition cursor-pointer",
+                  filterTab === tab ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
                 )}
-              </div>
-
-              <div className="score-circle-container py-4 flex flex-col items-center justify-center relative">
-                <svg width="160" height="160" viewBox="0 0 160 160" className="h-40 w-40 transform -rotate-90 overflow-visible">
-                  <circle cx="80" cy="80" r="70" stroke="var(--border)" strokeWidth="6" fill="transparent" />
-                  <motion.circle 
-                    cx="80" cy="80" r="70" 
-                    stroke={scoreColorHex} strokeWidth="8" fill="transparent"
-                    strokeDasharray="440" 
-                    initial={{ strokeDashoffset: 440 }}
-                    animate={{ strokeDashoffset: targetOffset }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                    strokeLinecap="round" 
-                  />
-                </svg>
-                <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-4xl font-extrabold text-white tracking-tight">{scoreNum}</span>
-                  <span className={cn("text-[10px] font-bold mt-1 uppercase tracking-widest", scoreColor)}>{scoreCategory}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Simulator & improvements */}
-          <Card className="lg:col-span-2 bg-card/60 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" /> Profile Simulator & Improvements
-              </CardTitle>
-              <CardDescription>Understand how payment actions and utilization boost your profile.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {computedUtil > 30 ? (
-                <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive flex gap-3">
-                  <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
-                  <div>
-                    <h4 className="text-sm font-bold">High Card Utilization Detected</h4>
-                    <p className="text-xs mt-1">Your utilization of {computedUtil}% is above the recommended 30%. This flags credit bureaus of potential cash flow constraints and lowers your score.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 flex gap-3">
-                  <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0" />
-                  <div>
-                    <h4 className="text-sm font-bold">Healthy Card Utilization</h4>
-                    <p className="text-xs mt-1">Your card utilization is at {computedUtil}%. This pristine tier signals perfect cash flow stability to bureaus.</p>
-                  </div>
-                </div>
-              )}
-              
-              <Button onClick={() => setSimulationActive(true)} variant="outline" className="w-full cursor-pointer hover:bg-slate-800 transition">
-                Simulate dropping utilization to 10%
-              </Button>
-
-              {simulationActive && computedUtil > 10 && (
-                <div className="p-6 rounded-xl border border-primary/20 bg-primary/5 space-y-4 animate-in fade-in zoom-in duration-300">
-                  <h4 className="font-semibold text-lg text-primary text-center">Simulated Impact Summary</h4>
-                  <div className="grid grid-cols-3 gap-4 text-center items-center">
-                    <div>
-                      <span className="text-xs text-muted-foreground block">Current Score</span>
-                      <span className="text-2xl font-bold">{scoreNum}</span>
-                    </div>
-                    <div>
-                      <span className="text-primary font-bold">+{estimatedImprovement} pts</span>
-                      <hr className="border-t-2 border-primary/50 my-1 mx-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground block">Simulated Score</span>
-                      <span className="text-3xl font-extrabold text-emerald-500">{newEstimatedScore}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-border space-y-3">
-                    <h5 className="text-sm font-semibold flex items-center gap-2 text-white">
-                      <Sparkles className="h-4 w-4 text-violet-400" /> 
-                      Actionable Improvement Plan (Based on your financial data):
-                    </h5>
-                    <ul className="space-y-2.5">
-                      {generatedInsights.map((insight, idx) => (
-                        <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2.5">
-                          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
-                          <span>{insight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <p className="text-[10px] text-center text-muted-foreground/60 pt-2 pb-1 italic">
-                    *This simulator uses standard models. Actual score outputs are determined by credit bureaus based on consolidated files.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                onClick={() => setFilterTab(tab)}
+              >
+                {tab === "all" ? "All Cards" : `${tab} Cards`}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {items.length === 0 ? (
+          <div className="empty-cards-state" onClick={() => setShowModal(true)}>
+            <div className="empty-cards-icon">
+              <Wallet className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-muted-foreground font-medium">Your card wallet is empty</p>
+            <p className="text-xs text-muted-foreground/70">Add your Credit Cards and Debit Cards to start optimizing transaction rewards.</p>
+            <Button variant="outline" size="sm" className="mt-3 gap-1.5 cursor-pointer">
+              <Plus className="h-3.5 w-3.5" /> Set Up Wallet
+            </Button>
+          </div>
+        ) : (
+          <div className="cards-grid">
+            {filteredItems.map(item => (
+              <WalletItemVisual
+                key={item.id}
+                item={item}
+                selected={selectedItem?.id === item.id}
+                onClick={() => setSelectedItem(item)}
+                onDelete={deleteWalletItem}
+              />
+            ))}
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowModal(true)}
+              className="add-card-slot cursor-pointer bg-card hover:bg-secondary/20"
+            >
+              <Plus className="h-6 w-6 text-muted-foreground/50" />
+              <span className="text-xs text-muted-foreground/60 mt-1 font-semibold">Add Card</span>
+            </motion.div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Active Card Perks and Smart Suggestions ────────────────────────────── */}
+      {selectedItem && (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <Card className="border-border shadow-level-1 overflow-hidden">
+            <CardHeader
+              className="cursor-pointer select-none"
+              onClick={() => setIsPerksExpanded(!isPerksExpanded)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-violet-600" />
+                  <CardTitle>Where to use your {selectedItem.name}</CardTitle>
+                </div>
+                <motion.div
+                  animate={{ rotate: isPerksExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                </motion.div>
+              </div>
+              <CardDescription className="mt-1">
+                Points multiplier mappings &amp; premium benefits associated with this {selectedItem.type === "credit" ? "Credit Card" : "Debit Card"}.
+              </CardDescription>
+            </CardHeader>
+            <AnimatePresence initial={false}>
+              {isPerksExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <CardContent className="border-t border-border pt-6">
+                    <div className="benefits-grid">
+                      {benefits.map((b, i) => {
+                        const Icon = b.icon;
+                        const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2, delay: i * 0.05 }}
+                            className="benefit-card border border-border bg-card p-4 rounded-xl shadow-level-1 flex flex-col justify-between"
+                            style={{ borderColor: `${color}22` }}
+                          >
+                            <div>
+                              <div className="benefit-card-top flex justify-between items-center mb-3">
+                                <div className="benefit-icon-wrap p-2 rounded-lg" style={{ background: `${color}10`, color }}>
+                                  <Icon className="h-5 w-5" />
+                                </div>
+                                <span className="benefit-tag text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color }}>{b.tag}</span>
+                              </div>
+                              <h4 className="benefit-category font-bold text-sm text-foreground mb-1">{b.category}</h4>
+                              <p className="benefit-desc text-xs text-muted-foreground leading-relaxed">{b.description}</p>
+                            </div>
+                            <div className="benefit-perk font-semibold text-xs flex items-center gap-1.5 mt-3">
+                              <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+                              <span style={{ color }}>{b.benefit}</span>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {selectedItem.type === "credit" && selectedItem.billingDate && (
+                      <div className="mt-4 p-4 rounded-xl border border-blue-200 bg-blue-50 flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                        <div>
+                          <h5 className="text-xs font-bold text-blue-900 uppercase tracking-wider">Statement Schedule</h5>
+                          <p className="text-xs text-blue-800/80 mt-1">
+                            This card's billing cycle closes on the <strong>{selectedItem.billingDate}th</strong> of the month. Clearing outstanding balances 3 days before safeguards utilization records sent to bureaus.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedItem.type === "debit" && selectedItem.linkedAccount && (
+                      <div className="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50 flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                        <div>
+                          <h5 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">Debit Source Status</h5>
+                          <p className="text-xs text-emerald-900/80 mt-1">
+                            Linked to account <strong>{selectedItem.linkedAccount}</strong>. Transactions using this card will draw directly from liquid capital, ensuring zero interest charges and keeping utilization ratios clean.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+        </motion.div>
       )}
 
-      {/* ── Tab 3: Payment Calendar ── */}
-      {activeSegment === "calendar" && (
-        <div className="animate-fadeIn">
-          <PaymentCalendarSection 
-            items={items}
-            loggedPayments={loggedPayments}
-            togglePayment={togglePayment}
-            formatCurrency={formatCurrency}
-            monthlyExpenses={monthlyExpenses}
-            totalLimit={totalLimit}
-            computedUtil={computedUtil}
-          />
+
+
+      {/* ── Transaction-Based Card Efficiency Optimizer ───────────────────────────────── */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
+        <Card className="border-border shadow-level-1">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-emerald-600" />
+                <CardTitle>Card Efficiency &amp; Max Rewards Analyzer</CardTitle>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold uppercase tracking-wider">
+                Dynamic Transaction Audit
+              </span>
+            </div>
+            <CardDescription>
+              Scans your real spending patterns to recommend exactly which card in your wallet yields the highest points waiver.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WalletEfficiencyAnalyzer items={items} />
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Quick select prompt */}
+      {items.length > 0 && !selectedItem && (
+        <div className="select-card-prompt text-muted-foreground text-center py-4 flex items-center justify-center gap-2 border border-dashed border-border rounded-xl">
+          <Wallet className="h-5 w-5 opacity-40" />
+          <p className="text-sm font-medium">Select a card above to view detailed perks, statement dates, and linked accounts.</p>
         </div>
       )}
 

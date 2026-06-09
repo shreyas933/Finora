@@ -67,7 +67,7 @@ export function Header() {
   const selectedCurrency = CURRENCIES.find(c => c.code === currency);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-white/5 bg-[#0a0f18]/40 px-6 backdrop-blur-2xl z-20 sticky top-0 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+    <header className="flex h-16 items-center justify-between border-b border-border bg-card/85 px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
       <div className="flex items-center">
         {/* Mobile menu toggle could go here */}
       </div>
@@ -92,7 +92,7 @@ export function Header() {
                 <button
                   key={c.code}
                   onClick={() => { setCurrency(c.code); setShowCurrencyMenu(false); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/5 transition-colors text-left ${c.code === currency ? "text-primary font-semibold bg-primary/5" : "text-foreground"}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-secondary transition-colors text-left ${c.code === currency ? "text-primary font-semibold bg-primary/5" : "text-foreground"}`}
                 >
                   <span className="text-base w-6 text-center">{c.symbol}</span>
                   <div>
@@ -126,7 +126,7 @@ export function Header() {
             <div className="h-px bg-border my-1" />
             <button 
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+              className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-secondary flex items-center gap-2.5 transition-colors"
             >
               <LogOut className="h-4 w-4" /> Logout
             </button>
