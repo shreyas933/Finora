@@ -4,7 +4,7 @@ import { useFinance } from "@/context/FinanceContext";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, Download } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, Download, CreditCard, ChevronRight } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Link from "next/link";
 import { format, subDays, getDaysInMonth } from "date-fns";
@@ -12,24 +12,49 @@ import { motion } from "framer-motion";
 import { AIInsights } from "@/components/dashboard/AIInsights";
 import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
 import { useCurrency } from "@/context/CurrencyContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function DashboardPage() {
   const { balance, monthlyIncome, monthlyExpenses, healthScore, transactions } = useFinance();
   const { currency } = useCurrency();
   const [safeToSpend, setSafeToSpend] = useState<number>(0);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [walletCardsCount, setWalletCardsCount] = useState({ credit: 0, debit: 0 });
 
   useEffect(() => {
+    const saved = localStorage.getItem("finora_wallet_items");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const credit = parsed.filter((c: any) => c.type === "credit").length;
+        const debit = parsed.filter((c: any) => c.type === "debit").length;
+        setWalletCardsCount({ credit, debit });
+      } catch (e) {}
+    }
+  }, []);
+
+  useEffect(() => {
+    // If monthlyIncome is 0, safeToSpend should be 0
+    if (monthlyIncome <= 0) {
+      setSafeToSpend(0);
+      return;
+    }
+
     // Determine discretionary budget targets
     const saved = localStorage.getItem("finora_budgets");
     let target = 0;
     if (saved) {
       const parsed = JSON.parse(saved);
-      const discretionary = parsed.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings"].includes(b.name));
-      target = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget), 0);
+      const discretionary = parsed.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
+      const discretionaryTarget = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
+      
+      const fixed = parsed.filter((b: any) => ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
+      const fixedTarget = fixed.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
+      
+      const maxDiscretionary = Math.max(0, monthlyIncome - fixedTarget);
+      target = Math.min(discretionaryTarget, maxDiscretionary);
     } else {
-      target = (monthlyIncome * 0.3) > 0 ? (monthlyIncome * 0.3) : 5000;
+      target = monthlyIncome * 0.3;
     }
 
     // Tally current month discretionary spend
@@ -53,13 +78,55 @@ export default function DashboardPage() {
     setSafeToSpend(Math.round(remaining / daysLeft));
   }, [transactions, monthlyIncome]);
 
-  // Create some dummy chart data based on recent transactions or just mock trend
-  const chartData = Array.from({ length: 7 }).map((_, i) => ({
-    date: format(subDays(new Date(), 6 - i), "MMM dd"),
-    balance: balance - (6 - i) * 5000 + Math.random() * 10000,
-  }));
+  // Calculate balance trend based on actual transactions over the last 7 days
+  const chartData = useMemo(() => {
+    const dates = Array.from({ length: 7 }).map((_, i) => subDays(new Date(), 6 - i));
+    
+    return dates.map(date => {
+      const boundaryTime = new Date(date);
+      boundaryTime.setHours(23, 59, 59, 999);
+      
+      const dayBalance = transactions
+        .filter(t => new Date(t.date).getTime() <= boundaryTime.getTime())
+        .reduce((acc, t) => {
+          return t.type === "income" ? acc + t.amount : acc - t.amount;
+        }, 0);
+
+      return {
+        date: format(date, "MMM dd"),
+        balance: Math.round(dayBalance * 100) / 100,
+      };
+    });
+  }, [transactions]);
 
   const recentTransactions = transactions.slice(0, 5);
+
+  const totalOverspent = useMemo(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("finora_budgets") : null;
+    if (!saved) return 0;
+    try {
+      const parsed = JSON.parse(saved);
+      let overspent = 0;
+      parsed.forEach((b: any) => {
+        const spent = transactions
+          .filter(t => t.type === "expense" && (b.txCategories || []).some((cat: string) => t.category.toLowerCase().includes(cat.toLowerCase()) || t.name.toLowerCase().includes(cat.toLowerCase())))
+          .reduce((acc, t) => acc + t.amount, 0);
+        if (spent > b.budget) {
+          overspent += (spent - b.budget);
+        }
+      });
+      return overspent;
+    } catch {
+      return 0;
+    }
+  }, [transactions]);
+
+  const alertMessage = useMemo(() => {
+    if (totalOverspent > 0) {
+      return `You have exceeded your budget by ${formatCurrency(totalOverspent, currency)} this month. Consider reducing discretionary spending.`;
+    }
+    return `Your savings rate is lower than recommended this month. Consider reducing lifestyle expenses.`;
+  }, [totalOverspent, currency]);
 
   return (
     <div className="space-y-6 md:space-y-8 pb-8">
@@ -101,10 +168,10 @@ export default function DashboardPage() {
 
       {showSyncModal && <PaymentSyncModal onClose={() => setShowSyncModal(false)} />}
 
-      {healthScore < 70 && (
+      {healthScore < 70 && transactions.length > 0 && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive" />
-          <p className="text-sm font-medium">You might overspend by ₹12,000 this month based on your current trajectory. Consider reducing lifestyle expenses.</p>
+          <p className="text-sm font-medium">{alertMessage}</p>
         </motion.div>
       )}
 
@@ -132,7 +199,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
@@ -186,6 +253,23 @@ export default function DashboardPage() {
               />
             </div>
           </CardContent>
+        </Card>
+        <Card className="relative overflow-hidden hover:border-primary/30 transition-colors">
+          <Link href="/credit" className="block h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Credit Wallet</CardTitle>
+              <CreditCard className="h-4 w-4 text-violet-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold font-mono">
+                {walletCardsCount.credit} Credit / {walletCardsCount.debit} Debit
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
+                <span className="text-violet-400 font-semibold hover:underline">View Perks & Score</span>
+                <ChevronRight className="h-3.5 w-3.5 text-violet-400" />
+              </p>
+            </CardContent>
+          </Link>
         </Card>
       </div>
 

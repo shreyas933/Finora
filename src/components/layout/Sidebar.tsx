@@ -27,10 +27,11 @@ const routes = [
   { label: "AI CFO Chat", icon: MessageSquare, href: "/chat" },
 ];
 
-// Bottom nav shows a subset of routes (max 5 for mobile)
+// Bottom nav shows a subset of routes (max 6 for mobile)
 const mobileRoutes = [
   { label: "Home", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Txns", icon: Receipt, href: "/transactions" },
+  { label: "Cards", icon: CreditCard, href: "/credit" },
   { label: "Goals", icon: Target, href: "/goals" },
   { label: "Invest", icon: LineChart, href: "/investments" },
   { label: "Chat", icon: MessageSquare, href: "/chat" },

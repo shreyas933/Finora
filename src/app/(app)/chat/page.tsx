@@ -27,26 +27,35 @@ export default function ChatPage() {
     const cards = cardsRaw ? JSON.parse(cardsRaw) : [];
 
     // Tally current month discretionary safe to spend spendings
-    const discretionary = budgets.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
-    const target = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0) || (monthlyIncome * 0.3 || 5000);
+    let safeToSpendVal = 0;
+    if (monthlyIncome > 0) {
+      const discretionary = budgets.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
+      const discretionaryTarget = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
+      
+      const fixed = budgets.filter((b: any) => ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
+      const fixedTarget = fixed.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
+      
+      const maxDiscretionary = Math.max(0, monthlyIncome - fixedTarget);
+      const target = budgets.length > 0 ? Math.min(discretionaryTarget, maxDiscretionary) : (monthlyIncome * 0.3);
 
-    const currentMonth = new Date().getMonth();
-    let discretionarySpent = 0;
-    transactions.forEach(t => {
-      if (t.type === "expense") {
-        const txDate = new Date(t.date);
-        if (txDate.getMonth() === currentMonth) {
-          const isFixed = ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].some(k => t.category.includes(k));
-          if (!isFixed) discretionarySpent += t.amount;
+      const currentMonth = new Date().getMonth();
+      let discretionarySpent = 0;
+      transactions.forEach(t => {
+        if (t.type === "expense") {
+          const txDate = new Date(t.date);
+          if (txDate.getMonth() === currentMonth) {
+            const isFixed = ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].some(k => t.category.includes(k));
+            if (!isFixed) discretionarySpent += t.amount;
+          }
         }
-      }
-    });
+      });
 
-    const remaining = Math.max(0, target - discretionarySpent);
-    const now = new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
-    const safeToSpendVal = Math.round(remaining / daysLeft);
+      const remaining = Math.max(0, target - discretionarySpent);
+      const now = new Date();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
+      safeToSpendVal = Math.round(remaining / daysLeft);
+    }
 
     // Format top 5 recent transactions
     const recentTx = transactions.slice(0, 5).map(t =>

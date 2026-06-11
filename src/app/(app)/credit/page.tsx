@@ -966,6 +966,9 @@ export default function CreditPage() {
     setItems(defaultSeed);
     setSelectedItem(defaultSeed[0]);
     localStorage.setItem("finora_wallet_items", JSON.stringify(defaultSeed));
+    // Keep finora_credit_cards synced for AI Chat
+    const creditOnly = defaultSeed.filter(i => i.type === "credit");
+    localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
   }, []);
 
   const scoreNum = Number(currentScore);
@@ -1062,6 +1065,9 @@ export default function CreditPage() {
     setItems(prev => {
       const newItems = [...prev, item];
       localStorage.setItem("finora_wallet_items", JSON.stringify(newItems));
+      // Keep finora_credit_cards synced for AI Chat
+      const creditOnly = newItems.filter(i => i.type === "credit");
+      localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
       return newItems;
     });
     setSelectedItem(item);
@@ -1072,6 +1078,9 @@ export default function CreditPage() {
     setItems(prev => {
       const filtered = prev.filter(item => item.id !== id);
       localStorage.setItem("finora_wallet_items", JSON.stringify(filtered));
+      // Keep finora_credit_cards synced for AI Chat
+      const creditOnly = filtered.filter(i => i.type === "credit");
+      localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
       if (selectedItem?.id === id) {
         setSelectedItem(filtered.length > 0 ? filtered[0] : null);
       }

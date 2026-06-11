@@ -27,12 +27,12 @@ type BudgetCategory = {
 };
 
 const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { name: "Food & Dining",    budget: 1200, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
-  { name: "Shopping",         budget: 800,  color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle"] },
-  { name: "Entertainment",    budget: 400,  color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment"] },
-  { name: "Transportation",   budget: 300,  color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Transportation", "Transport"] },
-  { name: "Health",           budget: 500,  color: "#ef4444", ringColor: "#ef4444", txCategories: ["Health", "Healthcare", "Medical"] },
-  { name: "Travel",           budget: 2000, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel"] },
+  { name: "Food & Dining",    budget: 0, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
+  { name: "Shopping",         budget: 0, color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle"] },
+  { name: "Entertainment",    budget: 0, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment"] },
+  { name: "Transportation",   budget: 0, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Transportation", "Transport"] },
+  { name: "Health",           budget: 0, color: "#ef4444", ringColor: "#ef4444", txCategories: ["Health", "Healthcare", "Medical"] },
+  { name: "Travel",           budget: 0, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel"] },
 ];
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -162,6 +162,40 @@ export default function TransactionsPage() {
 
   const [scanning, setScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ text: string; isError?: boolean } | null>(null);
+
+  // Custom subscription states
+  const [customSubscriptions, setCustomSubscriptions] = useState<{ name: string; amount: number }[]>([]);
+  const [dismissedSubscriptions, setDismissedSubscriptions] = useState<string[]>([]);
+  const [showAddSubModal, setShowAddSubModal] = useState(false);
+  const [subName, setSubName] = useState("");
+  const [subAmount, setSubAmount] = useState("");
+
+  const handleAddSubscription = () => {
+    if (!subName.trim() || !subAmount.trim()) return;
+    const amountNum = Number(subAmount);
+    if (isNaN(amountNum) || amountNum <= 0) return;
+
+    const newSub = { name: subName.trim(), amount: amountNum };
+    const updated = [...customSubscriptions, newSub];
+    setCustomSubscriptions(updated);
+    localStorage.setItem("finora_custom_subscriptions", JSON.stringify(updated));
+
+    setSubName("");
+    setSubAmount("");
+    setShowAddSubModal(false);
+  };
+
+  const handleDeleteSubscription = (bill: { name: string; amount: number; isCustom: boolean }) => {
+    if (bill.isCustom) {
+      const updated = customSubscriptions.filter(s => s.name.toLowerCase() !== bill.name.toLowerCase());
+      setCustomSubscriptions(updated);
+      localStorage.setItem("finora_custom_subscriptions", JSON.stringify(updated));
+    } else {
+      const updated = [...dismissedSubscriptions, bill.name.toLowerCase()];
+      setDismissedSubscriptions(updated);
+      localStorage.setItem("finora_dismissed_subscriptions", JSON.stringify(updated));
+    }
+  };
 
   // Questionnaire Split Budget states
   const [showCustomBudgetModal, setShowCustomBudgetModal] = useState(false);
@@ -331,8 +365,20 @@ export default function TransactionsPage() {
       }
     };
 
+    const loadCustomSubscriptions = () => {
+      const savedSubs = localStorage.getItem("finora_custom_subscriptions");
+      if (savedSubs) {
+        try { setCustomSubscriptions(JSON.parse(savedSubs)); } catch (e) { console.error(e); }
+      }
+      const savedDismissed = localStorage.getItem("finora_dismissed_subscriptions");
+      if (savedDismissed) {
+        try { setDismissedSubscriptions(JSON.parse(savedDismissed)); } catch (e) { console.error(e); }
+      }
+    };
+
     loadBudgets();
     loadCustomBudgets();
+    loadCustomSubscriptions();
     window.addEventListener("finora_budget_update", loadBudgets);
     return () => window.removeEventListener("finora_budget_update", loadBudgets);
   }, []);
@@ -399,6 +445,8 @@ export default function TransactionsPage() {
       
       // Match against known subscription keywords deeply
       if (SUB_KEYWORDS.some(k => nm.includes(k))) {
+        // Exclude if the subscription name is dismissed
+        if (dismissedSubscriptions.some(ds => nm.toLowerCase() === ds.toLowerCase() || ds.toLowerCase().includes(nm) || nm.includes(ds.toLowerCase()))) return;
         if (!grouped[nm]) grouped[nm] = [];
         grouped[nm].push(e.amount);
       }
@@ -408,13 +456,24 @@ export default function TransactionsPage() {
     const recurring = Object.entries(grouped)
       .map(([name, amounts]) => ({
         name: name.charAt(0).toUpperCase() + name.slice(1) || "Unknown Provider",
-        amount: amounts[0] // Using their most recent charge
-      }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 4);
+        amount: amounts[0], // Using their most recent charge
+        isCustom: false
+      }));
 
-    return recurring;
-  }, [transactions]);
+    // Merge with custom subscriptions
+    const allBills = [...recurring];
+    customSubscriptions.forEach(cs => {
+      if (!allBills.some(b => b.name.toLowerCase() === cs.name.toLowerCase())) {
+        allBills.push({
+          name: cs.name,
+          amount: cs.amount,
+          isCustom: true
+        });
+      }
+    });
+
+    return allBills.sort((a, b) => b.amount - a.amount);
+  }, [transactions, customSubscriptions, dismissedSubscriptions]);
 
   const handleAddTransaction = () => {
     if (!newTx.name || !newTx.amount) return;
@@ -739,12 +798,18 @@ export default function TransactionsPage() {
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-white/5 pb-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               <div className="p-2 bg-violet-500/20 rounded-lg">
                 <RefreshCw className="h-5 w-5 text-violet-400" />
               </div>
               <h3 className="text-2xl font-bold text-white tracking-tight">Active Subscriptions</h3>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 tracking-wider border border-violet-500/20 uppercase">Valid AI Target</span>
+              <button
+                onClick={() => setShowAddSubModal(true)}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors ml-auto sm:ml-2"
+              >
+                <Plus className="h-3.5 w-3.5 text-violet-400" /> Add Subscription
+              </button>
             </div>
             <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
               Targeted digital vendor analysis. Expect these static charges against your ongoing balance. By strictly tracing exact entities like Netflix or Amazon, we eliminate noise and calculate true recurring outlays.
@@ -764,9 +829,21 @@ export default function TransactionsPage() {
         {upcomingBills.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
             {upcomingBills.map((bill, idx) => (
-              <div key={idx} className="bg-[#1e293b]/60 p-5 rounded-2xl border border-white/5 flex flex-col justify-between hover:bg-[#1e293b] transition-all hover:-translate-y-1 hover:shadow-xl hover:border-violet-500/30 group">
-                <span className="text-sm font-semibold text-slate-300 truncate mb-3 group-hover:text-white transition-colors">{bill.name}</span>
-                <span className="text-xl font-bold font-mono text-violet-300">{formatCurrency(bill.amount, currency)}</span>
+              <div key={idx} className="bg-[#1e293b]/60 p-5 rounded-2xl border border-white/5 flex flex-col justify-between hover:bg-[#1e293b] transition-all hover:-translate-y-1 hover:shadow-xl hover:border-violet-500/30 group relative">
+                <button
+                  onClick={() => handleDeleteSubscription(bill)}
+                  className="absolute top-2 right-2 p-1 text-slate-500 hover:text-red-400 rounded-lg bg-white/0 hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  title="Remove Subscription"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+                <span className="text-sm font-semibold text-slate-300 truncate mb-3 group-hover:text-white transition-colors pr-4">{bill.name}</span>
+                <div className="flex items-baseline justify-between mt-auto">
+                  <span className="text-xl font-bold font-mono text-violet-300">{formatCurrency(bill.amount, currency)}</span>
+                  {bill.isCustom && (
+                    <span className="text-[9px] font-bold text-violet-400 uppercase tracking-widest bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-500/20">Custom</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -823,6 +900,73 @@ export default function TransactionsPage() {
             setShowCustomBudgetModal(false);
           }}
         />
+      )}
+
+      {showAddSubModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={() => setShowAddSubModal(false)}>
+          <div 
+            className="bg-[#0f172a] w-full max-w-md rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-white/10 bg-[#1e293b]/50">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                  <Plus className="h-5 w-5 text-violet-400" /> Add Custom Subscription
+                </h3>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">
+                  Manually track recurring services
+                </p>
+              </div>
+              <button onClick={() => setShowAddSubModal(false)}><X className="h-5 w-5 text-slate-400 hover:text-white" /></button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Subscription Name</label>
+                <input
+                  type="text"
+                  className="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                  placeholder="e.g. Netflix, Spotify, Gym"
+                  value={subName}
+                  onChange={e => setSubName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly Amount</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-3 text-slate-400 font-semibold text-base">₹</span>
+                  <input
+                    type="number"
+                    className="w-full bg-[#1e293b] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 font-mono"
+                    placeholder="e.g. 199"
+                    value={subAmount}
+                    onChange={e => setSubAmount(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") handleAddSubscription();
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowAddSubModal(false)}
+                  className="flex-1 h-12 border border-white/10 text-slate-300 hover:bg-white/5 rounded-xl font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddSubscription}
+                  className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-violet-600/10"
+                >
+                  <Check className="h-4 w-4" /> Add Subscription
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -35,6 +35,12 @@ function LoginForm() {
     setError(null);
     setMessage(null);
 
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password.");
+      setIsLoading(false);
+      return;
+    }
+
     const { error, data } = isSignUp
       ? await supabase.auth.signUp({ email, password })
       : await supabase.auth.signInWithPassword({ email, password });
@@ -48,12 +54,12 @@ function LoginForm() {
       data.user.identities.length === 0
     ) {
       setError("This email is already in use.");
-    } else if (isSignUp) {
+    } else if (isSignUp && !data.session) {
       setMessage(
-        "Success! Check your email to verify your account, or just login if verification is disabled.",
+        "Signup successful! Please check your email to verify your account.",
       );
     } else {
-      // Login successful, route directly to dashboard
+      // Login successful (or signup with email verification disabled)
       window.location.href = "/dashboard";
     }
 

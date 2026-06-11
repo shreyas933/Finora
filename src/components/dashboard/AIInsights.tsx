@@ -51,12 +51,12 @@ type BudgetCategory = {
 };
 
 const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { name: "Food & Dining",    budget: 1200, txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
-  { name: "Shopping",         budget: 800,  txCategories: ["Shopping", "Lifestyle"] },
-  { name: "Entertainment",    budget: 400,  txCategories: ["Entertainment"] },
-  { name: "Transportation",   budget: 300,  txCategories: ["Transportation", "Transport"] },
-  { name: "Health",           budget: 500,  txCategories: ["Health", "Healthcare", "Medical"] },
-  { name: "Travel",           budget: 2000, txCategories: ["Travel"] },
+  { name: "Food & Dining",    budget: 0, txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
+  { name: "Shopping",         budget: 0, txCategories: ["Shopping", "Lifestyle"] },
+  { name: "Entertainment",    budget: 0, txCategories: ["Entertainment"] },
+  { name: "Transportation",   budget: 0, txCategories: ["Transportation", "Transport"] },
+  { name: "Health",           budget: 0, txCategories: ["Health", "Healthcare", "Medical"] },
+  { name: "Travel",           budget: 0, txCategories: ["Travel"] },
 ];
 
 export function AIInsights({ collapsible = false, defaultCollapsed = false, mode = "overview" }: AIInsightsProps = {}) {

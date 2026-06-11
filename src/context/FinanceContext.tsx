@@ -168,6 +168,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       supabase.from("investments").delete().eq("user_id", userId)
     ]);
     localStorage.removeItem("finora_credit_cards");
+    localStorage.removeItem("finora_wallet_items");
     localStorage.removeItem("finora_budgets");
     localStorage.removeItem("finora_onboarding_done");
     window.dispatchEvent(new Event("finora_budget_update"));
@@ -198,10 +199,37 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("finora_budgets", JSON.stringify(data.budgets));
     
     // Simulate credit cards for /credit view
+    const simulatedCards = [
+      {
+        id: "card-demo-1",
+        type: "credit",
+        name: "Amex Platinum",
+        bank: "American Express",
+        number: "1007",
+        network: "amex",
+        color: "graphite",
+        limit: "1000000",
+        perks: ["lounge", "hotel", "travel", "dining"],
+        billingDate: "15"
+      },
+      {
+        id: "card-demo-2",
+        type: "credit",
+        name: "Chase Sapphire Reserve",
+        bank: "Chase Bank",
+        number: "4420",
+        network: "visa",
+        color: "blue",
+        limit: "800000",
+        perks: ["lounge", "dining", "travel", "shopping"],
+        billingDate: "20"
+      }
+    ];
     localStorage.setItem("finora_credit_cards", JSON.stringify([
       { id: "1", name: "Amex Platinum", balance: 2450, mappedTransactions: [data.transactions[0].id] },
       { id: "2", name: "Chase Sapphire Reserve", balance: 1200, mappedTransactions: [] }
     ]));
+    localStorage.setItem("finora_wallet_items", JSON.stringify(simulatedCards));
     
     // Trigger global UI re-renders for storage-based graphs
     window.dispatchEvent(new Event("finora_wealth_update"));
@@ -213,7 +241,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const monthlyExpenses = transactions.filter(t => t.type === "expense").reduce((acc, t) => acc + Number(t.amount), 0);
   const balance = transactions.reduce((acc, t) => t.type === "income" ? acc + Number(t.amount) : acc - Number(t.amount), 0);
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100 : 0;
-  const healthScore = Math.min(100, Math.max(0, 50 + (savingsRate * 0.5) + (balance > 100000 ? 10 : 0)));
+  const healthScore = transactions.length === 0
+    ? 100
+    : Math.min(100, Math.max(0, 50 + (savingsRate * 0.5) + (balance > 100000 ? 10 : 0)));
 
   return (
     <FinanceContext.Provider value={{

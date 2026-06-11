@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+let supabaseClient: any = null;
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.warn("[ingest] Supabase URL or Key is missing. Using fallback for compilation.");
+    }
+
+    supabaseClient = createClient(
+      supabaseUrl || "https://placeholder-project.supabase.co",
+      supabaseKey || "placeholder-anon-key"
+    );
+  }
+  return supabaseClient;
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const body = await req.json();
     const { userId, transaction } = body;
 
