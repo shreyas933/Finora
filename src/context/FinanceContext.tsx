@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 export type Transaction = {
@@ -59,35 +59,43 @@ type FinanceContextType = {
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
+// Create a single stable supabase client instance outside the component
+const stableSupabase = createClient();
+
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const supabase = createClient();
+  const supabase = stableSupabase;
 
   // Load User Authentication & Initial Data
   useEffect(() => {
     async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsLoaded(true);
+          return;
+        }
+        setUserId(user.id);
+
+        // Fetch all user active data in parallel
+        const [txRes, goalsRes, invRes] = await Promise.all([
+          supabase.from("transactions").select("*").order("date", { ascending: false }),
+          supabase.from("goals").select("*").order("created_at", { ascending: false }),
+          supabase.from("investments").select("*").order("created_at", { ascending: false }),
+        ]);
+
+        if (txRes.data) setTransactions(txRes.data);
+        if (goalsRes.data) setGoals(goalsRes.data);
+        if (invRes.data) setInvestments(invRes.data);
+      } catch (err) {
+        console.error("[FINORA] Error loading data:", err);
+      } finally {
         setIsLoaded(true);
-        return;
       }
-      setUserId(user.id);
-
-      // Fetch all user active data in parallel
-      const [txRes, goalsRes, invRes] = await Promise.all([
-        supabase.from("transactions").select("*").order("date", { ascending: false }),
-        supabase.from("goals").select("*").order("created_at", { ascending: false }),
-        supabase.from("investments").select("*").order("created_at", { ascending: false }),
-      ]);
-
-      if (txRes.data) setTransactions(txRes.data);
-      if (goalsRes.data) setGoals(goalsRes.data);
-      if (invRes.data) setInvestments(invRes.data);
-      setIsLoaded(true);
     }
     
     loadData();
@@ -105,7 +113,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── TRANSACTIONS ──
   const addTransaction = async (t: Omit<Transaction, "id">) => {

@@ -1,7 +1,6 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { CurrencyProvider } from "@/context/CurrencyContext";
-import { OnboardingWrapper } from "@/components/dashboard/OnboardingWrapper";
 
 export default function AppLayout({
   children,
@@ -19,9 +18,7 @@ export default function AppLayout({
         <div className="flex flex-col flex-1 overflow-hidden z-10">
           <Header />
           <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 bg-transparent relative z-10">
-            <OnboardingWrapper>
-              {children}
-            </OnboardingWrapper>
+            {children}
           </main>
         </div>
       </div>

@@ -1,19 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Wallet, LogIn } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { Wallet, LogIn, Loader2 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -21,213 +11,273 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const googleAuthEnabled =
-    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === "true";
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const authError = searchParams?.get("error");
 
-  const supabase = createClient();
-
-  const handleEmailLogin = async (e: React.FormEvent, isSignUp = false) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleLogin = useCallback(async () => {
+    console.log("[FINORA] Login button clicked");
     setError(null);
     setMessage(null);
 
     if (!email.trim() || !password.trim()) {
       setError("Please enter both email and password.");
-      setIsLoading(false);
-      return;
-    }
-
-    const { error, data } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setError(error.message);
-    } else if (
-      isSignUp &&
-      data.user &&
-      data.user.identities &&
-      data.user.identities.length === 0
-    ) {
-      setError("This email is already in use.");
-    } else if (isSignUp && !data.session) {
-      setMessage(
-        "Signup successful! Please check your email to verify your account.",
-      );
-    } else {
-      // Login successful (or signup with email verification disabled)
-      window.location.href = "/dashboard";
-    }
-
-    setIsLoading(false);
-  };
-
-  const handleGoogleLogin = async () => {
-    if (!googleAuthEnabled) {
-      setError(
-        "Google sign-in is not enabled yet. Turn on the Google provider in Supabase, then set NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true.",
-      );
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { error: authError, data } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
 
-    if (error) {
-      setError(error.message);
+      if (authError) {
+        console.log("[FINORA] Login error:", authError.message);
+        setError(authError.message);
+      } else if (data.session) {
+        console.log("[FINORA] Login success, navigating...");
+        window.location.href = "/dashboard";
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } catch (err: any) {
+      console.log("[FINORA] Unexpected error:", err);
+      setError("Unexpected error: " + (err?.message || String(err)));
+    } finally {
       setIsLoading(false);
     }
-  };
+  }, [email, password]);
+
+  const handleSignUp = useCallback(async () => {
+    console.log("[FINORA] SignUp button clicked");
+    setError(null);
+    setMessage(null);
+
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error: authError, data } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (authError) {
+        setError(authError.message);
+      } else if (data.user?.identities?.length === 0) {
+        setError("This email is already in use.");
+      } else if (!data.session) {
+        setMessage("Signup successful! Please check your email to verify your account.");
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch (err: any) {
+      setError("Unexpected error: " + (err?.message || String(err)));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [email, password]);
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Abstract Background Effects */}
-      <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-primary/20 blur-[128px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-[128px] pointer-events-none" />
-
-      <Card className="w-full max-w-md border-primary/20 shadow-2xl relative z-10 bg-card/80 backdrop-blur-xl">
-        <CardHeader className="space-y-3 pb-6 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mb-2">
-            <Wallet className="h-8 w-8 text-primary" />
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        backgroundColor: "#0a0a1a",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Card */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: 20,
+          border: "1px solid rgba(139,92,246,0.25)",
+          boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
+          background: "#111127",
+          position: "relative",
+          zIndex: 10,
+          overflow: "hidden",
+          padding: "32px 28px",
+        }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div
+            style={{
+              margin: "0 auto 16px",
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              background: "rgba(139,92,246,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Wallet style={{ width: 28, height: 28, color: "#8b5cf6" }} />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight">
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 8px" }}>
             Welcome to FINORA
-          </CardTitle>
-          <CardDescription className="text-base">
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>
             Log in to manage your AI Personal CFO
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {authError === "auth_failed" && (
-            <div className="p-3 text-sm rounded bg-red-500/10 text-red-500 border border-red-500/20 text-center">
-              Authentication failed. Please try again.
-            </div>
-          )}
-          {error && (
-            <div className="p-3 text-sm rounded bg-red-500/10 text-red-500 border border-red-500/20 text-center">
-              {error}
-            </div>
-          )}
-          {message && (
-            <div className="p-3 text-sm rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-center">
-              {message}
-            </div>
-          )}
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-12 text-base font-medium relative hover:bg-white/5 border-white/10"
-            onClick={handleGoogleLogin}
-            disabled={isLoading || !googleAuthEnabled}
-          >
-            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            Continue with Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
-          <form
-            onSubmit={(e) => handleEmailLogin(e, false)}
-            className="space-y-4"
-            autoComplete="on"
-          >
-            <div className="space-y-2">
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="m@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                className="h-12 bg-background border-white/10"
-              />
-            </div>
-            <div className="space-y-2">
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="h-12 bg-background border-white/10"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                type="submit"
-                className="flex-1 h-12 text-base font-medium"
-                disabled={isLoading}
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                Login
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                className="flex-1 h-12 text-base font-medium"
-                disabled={isLoading}
-                onClick={(e) => handleEmailLogin(e, true)}
-              >
-                Sign Up
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center border-t border-border/40 p-4">
-          <p className="text-sm text-muted-foreground">
-            Google sign-in needs to be enabled in Supabase before this button
-            will open the account chooser.
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+
+        {/* Error / success banners */}
+        {(authError === "auth_failed" || error) && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: "12px 16px",
+              borderRadius: 10,
+              background: "rgba(239,68,68,0.1)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              color: "#f87171",
+              fontSize: 14,
+              textAlign: "center",
+            }}
+          >
+            {error || "Authentication failed. Please try again."}
+          </div>
+        )}
+        {message && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: "12px 16px",
+              borderRadius: 10,
+              background: "rgba(16,185,129,0.1)",
+              border: "1px solid rgba(16,185,129,0.25)",
+              color: "#34d399",
+              fontSize: 14,
+              textAlign: "center",
+            }}
+          >
+            {message}
+          </div>
+        )}
+
+        {/* Email */}
+        <div style={{ marginBottom: 12 }}>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            disabled={isLoading}
+            style={{
+              width: "100%",
+              height: 48,
+              padding: "0 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.05)",
+              color: "#fff",
+              fontSize: 15,
+              outline: "none",
+              boxSizing: "border-box",
+              WebkitAppearance: "none",
+            }}
+          />
+        </div>
+
+        {/* Password */}
+        <div style={{ marginBottom: 24 }}>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            disabled={isLoading}
+            style={{
+              width: "100%",
+              height: 48,
+              padding: "0 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.05)",
+              color: "#fff",
+              fontSize: 15,
+              outline: "none",
+              boxSizing: "border-box",
+              WebkitAppearance: "none",
+            }}
+          />
+        </div>
+
+        {/* Buttons — plain HTML buttons, NO form, NO abstractions */}
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={handleLogin}
+            style={{
+              flex: 1,
+              height: 48,
+              borderRadius: 10,
+              border: "none",
+              background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+              color: "#fff",
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: isLoading ? "not-allowed" : "pointer",
+              opacity: isLoading ? 0.7 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              WebkitAppearance: "none",
+              touchAction: "manipulation",
+            }}
+          >
+            <LogIn style={{ width: 18, height: 18 }} />
+            Login
+          </button>
+
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={handleSignUp}
+            style={{
+              flex: 1,
+              height: 48,
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(255,255,255,0.85)",
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: isLoading ? "not-allowed" : "pointer",
+              opacity: isLoading ? 0.7 : 1,
+              WebkitAppearance: "none",
+              touchAction: "manipulation",
+            }}
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -236,7 +286,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center">
+        <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#0a0a1a", color: "#fff" }}>
           Loading...
         </div>
       }
