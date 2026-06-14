@@ -4,13 +4,14 @@ import { useFinance } from "@/context/FinanceContext";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, Download, CreditCard, ChevronRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, Download, CreditCard, ChevronRight, Pencil } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Link from "next/link";
 import { format, subDays, getDaysInMonth } from "date-fns";
 import { motion } from "framer-motion";
 import { AIInsights } from "@/components/dashboard/AIInsights";
 import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
+import { StartingBalanceModal } from "@/components/dashboard/StartingBalanceModal";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useEffect, useState, useMemo } from "react";
 
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const { currency } = useCurrency();
   const [safeToSpend, setSafeToSpend] = useState<number>(0);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [walletCardsCount, setWalletCardsCount] = useState({ credit: 0, debit: 0 });
 
   useEffect(() => {
@@ -167,6 +169,7 @@ export default function DashboardPage() {
       </div>
 
       {showSyncModal && <PaymentSyncModal onClose={() => setShowSyncModal(false)} />}
+      {showBalanceModal && <StartingBalanceModal onClose={() => setShowBalanceModal(false)} />}
 
       {healthScore < 70 && transactions.length > 0 && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive flex items-center gap-3">
@@ -202,7 +205,16 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+            <div className="flex items-center gap-1.5">
+              <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+              <button
+                onClick={() => setShowBalanceModal(true)}
+                className="text-muted-foreground hover:text-violet-400 p-0.5 rounded transition-colors"
+                title="Adjust balance"
+              >
+                <Pencil className="h-3 w-3" />
+              </button>
+            </div>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

@@ -44,25 +44,10 @@ class FinoraSmsReceiver : BroadcastReceiver() {
 
         Thread {
             try {
-                val bundle = intent.extras ?: return@Thread
-                val pdus = bundle.get("pdus") as? Array<*> ?: return@Thread
-                val format = bundle.getString("format")
-
-                val messageMap = mutableMapOf<String, StringBuilder>()
-
-                for (pdu in pdus) {
-                    val sms = SmsMessage.createFromPdu(pdu as ByteArray, format)
+                val messages = android.provider.Telephony.Sms.Intents.getMessagesFromIntent(intent)
+                for (sms in messages) {
                     val sender = sms.originatingAddress ?: "Unknown"
-                    val body = sms.messageBody ?: ""
-
-                    if (!messageMap.containsKey(sender)) {
-                        messageMap[sender] = StringBuilder()
-                    }
-                    messageMap[sender]?.append(body)
-                }
-
-                for ((sender, bodyBuilder) in messageMap) {
-                    val rawBody = bodyBuilder.toString().trim()
+                    val rawBody = sms.messageBody ?: ""
                     Log.d(TAG, "Intercepted SMS from $sender: $rawBody")
 
                     // Filter out non-financial transactions

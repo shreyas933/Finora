@@ -43,12 +43,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing userId or transaction" }, { status: 400 });
     }
 
-    const { name, amount, category, type } = transaction;
+    const { name, amount, category, type, availableBalance } = transaction;
     if (!name || !amount || !category || !type) {
       return NextResponse.json({ error: "Incomplete transaction fields" }, { status: 400 });
     }
 
-    const { error } = await supabase.from("transactions").insert({
+    const { error: insertError } = await supabase.from("transactions").insert({
       user_id: userId,
       name,
       amount: Number(amount),
@@ -57,9 +57,64 @@ export async function POST(req: NextRequest) {
       date: new Date().toISOString(),
     });
 
-    if (error) {
-      console.error("[ingest] Supabase error:", error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (insertError) {
+      console.error("[ingest] Supabase error:", insertError.message);
+      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    }
+
+    // Handle available balance sync if provided in the transaction metadata
+    if (availableBalance !== undefined && availableBalance !== null) {
+      const targetBalance = Number(availableBalance);
+      if (!isNaN(targetBalance)) {
+        const { data: allTxs, error: fetchError } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("user_id", userId);
+
+        if (!fetchError && allTxs) {
+          const adjustmentTx = allTxs.find((t: any) => t.name === "Starting Balance Adjustment");
+          let S = 0;
+          allTxs.forEach((t: any) => {
+            if (t.name !== "Starting Balance Adjustment") {
+              if (t.type === "income") S += Number(t.amount);
+              else S -= Number(t.amount);
+            }
+          });
+
+          const newAmountSigned = targetBalance - S;
+          const newAmount = Math.abs(newAmountSigned);
+          const newType = newAmountSigned >= 0 ? "income" : "expense";
+
+          if (adjustmentTx) {
+            const { error: updateError } = await supabase
+              .from("transactions")
+              .update({
+                amount: newAmount,
+                type: newType,
+              })
+              .eq("id", adjustmentTx.id);
+            if (updateError) {
+              console.error("[ingest] Error updating Starting Balance Adjustment:", updateError.message);
+            }
+          } else {
+            const { error: adjustInsertError } = await supabase
+              .from("transactions")
+              .insert({
+                user_id: userId,
+                name: "Starting Balance Adjustment",
+                category: "Savings",
+                amount: newAmount,
+                type: newType,
+                date: new Date().toISOString(),
+              });
+            if (adjustInsertError) {
+              console.error("[ingest] Error inserting Starting Balance Adjustment:", adjustInsertError.message);
+            }
+          }
+        } else if (fetchError) {
+          console.error("[ingest] Fetch error:", fetchError.message);
+        }
+      }
     }
 
     return NextResponse.json({ success: true });

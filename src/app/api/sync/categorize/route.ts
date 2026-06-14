@@ -88,7 +88,8 @@ function mockParseTransaction(raw: string) {
   if (upiRefMatch) {
     name = upiRefMatch[1].trim();
   } else {
-    const merchantMatch = raw.match(/(?:paid to|sent to|transfer to|spent at|at|debited for)\s+([A-Za-z0-9\s*]+?)(?:\.|\s+Ref|\s+UPI|\s+on|\s+from|\s+Rs|\s+INR|\s+A\/c|\s*$)/i);
+    // Upgraded pattern including "to" prefix
+    const merchantMatch = raw.match(/(?:paid to|sent to|transfer to|spent at|at|debited for|to)\s+([A-Za-z0-9\s*]+?)(?:\.|\s+Ref|\s+UPI|\s+on|\s+from|\s+Rs|\s+INR|\s+A\/c|\s*$)/i);
     if (merchantMatch) {
       name = merchantMatch[1].trim().replace(/\*+/g, " ").trim();
     }
@@ -117,12 +118,46 @@ function mockParseTransaction(raw: string) {
     category = "Income";
   }
 
-  let type = "expense";
-  if (lowerRaw.includes("credited") || lowerRaw.includes("refund") || lowerRaw.includes("cashback") || lowerRaw.includes("received") || lowerRaw.includes("added to") || lowerRaw.includes("deposited")) {
+  // Determine Type (Income vs. Expense) safely based on keyword patterns
+  let type: "income" | "expense" = "expense";
+  const isIncome = lowerRaw.includes("credited") || 
+                   lowerRaw.includes("received") || 
+                   lowerRaw.includes("recieved") || 
+                   lowerRaw.includes("credit") || 
+                   lowerRaw.includes("refund") || 
+                   lowerRaw.includes("cashback") || 
+                   lowerRaw.includes("deposited") || 
+                   lowerRaw.includes("deposit") || 
+                   lowerRaw.includes("added to") || 
+                   lowerRaw.includes("added");
+                   
+  const isExpense = lowerRaw.includes("sent") || 
+                    lowerRaw.includes("send") || 
+                    lowerRaw.includes("debited") || 
+                    lowerRaw.includes("debit") || 
+                    lowerRaw.includes("spent") || 
+                    lowerRaw.includes("spend") || 
+                    lowerRaw.includes("paid") || 
+                    lowerRaw.includes("pay") || 
+                    lowerRaw.includes("withdrawn") || 
+                    lowerRaw.includes("withdraw") || 
+                    lowerRaw.includes("transfer") || 
+                    lowerRaw.includes("to ");
+
+  if (isIncome && !isExpense) {
     type = "income";
+  } else if (isExpense && !isIncome) {
+    type = "expense";
   }
 
-  return { name, amount, category, type };
+  // Extract available balance if present in the raw SMS
+  let availableBalance: number | undefined = undefined;
+  const avlBalMatch = raw.match(/(?:avl\s*bal|available\s*balance|bal|balance)\s*:?\s*(?:rs\.?|₹|inr)?\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+  if (avlBalMatch) {
+    availableBalance = parseFloat(avlBalMatch[1].replace(/,/g, ""));
+  }
+
+  return { name, amount, category, type, ...(availableBalance !== undefined ? { availableBalance } : {}) };
 }
 
 export async function POST(req: NextRequest) {
@@ -132,7 +167,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing raw notification string" }, { status: 400 });
     }
 
-    const prompt = `You are a financial transaction parser. Parse this bank/payment notification and return ONLY valid JSON with no markdown, no explanation.
+    // Fast-path local parsing check to optimize response speed and bypass API rate limits
+    const localParsed = mockParseTransaction(raw);
+    if (localParsed && localParsed.amount > 0 && localParsed.name !== "Other Merchant" && localParsed.name.length > 1) {
+      console.log("[FINORA sync/categorize] Local parser fast-path hit. Bypassing AI models.");
+      return NextResponse.json({ success: true, transaction: localParsed });
+    }
+
+    const prompt = `You are a financial transaction parser. Parse this bank/payment notification received by a user on their phone, and return ONLY valid JSON with no markdown, no explanation.
 
 Keys to return:
 - name: merchant or payee name (clean, human-readable, e.g. "Zomato" not "ZOMATO*POS4291")
@@ -140,8 +182,9 @@ Keys to return:
 - category: one of exactly: ${CATEGORIES.join(", ")}
 - type: "income" or "expense"
 
-If the string looks like earnings, salary, cashback, or a refund, use type "income".
-If it looks like a payment, debit, or purchase, use type "expense".
+Guidelines to determine type:
+- If the message says "Sent Rs... to Y" or "Paid Rs... to Y" or "Debited" or "Spent" or "Withdrawn" or "Transfer to Y", the user sent money, so type must be "expense".
+- If the message says "Received" or "Credited" or "Refund" or "Cashback" or "Added to" or "Deposited", the user received money, so type must be "income".
 
 Raw notification/SMS string:
 "${raw}"
@@ -153,7 +196,7 @@ Return ONLY the JSON object. Example: {"name":"Zomato","amount":450,"category":"
     let parsed;
     if (!resultText) {
       console.log("[FINORA sync/categorize] AI models failed or keys missing. Using rule-based fallback parser.");
-      parsed = mockParseTransaction(raw);
+      parsed = localParsed;
     } else {
       // Strip any accidental markdown fences
       const clean = resultText.replace(/```json|```/g, "").trim();
@@ -170,6 +213,14 @@ Return ONLY the JSON object. Example: {"name":"Zomato","amount":450,"category":"
       // Validate required fields
       if (!parsed.name || !parsed.amount || !parsed.category || !parsed.type) {
         throw new Error("Missing required fields in AI response");
+      }
+
+      // Enforce strict local type overrides on AI responses to guarantee correctness
+      if (localParsed) {
+        parsed.type = localParsed.type;
+        if (localParsed.availableBalance !== undefined) {
+          parsed.availableBalance = localParsed.availableBalance;
+        }
       }
     }
 
