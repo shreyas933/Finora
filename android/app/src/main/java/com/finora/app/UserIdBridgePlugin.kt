@@ -26,6 +26,7 @@ class UserIdBridgePlugin : Plugin() {
     @PluginMethod
     fun setUserId(call: PluginCall) {
         val userId = call.getString("userId")
+        val accessToken = call.getString("accessToken")
         val apiBase = call.getString("apiBase")
         if (userId.isNullOrBlank()) {
             call.reject("userId is required")
@@ -34,6 +35,9 @@ class UserIdBridgePlugin : Plugin() {
 
         val editor = context.getSharedPreferences("finora_prefs", Context.MODE_PRIVATE).edit()
         editor.putString("user_id", userId)
+        if (!accessToken.isNullOrBlank()) {
+            editor.putString("access_token", accessToken)
+        }
         if (!apiBase.isNullOrBlank()) {
             editor.putString("api_base", apiBase)
         }

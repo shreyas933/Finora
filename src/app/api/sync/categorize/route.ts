@@ -73,31 +73,52 @@ async function callAI(prompt: string): Promise<string | null> {
 
 function mockParseTransaction(raw: string) {
   let amount = 100;
-  const amountMatch = raw.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+  const amountMatch = raw.match(/(?:₹|Rs\.?|INR)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
   if (amountMatch) {
     amount = parseFloat(amountMatch[1].replace(/,/g, ""));
+  } else {
+    const genericAmountMatch = raw.match(/(?:debited|credited|spent|withdrawn|paid|sent|received|amount)\s+(?:of\s+)?([0-9,]+(?:\.[0-9]{2})?)/i);
+    if (genericAmountMatch) {
+      amount = parseFloat(genericAmountMatch[1].replace(/,/g, ""));
+    }
   }
 
   let name = "Other Merchant";
-  const lowerRaw = raw.toLowerCase();
-  if (lowerRaw.includes("zomato")) name = "Zomato";
-  else if (lowerRaw.includes("amazon")) name = "Amazon";
-  else if (lowerRaw.includes("uber")) name = "Uber";
-  else if (lowerRaw.includes("swiggy")) name = "Swiggy";
-  else if (lowerRaw.includes("makemytrip")) name = "MakeMyTrip";
-  else if (lowerRaw.includes("netflix")) name = "Netflix";
-  else if (lowerRaw.includes("myntra")) name = "Myntra";
-  else if (lowerRaw.includes("chaayos")) name = "Chaayos";
+  const upiRefMatch = raw.match(/UPI\/\d+\/([^/.\s]+)/i);
+  if (upiRefMatch) {
+    name = upiRefMatch[1].trim();
+  } else {
+    const merchantMatch = raw.match(/(?:paid to|sent to|transfer to|spent at|at|debited for)\s+([A-Za-z0-9\s*]+?)(?:\.|\s+Ref|\s+UPI|\s+on|\s+from|\s+Rs|\s+INR|\s+A\/c|\s*$)/i);
+    if (merchantMatch) {
+      name = merchantMatch[1].trim().replace(/\*+/g, " ").trim();
+    }
+  }
 
+  // Capitalize merchant name
+  name = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+
+  const lowerRaw = raw.toLowerCase();
+  const lowerName = name.toLowerCase();
   let category = "Other";
-  if (name === "Zomato" || name === "Swiggy" || name === "Chaayos") category = "Food & Dining";
-  else if (name === "Amazon" || name === "Myntra") category = "Shopping";
-  else if (name === "Uber") category = "Transportation";
-  else if (name === "Netflix") category = "Entertainment";
-  else if (name === "MakeMyTrip") category = "Travel";
+
+  if (/(zomato|swiggy|chaayos|starbucks|mcdonald|kfc|pizza|burger|eats|food|dining|restaurant|cafe)/.test(lowerName)) {
+    category = "Food & Dining";
+  } else if (/(amazon|flipkart|myntra|nykaa|meesho|shopping|retail|groceries|bigbasket|blinkit|zepto|d-mart|dmart)/.test(lowerName)) {
+    category = "Shopping";
+  } else if (/(uber|ola|rapido|namma|metro|fuel|hpcl|bpcl|petrol|transport|car|auto)/.test(lowerName)) {
+    category = "Transportation";
+  } else if (/(netflix|spotify|prime|hotstar|youtube|ott|bms|bookmyshow|pvr|cinema|movies|entertainment)/.test(lowerName)) {
+    category = "Entertainment";
+  } else if (/(makemytrip|goibibo|irctc|easemytrip|booking|hotel|flight|travel|trip|airbnb)/.test(lowerName)) {
+    category = "Travel";
+  } else if (/(pharmacy|hospital|apollo|1mg|pharmeasy|health|medical|doctor|insurance)/.test(lowerName)) {
+    category = "Health";
+  } else if (/(salary|dividend|interest|credit|refund|cashback)/.test(lowerName)) {
+    category = "Income";
+  }
 
   let type = "expense";
-  if (lowerRaw.includes("credit") || lowerRaw.includes("refund") || lowerRaw.includes("cashback") || lowerRaw.includes("received")) {
+  if (lowerRaw.includes("credited") || lowerRaw.includes("refund") || lowerRaw.includes("cashback") || lowerRaw.includes("received") || lowerRaw.includes("added to") || lowerRaw.includes("deposited")) {
     type = "income";
   }
 

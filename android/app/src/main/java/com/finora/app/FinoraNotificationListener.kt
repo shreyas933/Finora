@@ -32,7 +32,7 @@ class FinoraNotificationListener : NotificationListenerService() {
         // ─── Server URL ───────────────────────────────────────────────────────
         // Dev:  your PC's LAN IP while running `npm run dev`
         // Prod: your deployed Vercel/Railway URL
-        private const val API_BASE = "http://10.55.128.169:3000"
+        private const val API_BASE = "https://finora-fawn.vercel.app"
 
         // ─── Supabase (for auth token so ingest can identify the user) ────────
         // These are read-only anon keys — safe to embed in the APK
@@ -143,6 +143,7 @@ class FinoraNotificationListener : NotificationListenerService() {
                     // We need the userId — stored in SharedPreferences after web login
                     val prefs  = getSharedPreferences("finora_prefs", MODE_PRIVATE)
                     val userId = prefs.getString("user_id", null)
+                    val token  = prefs.getString("access_token", null)
 
                     if (userId == null) {
                         Log.w(TAG, "No userId stored yet — user hasn't logged in via the app")
@@ -154,10 +155,15 @@ class FinoraNotificationListener : NotificationListenerService() {
                         .put("transaction", transaction)
                         .toString()
 
-                    val ingestRequest = Request.Builder()
+                    val requestBuilder = Request.Builder()
                         .url(ingestUrl)
                         .post(ingestPayload.toRequestBody("application/json".toMediaType()))
-                        .build()
+
+                    if (!token.isNullOrBlank()) {
+                        requestBuilder.addHeader("Authorization", "Bearer $token")
+                    }
+
+                    val ingestRequest = requestBuilder.build()
 
                     httpClient.newCall(ingestRequest).enqueue(object : Callback {
                         override fun onFailure(call: Call, e: IOException) {
@@ -166,6 +172,14 @@ class FinoraNotificationListener : NotificationListenerService() {
                         override fun onResponse(call: Call, response: Response) {
                             if (response.isSuccessful) {
                                 Log.d(TAG, "✓ Transaction logged to FINORA: ${transaction.getString("name")}")
+                                val amount = transaction.optDouble("amount", 0.0)
+                                val merchant = transaction.optString("name", "Unknown Merchant")
+                                val category = transaction.optString("category", "General")
+                                FinoraNotificationHelper.showNotification(
+                                    applicationContext,
+                                    "Transaction Logged ⚡",
+                                    "Saved ₹$amount to $merchant ($category) successfully."
+                                )
                             } else {
                                 Log.e(TAG, "Ingest failed ${response.code}: ${response.body?.string()}")
                             }

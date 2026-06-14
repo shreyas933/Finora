@@ -3,26 +3,39 @@ import { createClient } from "@supabase/supabase-js";
 
 let supabaseClient: any = null;
 
-function getSupabaseClient() {
-  if (!supabaseClient) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+function getSupabaseClient(authHeader?: string | null) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.warn("[ingest] Supabase URL or Key is missing. Using fallback for compilation.");
+  if (serviceRoleKey && supabaseUrl) {
+    // If the backend has a service role key, we can use it to bypass RLS safely on the server
+    if (!supabaseClient) {
+      supabaseClient = createClient(supabaseUrl, serviceRoleKey);
     }
-
-    supabaseClient = createClient(
-      supabaseUrl || "https://placeholder-project.supabase.co",
-      supabaseKey || "placeholder-anon-key"
-    );
+    return supabaseClient;
   }
-  return supabaseClient;
+
+  // Fallback: Use the user's personal session JWT from the request header to authenticate
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn("[ingest] Supabase URL or Key is missing. Using fallback for compilation.");
+  }
+
+  return createClient(
+    supabaseUrl || "https://placeholder-project.supabase.co",
+    supabaseKey || "placeholder-anon-key",
+    {
+      global: {
+        headers: authHeader ? { Authorization: authHeader } : {},
+      },
+    }
+  );
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = getSupabaseClient();
+    const authHeader = req.headers.get("Authorization");
+    const supabase = getSupabaseClient(authHeader);
     const body = await req.json();
     const { userId, transaction } = body;
 

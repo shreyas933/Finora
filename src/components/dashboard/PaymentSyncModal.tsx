@@ -118,11 +118,15 @@ export function PaymentSyncModal({ onClose }: Props) {
       // Step 2: Get current user and ingest
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await fetch("/api/sync/ingest", {
+        const ingestRes = await fetch("/api/sync/ingest", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: user.id, transaction }),
         });
+        if (!ingestRes.ok) {
+          const errData = await ingestRes.json().catch(() => ({}));
+          throw new Error(errData.error || "Database ingestion failed");
+        }
       }
 
       // Add to local log
@@ -140,10 +144,10 @@ export function PaymentSyncModal({ onClose }: Props) {
         setSimStatus("idle");
         setSimMessage("");
       }, 3000);
-    } catch (err) {
+    } catch (err: any) {
       setSimStatus("error");
-      setSimMessage("Failed to process. Check your API key.");
-      setTimeout(() => { setSimStatus("idle"); setSimMessage(""); }, 4000);
+      setSimMessage(err?.message || "Failed to process. Check your API key.");
+      setTimeout(() => { setSimStatus("idle"); setSimMessage(""); }, 5000);
     } finally {
       setSimulating(false);
     }

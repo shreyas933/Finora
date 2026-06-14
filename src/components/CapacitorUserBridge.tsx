@@ -22,16 +22,23 @@ export function CapacitorUserBridge() {
       if (typeof window === "undefined" || !(window as any).Capacitor) return;
 
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user?.id) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) return;
 
         const { registerPlugin } = await import("@capacitor/core");
-        const UserIdBridge = registerPlugin<{ setUserId: (opts: { userId: string; apiBase?: string }) => Promise<void> }>("UserIdBridge");
+        const UserIdBridge = registerPlugin<{ setUserId: (opts: { userId: string; accessToken?: string; apiBase?: string }) => Promise<void> }>("UserIdBridge");
 
         if (UserIdBridge) {
-          const apiBase = typeof window !== "undefined" ? window.location.origin : undefined;
-          await UserIdBridge.setUserId({ userId: user.id, apiBase });
-          console.log("[FINORA] UserId & ApiBase synced to Android native layer:", user.id, apiBase);
+          const origin = typeof window !== "undefined" ? window.location.origin : "";
+          const apiBase = (origin.includes("localhost") || origin.includes("capacitor://"))
+            ? "https://finora-fawn.vercel.app"
+            : origin;
+          await UserIdBridge.setUserId({
+            userId: session.user.id,
+            accessToken: session.access_token,
+            apiBase
+          });
+          console.log("[FINORA] UserId & ApiBase synced to Android native layer:", session.user.id, apiBase);
         }
       } catch (err) {
         // Non-fatal — the notification listener just won't ingest until next launch
