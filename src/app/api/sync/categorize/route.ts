@@ -83,24 +83,62 @@ function mockParseTransaction(raw: string) {
     }
   }
 
+  const lowerRaw = raw.toLowerCase();
+
+  // Determine Type (Income vs. Expense) safely based on regex word boundary checks
+  const isIncome = /\b(?:credited|credit|received|recieved|deposited|deposit|refund|cashback|added|incoming)\b/i.test(lowerRaw) || /transfer\s+from/i.test(lowerRaw);
+  const isExpense = /\b(?:debited|debit|withdrawn|withdraw|spent|spend|sent|send|paid|outgoing)\b/i.test(lowerRaw) || /transfer\s+to/i.test(lowerRaw);
+
+  let type: "income" | "expense" = "expense";
+  if (isIncome && !isExpense) {
+    type = "income";
+  } else if (isExpense && !isIncome) {
+    type = "expense";
+  } else if (isIncome && isExpense) {
+    // If both match (e.g. "debited... credited to" or "credited to... from VPA"), prioritize expense if there's a strong debit indicator
+    const hasStrongDebit = /\b(?:debited|debit|withdrawn|withdraw|spent|spend|sent|send|paid)\b/i.test(lowerRaw);
+    if (hasStrongDebit) {
+      type = "expense";
+    } else {
+      type = "income";
+    }
+  }
+
   let name = "Other Merchant";
-  const upiRefMatch = raw.match(/UPI\/\d+\/([^/.\s]+)/i);
-  if (upiRefMatch) {
-    name = upiRefMatch[1].trim();
-  } else {
-    // Upgraded pattern including "to" prefix
-    const merchantMatch = raw.match(/(?:paid to|sent to|transfer to|spent at|at|debited for|to)\s+([A-Za-z0-9\s*]+?)(?:\.|\s+Ref|\s+UPI|\s+on|\s+from|\s+Rs|\s+INR|\s+A\/c|\s*$)/i);
-    if (merchantMatch) {
-      name = merchantMatch[1].trim().replace(/\*+/g, " ").trim();
+  let matched = false;
+
+  // For income transactions, look for sender name after "from" or "by" or "received from"
+  if (type === "income") {
+    const incomePayeeMatch = raw.match(/(?:from|by|received from|transfer from)\s+(?:VPA\s+)?([A-Za-z0-9\s*@._-]+?)(?:\.|\s+Ref|\s+UPI|\s*\(|\s+on\b|\s+to\b|\s+by\b|\s+Rs\b|\s+INR\b|\s+A\/c|\s*via\b|\s*using\b|\s*$)/i);
+    if (incomePayeeMatch) {
+      name = incomePayeeMatch[1].trim();
+      matched = true;
+    }
+  }
+
+  if (!matched) {
+    const upiRefMatch = raw.match(/UPI\/\d+\/([^/.\s]+)/i);
+    if (upiRefMatch) {
+      name = upiRefMatch[1].trim();
+    } else {
+      // Upgraded pattern including "to" prefix, but avoid matching bank names if possible
+      const merchantMatch = raw.match(/(?:paid to|sent to|transfer to|spent at|at|debited for|to)\s+([A-Za-z0-9\s*]+?)(?:\.|\s+Ref|\s+UPI|\s+on|\s+from|\s+Rs|\s+INR|\s+A\/c|\s*$)/i);
+      if (merchantMatch) {
+        const extracted = merchantMatch[1].trim().replace(/\*+/g, " ").trim();
+        // If it looks like a bank name, don't use it as merchant name
+        if (!/^(?:hdfc|icici|sbi|axis|kotak|union|pnb|bob|hsbc|citi|bank)\b/i.test(extracted)) {
+          name = extracted;
+          matched = true;
+        }
+      }
     }
   }
 
   // Capitalize merchant name
   name = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
-  const lowerRaw = raw.toLowerCase();
   const lowerName = name.toLowerCase();
-  let category = "Other";
+  let category = type === "income" ? "Income" : "Other";
 
   if (/(zomato|swiggy|chaayos|starbucks|mcdonald|kfc|pizza|burger|eats|food|dining|restaurant|cafe)/.test(lowerName)) {
     category = "Food & Dining";
@@ -116,38 +154,6 @@ function mockParseTransaction(raw: string) {
     category = "Health";
   } else if (/(salary|dividend|interest|credit|refund|cashback)/.test(lowerName)) {
     category = "Income";
-  }
-
-  // Determine Type (Income vs. Expense) safely based on keyword patterns
-  let type: "income" | "expense" = "expense";
-  const isIncome = lowerRaw.includes("credited") || 
-                   lowerRaw.includes("received") || 
-                   lowerRaw.includes("recieved") || 
-                   lowerRaw.includes("credit") || 
-                   lowerRaw.includes("refund") || 
-                   lowerRaw.includes("cashback") || 
-                   lowerRaw.includes("deposited") || 
-                   lowerRaw.includes("deposit") || 
-                   lowerRaw.includes("added to") || 
-                   lowerRaw.includes("added");
-                   
-  const isExpense = lowerRaw.includes("sent") || 
-                    lowerRaw.includes("send") || 
-                    lowerRaw.includes("debited") || 
-                    lowerRaw.includes("debit") || 
-                    lowerRaw.includes("spent") || 
-                    lowerRaw.includes("spend") || 
-                    lowerRaw.includes("paid") || 
-                    lowerRaw.includes("pay") || 
-                    lowerRaw.includes("withdrawn") || 
-                    lowerRaw.includes("withdraw") || 
-                    lowerRaw.includes("transfer") || 
-                    lowerRaw.includes("to ");
-
-  if (isIncome && !isExpense) {
-    type = "income";
-  } else if (isExpense && !isIncome) {
-    type = "expense";
   }
 
   // Extract available balance if present in the raw SMS

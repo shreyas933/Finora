@@ -144,6 +144,7 @@ class FinoraNotificationListener : NotificationListenerService() {
                     val prefs  = getSharedPreferences("finora_prefs", MODE_PRIVATE)
                     val userId = prefs.getString("user_id", null)
                     val token  = prefs.getString("access_token", null)
+                    val isBudgetSet = prefs.getBoolean("is_budget_set", false)
 
                     if (userId == null) {
                         Log.w(TAG, "No userId stored yet — user hasn't logged in via the app")
@@ -153,6 +154,7 @@ class FinoraNotificationListener : NotificationListenerService() {
                     val ingestPayload = JSONObject()
                         .put("userId", userId)
                         .put("transaction", transaction)
+                        .put("isBudgetSet", isBudgetSet)
                         .toString()
 
                     val requestBuilder = Request.Builder()

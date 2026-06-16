@@ -26,19 +26,21 @@ export function CapacitorUserBridge() {
         if (!session?.user?.id) return;
 
         const { registerPlugin } = await import("@capacitor/core");
-        const UserIdBridge = registerPlugin<{ setUserId: (opts: { userId: string; accessToken?: string; apiBase?: string }) => Promise<void> }>("UserIdBridge");
+        const UserIdBridge = registerPlugin<{ setUserId: (opts: { userId: string; accessToken?: string; apiBase?: string; isBudgetSet?: boolean }) => Promise<void> }>("UserIdBridge");
 
         if (UserIdBridge) {
           const origin = typeof window !== "undefined" ? window.location.origin : "";
           const apiBase = (origin.includes("localhost") || origin.includes("capacitor://"))
             ? "https://finora-fawn.vercel.app"
             : origin;
+          const isBudgetSet = !!localStorage.getItem("finora_budgets");
           await UserIdBridge.setUserId({
             userId: session.user.id,
             accessToken: session.access_token,
-            apiBase
+            apiBase,
+            isBudgetSet
           });
-          console.log("[FINORA] UserId & ApiBase synced to Android native layer:", session.user.id, apiBase);
+          console.log("[FINORA] UserId, ApiBase, & isBudgetSet synced to Android native layer:", session.user.id, apiBase, isBudgetSet);
         }
       } catch (err) {
         // Non-fatal — the notification listener just won't ingest until next launch
@@ -55,7 +57,12 @@ export function CapacitorUserBridge() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    window.addEventListener("finora_budget_update", syncUserId);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("finora_budget_update", syncUserId);
+    };
   }, []);
 
   return null;

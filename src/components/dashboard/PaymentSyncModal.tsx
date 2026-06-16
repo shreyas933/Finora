@@ -311,7 +311,9 @@ export function PaymentSyncModal({ onClose }: Props) {
                             <p className="text-xs text-slate-400">{tx.category} • {tx.timestamp.toLocaleTimeString()}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-red-400">−\u20B9{tx.amount}</span>
+                            <span className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-400" : "text-red-400"}`}>
+                              {tx.type === "income" ? "+" : "−"}\u20B9{tx.amount}
+                            </span>
                             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                           </div>
                         </motion.div>
@@ -414,7 +416,9 @@ export function PaymentSyncModal({ onClose }: Props) {
                             <p className="text-xs text-slate-400">{tx.category} • {tx.timestamp.toLocaleTimeString()}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-red-400">−\u20B9{tx.amount}</span>
+                            <span className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-400" : "text-red-400"}`}>
+                              {tx.type === "income" ? "+" : "−"}\u20B9{tx.amount}
+                            </span>
                             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                           </div>
                         </motion.div>

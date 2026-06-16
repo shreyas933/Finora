@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("Authorization");
     const supabase = getSupabaseClient(authHeader);
     const body = await req.json();
-    const { userId, transaction } = body;
+    const { userId, transaction, isBudgetSet } = body;
 
     if (!userId || !transaction) {
       return NextResponse.json({ error: "Missing userId or transaction" }, { status: 400 });
@@ -48,11 +48,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Incomplete transaction fields" }, { status: 400 });
     }
 
+    let finalCategory = category;
+    let finalName = name;
+    if (isBudgetSet === false) {
+      finalCategory = "Uncategorized";
+      finalName = `${name} || ${category}`;
+    }
+
     const { error: insertError } = await supabase.from("transactions").insert({
       user_id: userId,
-      name,
+      name: finalName,
       amount: Number(amount),
-      category,
+      category: finalCategory,
       type,
       date: new Date().toISOString(),
     });

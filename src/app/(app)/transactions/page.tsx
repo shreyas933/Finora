@@ -10,7 +10,7 @@ import {
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
   RefreshCw, AlertCircle, Camera, Loader2,
-  BrainCircuit, CheckCircle2
+  BrainCircuit, CheckCircle2, Trash2
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
@@ -211,7 +211,7 @@ export default function TransactionsPage() {
     { name: "EMI", budget: 5000, color: "#ec4899", ringColor: "#ec4899", txCategories: ["EMI", "Debt"] },
   ]);
   const [customWants, setCustomWants] = useState<BudgetCategory[]>([
-    { name: "Dining / Food", budget: 4000, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Dining Out", "Dining", "Food", "Restaurant", "Cafe", "Zomato", "Swiggy"] },
+    { name: "Dining / Food", budget: 4000, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Dining Out", "Dining", "Food", "Restaurant", "Cafe", "Zomato", "Swiggy", "Food & Dining"] },
     { name: "Shopping", budget: 8000, color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle", "Amazon", "Flipkart", "Clothing", "Apparel"] },
     { name: "Entertainment", budget: 3000, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment", "Movies", "Cinema", "Hobbies", "Booking", "Event"] },
     { name: "Travel", budget: 4000, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel", "Flight", "Hotel", "Airbnb", "Trip"] },
@@ -441,7 +441,8 @@ export default function TransactionsPage() {
     const grouped: Record<string, number[]> = {};
     expenses.forEach(e => {
       // Clean string and strip dates if present to group accurately
-      const nm = e.name.toLowerCase().replace(/\d/g, '').trim();
+      const cleanName = e.name.includes(" || ") ? e.name.split(" || ")[0] : e.name;
+      const nm = cleanName.toLowerCase().replace(/\d/g, '').trim();
       
       // Match against known subscription keywords deeply
       if (SUB_KEYWORDS.some(k => nm.includes(k))) {
@@ -767,7 +768,9 @@ export default function TransactionsPage() {
                       <Icon />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate pr-2">{tx.name}</p>
+                      <p className="text-sm font-semibold text-white truncate pr-2">
+                        {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
+                      </p>
                       <div className="flex items-center gap-2 mt-1 overflow-hidden">
                         <span className={cn("text-[10px] md:text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap", tagClass)}>
                           {tx.category}
@@ -999,6 +1002,62 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
     setWantsList(updated);
   };
 
+  // Custom Needs / Wants additions state
+  const [newNeedName, setNewNeedName] = useState("");
+  const [newNeedAmount, setNewNeedAmount] = useState("");
+  const [newWantName, setNewWantName] = useState("");
+  const [newWantAmount, setNewWantAmount] = useState("");
+
+  const addNeed = () => {
+    if (!newNeedName.trim()) return;
+    const name = newNeedName.trim();
+    if (needsList.some(n => n.name.toLowerCase() === name.toLowerCase())) {
+      alert("A Need category with this name already exists.");
+      return;
+    }
+    const budget = Number(newNeedAmount) || 0;
+    const colors = ["#3b82f6", "#22c55e", "#eab308", "#ef4444", "#a855f7", "#ec4899", "#06b6d4"];
+    const randomColor = colors[needsList.length % colors.length];
+    setNeedsList(prev => [...prev, {
+      name,
+      budget,
+      color: randomColor,
+      ringColor: randomColor,
+      txCategories: [name.toLowerCase()]
+    }]);
+    setNewNeedName("");
+    setNewNeedAmount("");
+  };
+
+  const removeNeed = (index: number) => {
+    setNeedsList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addWant = () => {
+    if (!newWantName.trim()) return;
+    const name = newWantName.trim();
+    if (wantsList.some(w => w.name.toLowerCase() === name.toLowerCase())) {
+      alert("A Want category with this name already exists.");
+      return;
+    }
+    const budget = Number(newWantAmount) || 0;
+    const colors = ["#3b82f6", "#22c55e", "#eab308", "#ef4444", "#a855f7", "#ec4899", "#06b6d4"];
+    const randomColor = colors[wantsList.length % colors.length];
+    setWantsList(prev => [...prev, {
+      name,
+      budget,
+      color: randomColor,
+      ringColor: randomColor,
+      txCategories: [name.toLowerCase()]
+    }]);
+    setNewWantName("");
+    setNewWantAmount("");
+  };
+
+  const removeWant = (index: number) => {
+    setWantsList(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={onClose}>
       <div 
@@ -1059,7 +1118,17 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1.5 custom-scrollbar">
                 {needsList.map((need, idx) => (
                   <div key={need.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
-                    <span className="text-sm font-semibold text-white">{need.name}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => removeNeed(idx)}
+                        className="text-red-400 hover:text-red-300 p-1 hover:bg-white/5 rounded transition cursor-pointer"
+                        title="Remove Category"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="text-xs font-semibold text-white truncate max-w-[140px]">{need.name}</span>
+                    </div>
                     <div className="relative w-32">
                       <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                       <input
@@ -1071,6 +1140,35 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Add Custom Need Inline Form */}
+              <div className="flex items-center gap-2 p-2 bg-[#1e293b]/20 border border-white/5 rounded-xl">
+                <input
+                  type="text"
+                  placeholder="Custom Need Name"
+                  value={newNeedName}
+                  onChange={e => setNewNeedName(e.target.value)}
+                  className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                />
+                <div className="relative w-24">
+                  <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
+                  <input
+                    type="number"
+                    placeholder="Amt"
+                    value={newNeedAmount}
+                    onChange={e => setNewNeedAmount(e.target.value)}
+                    className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={addNeed}
+                  disabled={!newNeedName.trim()}
+                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                >
+                  Add
+                </button>
               </div>
 
               <div className="flex gap-2 pt-2">
@@ -1102,7 +1200,18 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1.5 custom-scrollbar">
                 {wantsList.map((want, idx) => (
                   <div key={want.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
-                    <span className="text-sm font-semibold text-white">{want.name}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => removeWant(idx)}
+                        className="text-red-400 hover:text-red-300 p-1 hover:bg-white/5 rounded transition cursor-pointer"
+                        title="Remove Category"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: want.color }} />
+                      <span className="text-xs font-semibold text-white truncate max-w-[120px]">{want.name}</span>
+                    </div>
                     <div className="relative w-32">
                       <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                       <input
@@ -1114,6 +1223,35 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Add Custom Want Inline Form */}
+              <div className="flex items-center gap-2 p-2 bg-[#1e293b]/20 border border-white/5 rounded-xl">
+                <input
+                  type="text"
+                  placeholder="Custom Want Name"
+                  value={newWantName}
+                  onChange={e => setNewWantName(e.target.value)}
+                  className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                />
+                <div className="relative w-24">
+                  <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
+                  <input
+                    type="number"
+                    placeholder="Amt"
+                    value={newWantAmount}
+                    onChange={e => setNewWantAmount(e.target.value)}
+                    className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={addWant}
+                  disabled={!newWantName.trim()}
+                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                >
+                  Add
+                </button>
               </div>
 
               <div className="flex gap-2 pt-2">

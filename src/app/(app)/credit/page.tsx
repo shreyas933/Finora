@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useFinance } from "@/context/FinanceContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -894,208 +894,816 @@ function PaymentCalendarSection({
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function CreditPage() {
-  const { monthlyIncome, monthlyExpenses, balance, transactions, goals } = useFinance();
-  const [currentScore, setCurrentScore] = useState<string>("720");
-  const [utilization, setUtilization] = useState<string>("30");
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  
-  // Segmented control tabs: "wallet", "score", "calendar"
-  const [activeSegment, setActiveSegment] = useState<"wallet" | "score" | "calendar">("wallet");
+interface CreditViewProps {
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  balance: number;
+  transactions: any[];
+  goals: any[];
+  currentScore: string;
+  setCurrentScore: (s: string) => void;
+  utilization: string;
+  setUtilization: (u: string) => void;
+  simulationActive: boolean;
+  setSimulationActive: (active: boolean) => void;
+  showModal: boolean;
+  setShowModal: (show: boolean) => void;
+  activeSegment: "wallet" | "score" | "calendar";
+  setActiveSegment: (seg: "wallet" | "score" | "calendar") => void;
+  loggedPayments: Record<string, boolean>;
+  togglePayment: (cardId: string) => void;
+  items: WalletItem[];
+  selectedItem: WalletItem | null;
+  setSelectedItem: (item: WalletItem | null) => void;
+  filterTab: "all" | "credit" | "debit";
+  setFilterTab: (tab: "all" | "credit" | "debit") => void;
+  isPerksExpanded: boolean;
+  setIsPerksExpanded: (expanded: boolean) => void;
+  totalLimit: number;
+  isDynamicUtil: boolean;
+  computedUtil: number;
+  scoreCategory: string;
+  scoreColor: string;
+  scoreColorHex: string;
+  estimatedImprovement: number;
+  newEstimatedScore: number;
+  generatedInsights: string[];
+  creditCards: WalletItem[];
+  debitCards: WalletItem[];
+  filteredItems: WalletItem[];
+  benefits: BenefitScenario[];
+  targetOffset: number;
+  addWalletItem: (item: WalletItem) => void;
+  deleteWalletItem: (id: string, e: React.MouseEvent) => void;
+}
 
-  // Logged statement payments state
-  const [loggedPayments, setLoggedPayments] = useState<Record<string, boolean>>({});
+// ─── Mobile slide-up bottom drawer ──────────────────────────────────────────
+function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (item: WalletItem) => void }) {
+  const [form, setForm] = useState({
+    type: "credit" as WalletItemType,
+    name: "", bank: "", number: "", network: "visa" as CardNetwork,
+    color: "blue" as CardColor, limit: "", perks: "", billingDate: "15",
+    linkedAccount: ""
+  });
+  const [step, setStep] = useState(1);
 
-  const togglePayment = (cardId: string) => {
-    setLoggedPayments(prev => ({
-      ...prev,
-      [cardId]: !prev[cardId]
-    }));
+  const handle = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const submit = () => {
+    if (!form.name || !form.bank) return;
+    const item: WalletItem = {
+      id: Date.now().toString(),
+      type: form.type,
+      name: form.name,
+      bank: form.bank,
+      number: form.number.slice(-4),
+      network: form.network,
+      color: form.color,
+      limit: form.type === "credit" ? form.limit : undefined,
+      perks: form.perks.split(",").map(p => p.trim()).filter(Boolean),
+      billingDate: form.type === "credit" ? form.billingDate : undefined,
+      linkedAccount: form.type === "debit" ? (form.linkedAccount || "Primary Account") : undefined
+    };
+    onAdd(item);
+    onClose();
   };
 
-  // Wallet states
-  const [items, setItems] = useState<WalletItem[]>([]);
-  const [selectedItem, setSelectedItem] = useState<WalletItem | null>(null);
-  const [filterTab, setFilterTab] = useState<"all" | "credit" | "debit">("all");
+  return (
+    <div className="mobile-bottom-sheet-overlay" onClick={onClose}>
+      <motion.div
+        className="mobile-bottom-sheet-content"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 260 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="mobile-bottom-sheet-handle" />
+        <div className="flex justify-between items-center mb-5">
+          <div>
+            <h3 className="text-base font-bold text-white">Add Card to Wallet</h3>
+            <p className="text-[11px] text-slate-400">Step {step} of 2 — {step === 1 ? "Select Card Type" : "Card Details"}</p>
+          </div>
+          <button className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-  // Collapsible state for active card perks section
-  const [isPerksExpanded, setIsPerksExpanded] = useState(true);
+        <div className="modal-progress-track mb-5 mx-0 bg-slate-800">
+          <div className="modal-progress-fill" style={{ width: step === 1 ? "50%" : "100%" }} />
+        </div>
 
-  // Load and migrate state
-  useEffect(() => {
-    const savedWallet = localStorage.getItem("finora_wallet_items");
-    if (savedWallet) {
-      try {
-        const parsed = JSON.parse(savedWallet);
-        // Strictly filter Credit and Debit cards only
-        const filtered = parsed.filter((item: any) => item.type === "credit" || item.type === "debit");
-        setItems(filtered);
-        if (filtered.length > 0) setSelectedItem(filtered[0]);
-        return;
-      } catch (e) {}
-    }
+        <AnimatePresence mode="wait">
+          {step === 1 ? (
+            <motion.div key="mstep1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+              <label className="text-xs font-semibold text-white/70 block">What card type would you like to add?</label>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  className={cn("p-5 rounded-xl border flex flex-col items-center justify-center gap-2 cursor-pointer transition-all", 
+                    form.type === "credit" ? "border-primary bg-primary/15 text-white" : "border-white/5 bg-slate-900/60 text-slate-400 hover:bg-slate-800"
+                  )}
+                  onClick={() => handle("type", "credit")}
+                >
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Credit Card</span>
+                </button>
 
-    // Default Seed focusing purely on Credit and Debit Cards
-    const defaultSeed: WalletItem[] = [
-      {
-        id: "card-1",
-        type: "credit",
-        name: "HDFC Regalia",
-        bank: "HDFC Bank",
-        number: "4321",
-        network: "visa",
-        color: "gold",
-        limit: "500000",
-        perks: ["lounge", "dining", "travel", "shopping"],
-        billingDate: "12"
-      },
-      {
-        id: "card-2",
-        type: "debit",
-        name: "SBI Platinum Debit",
-        bank: "SBI",
-        number: "9876",
-        network: "mastercard",
-        color: "blue",
-        perks: ["cashback", "fuel", "dining"],
-        linkedAccount: "SBI Savings Account"
+                <button
+                  className={cn("p-5 rounded-xl border flex flex-col items-center justify-center gap-2 cursor-pointer transition-all", 
+                    form.type === "debit" ? "border-primary bg-primary/15 text-white" : "border-white/5 bg-slate-900/60 text-slate-400 hover:bg-slate-800"
+                  )}
+                  onClick={() => handle("type", "debit")}
+                >
+                  <Landmark className="h-6 w-6" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Debit Card</span>
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Integrating your credit and debit cards allows Finora's **Rewards Optimizer** to automatically recommend the absolute best card to swipe at various stores.
+                </p>
+              </div>
+
+              <Button className="w-full mt-4 cursor-pointer" onClick={() => setStep(2)}>
+                Next: Enter Card Details →
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div key="mstep2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3.5">
+              <div className="form-group">
+                <label className="form-label text-[11px]">Card Name *</label>
+                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label text-[11px]">Bank / Issuer *</label>
+                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label text-[11px]">Last 4 Digits *</label>
+                <Input 
+                  placeholder="1234" 
+                  maxLength={4} 
+                  value={form.number} 
+                  onChange={e => handle("number", e.target.value.replace(/\D/g, ""))} 
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label text-[11px]">Network</label>
+                  <select className="form-select bg-slate-900 border-white/10" value={form.network} onChange={e => handle("network", e.target.value)}>
+                    <option value="visa">Visa</option>
+                    <option value="mastercard">Mastercard</option>
+                    <option value="amex">Amex</option>
+                    <option value="rupay">RuPay</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label text-[11px]">Card Color</label>
+                  <div className="color-picker">
+                    {(Object.entries(CARD_COLORS) as [CardColor, { bg: string }][]).map(([c, t]) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={cn("color-dot", form.color === c && "active")}
+                        style={{ background: t.bg }}
+                        onClick={() => handle("color", c)}
+                        title={c}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {form.type === "credit" ? (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label text-[11px]">Credit Limit (₹)</label>
+                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label text-[11px]">Billing Date (1–31)</label>
+                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} />
+                  </div>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label className="form-label text-[11px]">Linked Account Code / Name</label>
+                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} />
+                </div>
+              )}
+
+              <div className="form-group">
+                <label className="form-label text-[11px]">Card Perks / Benefits</label>
+                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} />
+                <p className="form-hint text-[10px] text-slate-500">Comma-separated keywords.</p>
+              </div>
+
+              <div className="perk-chips">
+                {["lounge", "hotel", "dining", "fuel", "shopping", "travel", "cashback"].map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={cn("perk-chip", form.perks.toLowerCase().includes(p) && "active")}
+                    onClick={() => {
+                      const existing = form.perks ? form.perks.split(",").map(s => s.trim()) : [];
+                      if (!existing.map(s => s.toLowerCase()).includes(p)) {
+                        handle("perks", [...existing, p].join(", "));
+                      }
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <div className="form-row pt-2">
+                <Button variant="outline" className="flex-1 cursor-pointer" onClick={() => setStep(1)}>← Back</Button>
+                <Button className="flex-1 cursor-pointer" onClick={submit} disabled={!form.name || !form.bank}>Add Card</Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Mobile Layout Component ───────────────────────────────────────────────
+function MobileCreditView({
+  monthlyIncome,
+  monthlyExpenses,
+  balance,
+  transactions,
+  goals,
+  currentScore,
+  setCurrentScore,
+  utilization,
+  setUtilization,
+  simulationActive,
+  setSimulationActive,
+  showModal,
+  setShowModal,
+  activeSegment,
+  setActiveSegment,
+  loggedPayments,
+  togglePayment,
+  items,
+  selectedItem,
+  setSelectedItem,
+  filterTab,
+  setFilterTab,
+  isPerksExpanded,
+  setIsPerksExpanded,
+  totalLimit,
+  isDynamicUtil,
+  computedUtil,
+  scoreCategory,
+  scoreColor,
+  scoreColorHex,
+  estimatedImprovement,
+  newEstimatedScore,
+  generatedInsights,
+  creditCards,
+  debitCards,
+  filteredItems,
+  benefits,
+  targetOffset,
+  addWalletItem,
+  deleteWalletItem,
+}: CreditViewProps) {
+  // Mobile timeline calculations
+  const daysWithEvents = useMemo(() => {
+    const events: { day: number; type: "statement" | "due"; card: WalletItem }[] = [];
+    creditCards.forEach(card => {
+      if (card.billingDate) {
+        const bDay = Number(card.billingDate);
+        if (!isNaN(bDay) && bDay >= 1 && bDay <= 30) {
+          events.push({ day: bDay, type: "statement", card });
+          
+          const dDay = ((bDay + 20 - 1) % 30) + 1;
+          events.push({ day: dDay, type: "due", card });
+        }
       }
-    ];
+    });
+    return events.sort((a, b) => a.day - b.day);
+  }, [creditCards]);
 
-    setItems(defaultSeed);
-    setSelectedItem(defaultSeed[0]);
-    localStorage.setItem("finora_wallet_items", JSON.stringify(defaultSeed));
-    // Keep finora_credit_cards synced for AI Chat
-    const creditOnly = defaultSeed.filter(i => i.type === "credit");
-    localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
-  }, []);
+  // Card efficiency analyzer calculations
+  const categorySpend: Record<string, number> = {};
+  for (const tx of transactions) {
+    if (tx.type === "expense") {
+      categorySpend[tx.category] = (categorySpend[tx.category] ?? 0) + tx.amount;
+    }
+  }
+
+  const totalSpend = Object.values(categorySpend).reduce((a, b) => a + b, 0);
+  const topCategories = Object.entries(categorySpend)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5);
+
+  let matchedCategories = 0;
+  topCategories.forEach(([category]) => {
+    const tip = CATEGORY_TIPS[category] ?? DEFAULT_TIP;
+    const idealPerk = tip.idealPerk.toLowerCase();
+    const hasPerkMatch = items.some(item => 
+      item.perks.some(p => p.toLowerCase().includes(idealPerk))
+    );
+    if (hasPerkMatch) matchedCategories++;
+  });
+
+  const efficiencyScore = topCategories.length > 0 
+    ? Math.round((matchedCategories / Math.min(topCategories.length, 5)) * 100)
+    : 0;
 
   const scoreNum = Number(currentScore);
 
-  const totalLimit = items
-    .filter(i => i.type === "credit" && i.limit)
-    .reduce((acc, i) => acc + Number(i.limit), 0);
+  return (
+    <div className="space-y-6 pb-20 relative px-1">
+      {/* Compact Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-1.5">
+            <Wallet className="text-violet-400 h-6 w-6" /> Digital Wallet
+          </h2>
+          <p className="text-[11px] text-slate-400 mt-0.5">Track limits, credit score &amp; routing perks</p>
+        </div>
+        <button 
+          onClick={() => setShowModal(true)}
+          className="p-2.5 rounded-xl bg-violet-600/10 text-violet-400 border border-violet-500/25 active:scale-95 transition cursor-pointer"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
 
-  const isDynamicUtil = totalLimit > 0;
-  const computedUtil = isDynamicUtil 
-    ? Math.min(100, Math.round((monthlyExpenses / totalLimit) * 100))
-    : Number(utilization);
+      {/* Touch-Friendly Sticky Selector */}
+      <div className="sticky top-0 z-30 flex bg-[#0c1328]/95 backdrop-blur-md p-1 rounded-xl border border-white/5 w-full gap-1 shadow-inner">
+        <button
+          onClick={() => setActiveSegment("wallet")}
+          className={cn(
+            "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+            activeSegment === "wallet"
+              ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
+              : "text-slate-400 border border-transparent"
+          )}
+        >
+          <CreditCard className="h-3.5 w-3.5" />
+          Cards
+        </button>
+        <button
+          onClick={() => setActiveSegment("score")}
+          className={cn(
+            "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+            activeSegment === "score"
+              ? "bg-blue-600/20 text-blue-300 border border-blue-500/30"
+              : "text-slate-400 border border-transparent"
+          )}
+        >
+          <TrendingUp className="h-3.5 w-3.5" />
+          Score
+        </button>
+        <button
+          onClick={() => setActiveSegment("calendar")}
+          className={cn(
+            "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+            activeSegment === "calendar"
+              ? "bg-emerald-600/20 text-emerald-300 border border-emerald-500/30"
+              : "text-slate-400 border border-transparent"
+          )}
+        >
+          <Coins className="h-3.5 w-3.5" />
+          Calendar
+        </button>
+      </div>
 
-  let scoreCategory = "Poor";
-  let scoreColor = "text-destructive";
-  let scoreColorHex = "#ef4444";
-  if (scoreNum >= 750) { 
-    scoreCategory = "Excellent"; 
-    scoreColor = "text-emerald-500"; 
-    scoreColorHex = "#10b981";
-  } else if (scoreNum >= 700) { 
-    scoreCategory = "Good"; 
-    scoreColor = "text-blue-500"; 
-    scoreColorHex = "#3b82f6";
-  } else if (scoreNum >= 650) { 
-    scoreCategory = "Fair"; 
-    scoreColor = "text-amber-500"; 
-    scoreColorHex = "#f59e0b";
-  }
+      {/* ── Mobile Tab 1: Cards & Perks ── */}
+      {activeSegment === "wallet" && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Header controls for Carousel */}
+          <div className="flex justify-between items-center px-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Swipe Card Deck</span>
+            
+            <div className="flex gap-1 p-0.5 bg-slate-900 border border-slate-800 rounded-lg">
+              {(["all", "credit", "debit"] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setFilterTab(tab)}
+                  className={cn("px-2 py-0.5 text-[9px] font-bold rounded capitalize transition cursor-pointer",
+                    filterTab === tab ? "bg-violet-600 text-white" : "text-slate-500"
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
 
-  const targetUtil = 10;
-  const utilDiff = Math.max(0, computedUtil - targetUtil);
-  const estimatedImprovement = Math.round(utilDiff * 1.5);
-  const newEstimatedScore = Math.min(850, scoreNum + estimatedImprovement);
+          {items.length === 0 ? (
+            <div className="empty-cards-state py-8 border border-dashed border-white/10" onClick={() => setShowModal(true)}>
+              <div className="empty-cards-icon h-12 w-12 rounded-xl">
+                <Wallet className="h-5 w-5 text-slate-400" />
+              </div>
+              <p className="text-slate-300 font-semibold text-sm">Your card wallet is empty</p>
+              <p className="text-[10px] text-slate-400 max-w-[240px]">Add your cards to map points calculations and sync statement generating days.</p>
+              <Button variant="outline" size="sm" className="mt-2 text-xs gap-1.5 cursor-pointer">
+                <Plus className="h-3.5 w-3.5" /> Add Card
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Snap Horizontal Carousel */}
+              <div className="mobile-snap-carousel no-scrollbar -mx-4">
+                {filteredItems.map(item => (
+                  <div 
+                    key={item.id} 
+                    className={cn("mobile-card-wrapper", selectedItem?.id !== item.id && "inactive")}
+                  >
+                    <WalletItemVisual 
+                      item={item} 
+                      selected={selectedItem?.id === item.id} 
+                      onClick={() => setSelectedItem(item)}
+                      onDelete={deleteWalletItem}
+                    />
+                  </div>
+                ))}
+                
+                <div 
+                  onClick={() => setShowModal(true)} 
+                  className="mobile-add-card-slot"
+                >
+                  <Plus className="h-5 w-5 text-slate-400" />
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Add Card</span>
+                </div>
+              </div>
 
-  const monthlySurplus = monthlyIncome - monthlyExpenses;
-  const generatedInsights = [];
+              {/* Perks details container */}
+              {selectedItem && (
+                <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                    <div>
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">{selectedItem.name} Perks</h4>
+                      <p className="text-[9px] text-slate-400 mt-0.5">{selectedItem.bank}</p>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
+                      •••• {selectedItem.number}
+                    </span>
+                  </div>
 
-  const creditCards = items.filter(i => i.type === "credit");
-  const debitCards = items.filter(i => i.type === "debit");
+                  <div className="mobile-perks-list">
+                    {benefits.map((b, i) => {
+                      const Icon = b.icon;
+                      const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
+                      return (
+                        <div key={i} className="mobile-perk-row" style={{ borderColor: `${color}15` }}>
+                          <div className="p-1.5 rounded-lg shrink-0" style={{ background: `${color}12`, color }}>
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <h5 className="text-[11px] font-bold text-white">{b.category}</h5>
+                              <span className="text-[8px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wider" style={{ background: `${color}15`, color }}>
+                                {b.tag}
+                              </span>
+                            </div>
+                            <p className="text-[9px] text-slate-400 mt-0.5">{b.description}</p>
+                            <div className="flex items-center gap-1 mt-1 text-[9px] font-bold" style={{ color }}>
+                              <ChevronRight className="h-3 w-3 shrink-0" />
+                              <span>{b.benefit}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-  if (isDynamicUtil) {
-    if (computedUtil > 30) {
-      generatedInsights.push(`High Card Utilization: Your dynamic utilization is ${computedUtil}% (₹${monthlyExpenses.toLocaleString("en-IN")} spent against ₹${totalLimit.toLocaleString("en-IN")} limits). Shift minor expenses to your ${debitCards[0]?.name || "Debit Card"} to instantly drop this below 30%!`);
-    } else {
-      generatedInsights.push(`Good job! Your card utilization is at a healthy ${computedUtil}%. Keeping utilization below 30% acts as a major catalyst for credit growth.`);
-    }
-  } else {
-    if (Number(utilization) > 30) {
-      generatedInsights.push(`Your credit utilization is high (${utilization}%). Keeping card outstanding below 30% helps secure lower loan rates.`);
-    }
-  }
+                  {selectedItem.type === "credit" && selectedItem.billingDate && (
+                    <div className="p-3 rounded-xl border border-blue-500/10 bg-blue-500/5 flex items-start gap-2.5">
+                      <AlertCircle className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-slate-400 leading-normal">
+                        Billing generated on the <strong>{selectedItem.billingDate}th</strong>. Clear outstanding dues 3 days before this date to lower dynamic reported utilization.
+                      </p>
+                    </div>
+                  )}
 
-  const billingCards = creditCards.filter(c => c.billingDate);
-  if (billingCards.length > 0) {
-    const card = billingCards[0];
-    const bDay = Number(card.billingDate);
-    if (!isNaN(bDay)) {
-      generatedInsights.push(`Your statement for ${card.name} is printed on the ${bDay}th of each month. Pay off outstanding dues 3 days before this generation date to lower bureaus' reported utilization!`);
-    }
-  }
+                  {selectedItem.type === "debit" && selectedItem.linkedAccount && (
+                    <div className="p-3 rounded-xl border border-teal-500/10 bg-teal-500/5 flex items-start gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 text-teal-400 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-slate-400 leading-normal">
+                        Linked to <strong>{selectedItem.linkedAccount}</strong> account. Directly drafts from balances, ensuring zero interest charges.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
-  if (balance > 100000 && creditCards.length > 0) {
-    generatedInsights.push(`Liquid Surplus: You have ${formatCurrency(balance)} in bank balance. Directing some of this surplus to a mid-cycle card payment before your due date instantly builds excellent payment records.`);
-  } else if (monthlySurplus > 0) {
-    generatedInsights.push(`Savings Rate: Your monthly surplus is ${formatCurrency(monthlySurplus)}. Redirecting ₹${(monthlySurplus / 2).toLocaleString("en-IN")} towards cards before bills hit shields your credit record.`);
-  }
+              {/* Card Efficiency list optimized for mobile */}
+              <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1.5">
+                    <BarChart3 className="h-4 w-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-white">Spend Routing Optimizer</span>
+                  </div>
+                  <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-lg">{efficiencyScore}% Optimal</span>
+                </div>
 
-  if (transactions.length > 0 && creditCards.length > 0) {
-    const expensesByCategory = transactions
-      .filter(t => t.type === "expense")
-      .reduce((acc, t) => {
-        acc[t.category] = (acc[t.category] || 0) + t.amount;
-        return acc;
-      }, {} as Record<string, number>);
+                <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{ width: `${efficiencyScore}%` }} />
+                </div>
 
-    const topCategory = Object.entries(expensesByCategory).sort(([, a], [, b]) => b - a)[0];
-    if (topCategory && topCategory[1] > 2000) {
-      const bestMatch = findOptimalWalletItemForCategory(topCategory[0], items);
-      if (bestMatch && bestMatch.type === "credit") {
-        generatedInsights.push(`Your highest expense is ${topCategory[0]} (${formatCurrency(topCategory[1])}). Route this specifically through your ${bestMatch.name} Credit Card to unlock premium rewards.`);
-      }
-    }
-  }
+                {topCategories.length === 0 ? (
+                  <p className="text-[10px] text-slate-400 text-center py-2">Add transaction logs to populate recommendations.</p>
+                ) : (
+                  <div className="space-y-2 pt-1">
+                    {topCategories.map(([category, amount]) => {
+                      const tip = CATEGORY_TIPS[category] ?? DEFAULT_TIP;
+                      const Icon = tip.icon;
+                      const bestItem = findOptimalWalletItemForCategory(category, items);
+                      
+                      return (
+                        <div key={category} className="flex justify-between items-center p-2.5 rounded-xl bg-slate-950/40 border border-white/5">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg" style={{ background: `${tip.color}15`, color: tip.color }}>
+                              <Icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div>
+                              <span className="text-[11px] font-bold text-white block">{tip.label}</span>
+                              <span className="text-[9px] text-slate-400">{formatCurrency(amount)} spend</span>
+                            </div>
+                          </div>
+                          {bestItem ? (
+                            <div className="text-right">
+                              <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white font-bold inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ background: CARD_COLORS[bestItem.color].bg }} />
+                                {bestItem.name.split(" ")[0]}
+                              </span>
+                              <span className="text-[9px] block mt-0.5" style={{ color: tip.color }}>{tip.pointsMultiplier} points</span>
+                            </div>
+                          ) : (
+                            <span className="text-[9px] text-slate-500">No cards</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
-  if (generatedInsights.length < 3) {
-    generatedInsights.push("Pro Tip: Clearing balances before the statement generation date reports as a pristine 0% utilization, protecting your profile.");
-    generatedInsights.push("Maintain old credit accounts active. A longer credit duration history signals reliability to financial agencies.");
-  }
+      {/* ── Mobile Tab 2: Credit Score ── */}
+      {activeSegment === "score" && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Radial score card */}
+          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Bureau Rating</span>
+            
+            <div className="score-circle-container py-4 flex flex-col items-center justify-center relative h-36 w-36">
+              <svg width="140" height="140" viewBox="0 0 160 160" className="h-32 w-32 transform -rotate-90 overflow-visible">
+                <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="transparent" />
+                <motion.circle 
+                  cx="80" cy="80" r="70" 
+                  stroke={scoreColorHex} strokeWidth="8" fill="transparent"
+                  strokeDasharray="440" 
+                  initial={{ strokeDashoffset: 440 }}
+                  animate={{ strokeDashoffset: targetOffset }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  strokeLinecap="round" 
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-3xl font-extrabold text-white tracking-tight">{scoreNum}</span>
+                <span className={cn("text-[9px] font-bold mt-0.5 uppercase tracking-wider", scoreColor)}>{scoreCategory}</span>
+              </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-4 w-full mt-2 border-t border-white/5 pt-4">
+              <div className="text-center">
+                <span className="text-[9px] text-slate-400 block uppercase tracking-wider font-semibold">Bureau Target</span>
+                <span className="text-base font-bold text-emerald-400">&lt; 30%</span>
+              </div>
+              <div className="text-center border-l border-white/5">
+                <span className="text-[9px] text-slate-400 block uppercase tracking-wider font-semibold">Utilization</span>
+                <span className="text-base font-bold text-white">{computedUtil}%</span>
+              </div>
+            </div>
+          </div>
 
+          {/* Simulator block */}
+          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+            <div className="flex justify-between items-center">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Score Simulator</h4>
+              <span className="text-[8px] px-1.5 py-0.5 rounded bg-violet-600/15 text-violet-300 font-extrabold uppercase border border-violet-500/25">Simulate</span>
+            </div>
+            
+            <p className="text-[10px] text-slate-400 leading-normal">
+              Revolving utilization ratio signals reliability. Lowering this below 30% acts as a major catalyst for credit growth.
+            </p>
 
-  const addWalletItem = (item: WalletItem) => {
-    setItems(prev => {
-      const newItems = [...prev, item];
-      localStorage.setItem("finora_wallet_items", JSON.stringify(newItems));
-      // Keep finora_credit_cards synced for AI Chat
-      const creditOnly = newItems.filter(i => i.type === "credit");
-      localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
-      return newItems;
-    });
-    setSelectedItem(item);
-  };
+            <div className="space-y-2 pt-1">
+              <div className="flex justify-between text-[10px] font-bold">
+                <span className="text-slate-400">Target Ratio</span>
+                <span className="text-violet-400">{simulationActive ? "10%" : `${computedUtil}%`}</span>
+              </div>
+              
+              <input 
+                type="range" 
+                min="10" 
+                max="100" 
+                value={simulationActive ? 10 : computedUtil}
+                onChange={(e) => {
+                  if (Number(e.target.value) <= 15) {
+                    setSimulationActive(true);
+                  } else {
+                    setSimulationActive(false);
+                  }
+                }}
+                className="w-full accent-violet-600 cursor-pointer h-1 bg-slate-800 rounded-lg appearance-none"
+              />
+            </div>
 
-  const deleteWalletItem = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setItems(prev => {
-      const filtered = prev.filter(item => item.id !== id);
-      localStorage.setItem("finora_wallet_items", JSON.stringify(filtered));
-      // Keep finora_credit_cards synced for AI Chat
-      const creditOnly = filtered.filter(i => i.type === "credit");
-      localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
-      if (selectedItem?.id === id) {
-        setSelectedItem(filtered.length > 0 ? filtered[0] : null);
-      }
-      return filtered;
-    });
-  };
+            {simulationActive && computedUtil > 10 ? (
+              <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 space-y-3 animate-in fade-in zoom-in duration-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-[9px] text-slate-400 block uppercase font-semibold">Projected Boost</span>
+                    <span className="text-lg font-bold text-emerald-400">+{estimatedImprovement} Points</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] text-slate-400 block uppercase font-semibold">New Estimated Score</span>
+                    <span className="text-lg font-bold text-white">{newEstimatedScore}</span>
+                  </div>
+                </div>
+                <div className="pt-2.5 border-t border-white/5">
+                  <span className="text-[9px] font-bold text-white uppercase block">Action Plan:</span>
+                  <p className="text-[10px] text-slate-400 leading-relaxed mt-0.5">
+                    Clear card outstanding balances 3 days before statements generate to report minimal balance usage to bureaus.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <Button 
+                onClick={() => setSimulationActive(true)}
+                variant="outline" 
+                className="w-full text-xs h-9 font-bold hover:bg-slate-800 transition cursor-pointer"
+              >
+                Simulate 10% Utilization
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
-  const filteredItems = items.filter(item => {
-    if (filterTab === "all") return true;
-    return item.type === filterTab;
-  });
+      {/* ── Mobile Tab 3: Calendar ── */}
+      {activeSegment === "calendar" && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Credit Utilization card */}
+          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex justify-between items-center gap-4">
+            <div>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Total Cards Limit</span>
+              <span className="text-lg font-bold text-white block mt-0.5">{formatCurrency(totalLimit)}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mt-2">Dynamic Utilization</span>
+              <span className="text-lg font-bold text-emerald-400 block mt-0.5">{formatCurrency(monthlyExpenses)} ({computedUtil}%)</span>
+            </div>
 
-  const benefits = selectedItem ? getBenefitsForWalletItem(selectedItem) : [];
-  const targetOffset = 440 - (440 * (scoreNum - 300)) / 550;
+            <div className="relative w-20 h-20 flex items-center justify-center">
+              <svg width="80" height="80" viewBox="0 0 80 80" className="transform -rotate-90">
+                <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="none" />
+                <circle 
+                  cx="40" cy="40" r="34" 
+                  stroke={computedUtil > 30 ? "#ef4444" : "#10b981"} 
+                  strokeWidth="5" fill="none"
+                  strokeDasharray="213"
+                  strokeDashoffset={213 - (213 * computedUtil) / 100}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-sm font-black text-white">{computedUtil}%</span>
+                <span className={cn("text-[7px] font-bold uppercase tracking-wider", computedUtil > 30 ? "text-red-400" : "text-emerald-400")}>
+                  {computedUtil > 30 ? "High Risk" : "Healthy"}
+                </span>
+              </div>
+            </div>
+          </div>
 
+          {/* Interactive timeline instead of wide calendar grid */}
+          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
+              <Coins className="h-4 w-4 text-emerald-400" /> Upcoming Card Schedules
+            </h3>
+
+            {daysWithEvents.length === 0 ? (
+              <p className="text-[10px] text-slate-400 text-center py-4">No credit cards added to track statements.</p>
+            ) : (
+              <div className="space-y-1">
+                {daysWithEvents.map((evt: any, idx: number) => {
+                  const isStatement = evt.type === "statement";
+                  return (
+                    <div key={idx} className="mobile-timeline-item">
+                      <div className="mobile-timeline-connector" />
+                      <div 
+                        className={cn(
+                          "mobile-timeline-marker", 
+                          isStatement ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"
+                        )}
+                      >
+                        {isStatement ? "S" : "D"}
+                      </div>
+                      
+                      <div className="mobile-timeline-content">
+                        <div>
+                          <h4 className="text-[11px] font-bold text-white leading-tight">{evt.card.name}</h4>
+                          <p className="text-[9px] text-slate-400 mt-0.5">
+                            {isStatement ? "Statement generation date" : "Payment due date"} on the <strong className="text-white">{evt.day}th</strong>
+                          </p>
+                        </div>
+                        
+                        {!isStatement && (
+                          <div className="flex items-center">
+                            {loggedPayments[evt.card.id] ? (
+                              <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg font-bold flex items-center gap-0.5">
+                                <CheckCircle2 className="h-3 w-3" /> Paid
+                              </span>
+                            ) : (
+                              <Button 
+                                size="sm" 
+                                onClick={() => togglePayment(evt.card.id)}
+                                className="bg-violet-600 hover:bg-violet-500 text-[9px] px-2 py-0.5 h-6 rounded-lg text-white font-extrabold cursor-pointer"
+                              >
+                                Mark Paid
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Slide up mobile bottom drawer */}
+      <AnimatePresence>
+        {showModal && <MobileAddCardDrawer onClose={() => setShowModal(false)} onAdd={addWalletItem} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Desktop Layout Component ──────────────────────────────────────────────
+function DesktopCreditView({
+  monthlyIncome,
+  monthlyExpenses,
+  balance,
+  transactions,
+  goals,
+  currentScore,
+  setCurrentScore,
+  utilization,
+  setUtilization,
+  simulationActive,
+  setSimulationActive,
+  showModal,
+  setShowModal,
+  activeSegment,
+  setActiveSegment,
+  loggedPayments,
+  togglePayment,
+  items,
+  selectedItem,
+  setSelectedItem,
+  filterTab,
+  setFilterTab,
+  isPerksExpanded,
+  setIsPerksExpanded,
+  totalLimit,
+  isDynamicUtil,
+  computedUtil,
+  scoreCategory,
+  scoreColor,
+  scoreColorHex,
+  estimatedImprovement,
+  newEstimatedScore,
+  generatedInsights,
+  creditCards,
+  debitCards,
+  filteredItems,
+  benefits,
+  targetOffset,
+  addWalletItem,
+  deleteWalletItem,
+}: CreditViewProps) {
+  const scoreNum = Number(currentScore);
   return (
     <div className="space-y-8 pb-8 relative">
 
@@ -1487,4 +2095,268 @@ export default function CreditPage() {
       </AnimatePresence>
     </div>
   );
+}
+
+// ─── Exported Page Component ────────────────────────────────────────────────
+export default function CreditPage() {
+  const { monthlyIncome, monthlyExpenses, balance, transactions, goals } = useFinance();
+  const [currentScore, setCurrentScore] = useState<string>("720");
+  const [utilization, setUtilization] = useState<string>("30");
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  
+  // Segmented control tabs: "wallet", "score", "calendar"
+  const [activeSegment, setActiveSegment] = useState<"wallet" | "score" | "calendar">("wallet");
+
+  // Logged statement payments state
+  const [loggedPayments, setLoggedPayments] = useState<Record<string, boolean>>({});
+
+  const togglePayment = (cardId: string) => {
+    setLoggedPayments(prev => ({
+      ...prev,
+      [cardId]: !prev[cardId]
+    }));
+  };
+
+  // Wallet states
+  const [items, setItems] = useState<WalletItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<WalletItem | null>(null);
+  const [filterTab, setFilterTab] = useState<"all" | "credit" | "debit">("all");
+
+  // Collapsible state for active card perks section
+  const [isPerksExpanded, setIsPerksExpanded] = useState(true);
+
+  // Mobile environment detection
+  const [isMobileApp, setIsMobileApp] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isCapacitor = typeof window !== "undefined" && !!(window as any).Capacitor;
+      setIsMobileApp(isCapacitor || window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Load and migrate state
+  useEffect(() => {
+    const savedWallet = localStorage.getItem("finora_wallet_items");
+    if (savedWallet) {
+      try {
+        const parsed = JSON.parse(savedWallet);
+        // Strictly filter Credit and Debit cards only
+        const filtered = parsed.filter((item: any) => item.type === "credit" || item.type === "debit");
+        setItems(filtered);
+        if (filtered.length > 0) setSelectedItem(filtered[0]);
+        return;
+      } catch (e) {}
+    }
+
+    // Default Seed focusing purely on Credit and Debit Cards
+    const defaultSeed: WalletItem[] = [
+      {
+        id: "card-1",
+        type: "credit",
+        name: "HDFC Regalia",
+        bank: "HDFC Bank",
+        number: "4321",
+        network: "visa",
+        color: "gold",
+        limit: "500000",
+        perks: ["lounge", "dining", "travel", "shopping"],
+        billingDate: "12"
+      },
+      {
+        id: "card-2",
+        type: "debit",
+        name: "SBI Platinum Debit",
+        bank: "SBI",
+        number: "9876",
+        network: "mastercard",
+        color: "blue",
+        perks: ["cashback", "fuel", "dining"],
+        linkedAccount: "SBI Savings Account"
+      }
+    ];
+
+    setItems(defaultSeed);
+    setSelectedItem(defaultSeed[0]);
+    localStorage.setItem("finora_wallet_items", JSON.stringify(defaultSeed));
+    // Keep finora_credit_cards synced for AI Chat
+    const creditOnly = defaultSeed.filter(i => i.type === "credit");
+    localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
+  }, []);
+
+  const scoreNum = Number(currentScore);
+
+  const totalLimit = items
+    .filter(i => i.type === "credit" && i.limit)
+    .reduce((acc, i) => acc + Number(i.limit), 0);
+
+  const isDynamicUtil = totalLimit > 0;
+  const computedUtil = isDynamicUtil 
+    ? Math.min(100, Math.round((monthlyExpenses / totalLimit) * 100))
+    : Number(utilization);
+
+  let scoreCategory = "Poor";
+  let scoreColor = "text-destructive";
+  let scoreColorHex = "#ef4444";
+  if (scoreNum >= 750) { 
+    scoreCategory = "Excellent"; 
+    scoreColor = "text-emerald-500"; 
+    scoreColorHex = "#10b981";
+  } else if (scoreNum >= 700) { 
+    scoreCategory = "Good"; 
+    scoreColor = "text-blue-500"; 
+    scoreColorHex = "#3b82f6";
+  } else if (scoreNum >= 650) { 
+    scoreCategory = "Fair"; 
+    scoreColor = "text-amber-500"; 
+    scoreColorHex = "#f59e0b";
+  }
+
+  const targetUtil = 10;
+  const utilDiff = Math.max(0, computedUtil - targetUtil);
+  const estimatedImprovement = Math.round(utilDiff * 1.5);
+  const newEstimatedScore = Math.min(850, scoreNum + estimatedImprovement);
+
+  const monthlySurplus = monthlyIncome - monthlyExpenses;
+  const generatedInsights = [];
+
+  const creditCards = items.filter(i => i.type === "credit");
+  const debitCards = items.filter(i => i.type === "debit");
+
+  if (isDynamicUtil) {
+    if (computedUtil > 30) {
+      generatedInsights.push(`High Card Utilization: Your dynamic utilization is ${computedUtil}% (₹${monthlyExpenses.toLocaleString("en-IN")} spent against ₹${totalLimit.toLocaleString("en-IN")} limits). Shift minor expenses to your ${debitCards[0]?.name || "Debit Card"} to instantly drop this below 30%!`);
+    } else {
+      generatedInsights.push(`Good job! Your card utilization is at a healthy ${computedUtil}%. Keeping utilization below 30% acts as a major catalyst for credit growth.`);
+    }
+  } else {
+    if (Number(utilization) > 30) {
+      generatedInsights.push(`Your credit utilization is high (${utilization}%). Keeping card outstanding below 30% helps secure lower loan rates.`);
+    }
+  }
+
+  const billingCards = creditCards.filter(c => c.billingDate);
+  if (billingCards.length > 0) {
+    const card = billingCards[0];
+    const bDay = Number(card.billingDate);
+    if (!isNaN(bDay)) {
+      generatedInsights.push(`Your statement for ${card.name} is printed on the ${bDay}th of each month. Pay off outstanding dues 3 days before this generation date to lower bureaus' reported utilization!`);
+    }
+  }
+
+  if (balance > 100000 && creditCards.length > 0) {
+    generatedInsights.push(`Liquid Surplus: You have ${formatCurrency(balance)} in bank balance. Directing some of this surplus to a mid-cycle card payment before your due date instantly builds excellent payment records.`);
+  } else if (monthlySurplus > 0) {
+    generatedInsights.push(`Savings Rate: Your monthly surplus is ${formatCurrency(monthlySurplus)}. Redirecting ₹${(monthlySurplus / 2).toLocaleString("en-IN")} towards cards before bills hit shields your credit record.`);
+  }
+
+  if (transactions.length > 0 && creditCards.length > 0) {
+    const expensesByCategory = transactions
+      .filter(t => t.type === "expense")
+      .reduce((acc, t) => {
+        acc[t.category] = (acc[t.category] || 0) + t.amount;
+        return acc;
+      }, {} as Record<string, number>);
+
+    const topCategory = Object.entries(expensesByCategory).sort(([, a], [, b]) => b - a)[0];
+    if (topCategory && topCategory[1] > 2000) {
+      const bestMatch = findOptimalWalletItemForCategory(topCategory[0], items);
+      if (bestMatch && bestMatch.type === "credit") {
+        generatedInsights.push(`Your highest expense is ${topCategory[0]} (${formatCurrency(topCategory[1])}). Route this specifically through your ${bestMatch.name} Credit Card to unlock premium rewards.`);
+      }
+    }
+  }
+
+  if (generatedInsights.length < 3) {
+    generatedInsights.push("Pro Tip: Clearing balances before the statement generation date reports as a pristine 0% utilization, protecting your profile.");
+    generatedInsights.push("Maintain old credit accounts active. A longer credit duration history signals reliability to financial agencies.");
+  }
+
+  const addWalletItem = (item: WalletItem) => {
+    setItems(prev => {
+      const newItems = [...prev, item];
+      localStorage.setItem("finora_wallet_items", JSON.stringify(newItems));
+      // Keep finora_credit_cards synced for AI Chat
+      const creditOnly = newItems.filter(i => i.type === "credit");
+      localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
+      return newItems;
+    });
+    setSelectedItem(item);
+  };
+
+  const deleteWalletItem = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setItems(prev => {
+      const filtered = prev.filter(item => item.id !== id);
+      localStorage.setItem("finora_wallet_items", JSON.stringify(filtered));
+      // Keep finora_credit_cards synced for AI Chat
+      const creditOnly = filtered.filter(i => i.type === "credit");
+      localStorage.setItem("finora_credit_cards", JSON.stringify(creditOnly));
+      if (selectedItem?.id === id) {
+        setSelectedItem(filtered.length > 0 ? filtered[0] : null);
+      }
+      return filtered;
+    });
+  };
+
+  const filteredItems = items.filter(item => {
+    if (filterTab === "all") return true;
+    return item.type === filterTab;
+  });
+
+  const benefits = selectedItem ? getBenefitsForWalletItem(selectedItem) : [];
+  const targetOffset = 440 - (440 * (scoreNum - 300)) / 550;
+
+  const viewProps: CreditViewProps = {
+    monthlyIncome,
+    monthlyExpenses,
+    balance,
+    transactions,
+    goals,
+    currentScore,
+    setCurrentScore,
+    utilization,
+    setUtilization,
+    simulationActive,
+    setSimulationActive,
+    showModal,
+    setShowModal,
+    activeSegment,
+    setActiveSegment,
+    loggedPayments,
+    togglePayment,
+    items,
+    selectedItem,
+    setSelectedItem,
+    filterTab,
+    setFilterTab,
+    isPerksExpanded,
+    setIsPerksExpanded,
+    totalLimit,
+    isDynamicUtil,
+    computedUtil,
+    scoreCategory,
+    scoreColor,
+    scoreColorHex,
+    estimatedImprovement,
+    newEstimatedScore,
+    generatedInsights,
+    creditCards,
+    debitCards,
+    filteredItems,
+    benefits,
+    targetOffset,
+    addWalletItem,
+    deleteWalletItem,
+  };
+
+  if (isMobileApp) {
+    return <MobileCreditView {...viewProps} />;
+  }
+
+  return <DesktopCreditView {...viewProps} />;
 }

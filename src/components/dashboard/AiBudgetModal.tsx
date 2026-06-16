@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Papa from "papaparse";
 import { Button } from "@/components/ui/Button";
-import { X, FileJson, Loader2, Sparkles, BrainCircuit, CheckCircle2, ArrowRight, ArrowLeft, AlertCircle } from "lucide-react";
+import { X, FileJson, Loader2, Sparkles, BrainCircuit, CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AiBudgetModalProps {
@@ -202,6 +202,62 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
     const updated = [...wantsList];
     updated[index] = { ...updated[index], budget: Number(val) || 0 };
     setWantsList(updated);
+  };
+
+  // Custom Needs / Wants additions state
+  const [newNeedName, setNewNeedName] = useState("");
+  const [newNeedAmount, setNewNeedAmount] = useState("");
+  const [newWantName, setNewWantName] = useState("");
+  const [newWantAmount, setNewWantAmount] = useState("");
+
+  const addNeed = () => {
+    if (!newNeedName.trim()) return;
+    const name = newNeedName.trim();
+    if (needsList.some(n => n.name.toLowerCase() === name.toLowerCase())) {
+      alert("A Need category with this name already exists.");
+      return;
+    }
+    const budget = Number(newNeedAmount) || 0;
+    const colors = ["#3b82f6", "#22c55e", "#eab308", "#ef4444", "#a855f7", "#ec4899", "#06b6d4"];
+    const randomColor = colors[needsList.length % colors.length];
+    setNeedsList(prev => [...prev, {
+      name,
+      budget,
+      color: randomColor,
+      ringColor: randomColor,
+      txCategories: [name.toLowerCase()]
+    }]);
+    setNewNeedName("");
+    setNewNeedAmount("");
+  };
+
+  const removeNeed = (index: number) => {
+    setNeedsList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addWant = () => {
+    if (!newWantName.trim()) return;
+    const name = newWantName.trim();
+    if (wantsList.some(w => w.name.toLowerCase() === name.toLowerCase())) {
+      alert("A Want category with this name already exists.");
+      return;
+    }
+    const budget = Number(newWantAmount) || 0;
+    const colors = ["#3b82f6", "#22c55e", "#eab308", "#ef4444", "#a855f7", "#ec4899", "#06b6d4"];
+    const randomColor = colors[wantsList.length % colors.length];
+    setWantsList(prev => [...prev, {
+      name,
+      budget,
+      color: randomColor,
+      ringColor: randomColor,
+      txCategories: [name.toLowerCase()]
+    }]);
+    setNewWantName("");
+    setNewWantAmount("");
+  };
+
+  const removeWant = (index: number) => {
+    setWantsList(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -575,10 +631,20 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   </p>
                 </div>
 
-                <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-1.5 custom-scrollbar">
+                <div className="space-y-2.5 max-h-[200px] overflow-y-auto pr-1.5 custom-scrollbar">
                   {needsList.map((need, idx) => (
                     <div key={need.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
-                      <span className="text-xs font-semibold text-white">{need.name}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => removeNeed(idx)}
+                          className="text-red-400 hover:text-red-300 p-1 hover:bg-white/5 rounded transition cursor-pointer"
+                          title="Remove Category"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="text-xs font-semibold text-white truncate max-w-[120px]">{need.name}</span>
+                      </div>
                       <div className="relative w-32">
                         <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                         <input
@@ -590,6 +656,35 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Add Custom Need Inline Form */}
+                <div className="flex items-center gap-2 p-2 bg-[#1e293b]/20 border border-white/5 rounded-xl">
+                  <input
+                    type="text"
+                    placeholder="Custom Need Name"
+                    value={newNeedName}
+                    onChange={e => setNewNeedName(e.target.value)}
+                    className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                  />
+                  <div className="relative w-24">
+                    <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
+                    <input
+                      type="number"
+                      placeholder="Amt"
+                      value={newNeedAmount}
+                      onChange={e => setNewNeedAmount(e.target.value)}
+                      className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addNeed}
+                    disabled={!newNeedName.trim()}
+                    className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                  >
+                    Add
+                  </button>
                 </div>
 
                 <div className="flex gap-2 pt-2">
@@ -795,23 +890,62 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   {/* Manual editing card list */}
                   <div className="space-y-2">
                     <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Edit Wants Budgets Manually</h5>
-                    {wantsList.map((want, idx) => (
-                      <div key={want.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: want.color }} />
-                          <span className="text-xs font-semibold text-white">{want.name}</span>
+                    <div className="space-y-2.5 max-h-[160px] overflow-y-auto pr-1.5 custom-scrollbar">
+                      {wantsList.map((want, idx) => (
+                        <div key={want.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => removeWant(idx)}
+                              className="text-red-400 hover:text-red-300 p-1 hover:bg-white/5 rounded transition cursor-pointer"
+                              title="Remove Category"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: want.color }} />
+                            <span className="text-xs font-semibold text-white truncate max-w-[120px]">{want.name}</span>
+                          </div>
+                          <div className="relative w-32">
+                            <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
+                            <input
+                              type="number"
+                              className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                              value={want.budget}
+                              onChange={e => handleWantChange(idx, e.target.value)}
+                            />
+                          </div>
                         </div>
-                        <div className="relative w-32">
-                          <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
-                          <input
-                            type="number"
-                            className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
-                            value={want.budget}
-                            onChange={e => handleWantChange(idx, e.target.value)}
-                          />
-                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Custom Want Inline Form */}
+                    <div className="flex items-center gap-2 p-2 bg-[#1e293b]/20 border border-white/5 rounded-xl">
+                      <input
+                        type="text"
+                        placeholder="Custom Want Name"
+                        value={newWantName}
+                        onChange={e => setNewWantName(e.target.value)}
+                        className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                      />
+                      <div className="relative w-24">
+                        <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
+                        <input
+                          type="number"
+                          placeholder="Amt"
+                          value={newWantAmount}
+                          onChange={e => setNewWantAmount(e.target.value)}
+                          className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                        />
                       </div>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={addWant}
+                        disabled={!newWantName.trim()}
+                        className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
 
                 </div>

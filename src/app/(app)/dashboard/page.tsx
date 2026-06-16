@@ -356,7 +356,9 @@ export default function DashboardPage() {
                       {tx.type === "income" ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{tx.name}</p>
+                      <p className="text-sm font-medium leading-none">
+                        {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
+                      </p>
                       <p className="text-xs text-muted-foreground">{tx.category}</p>
                     </div>
                   </div>

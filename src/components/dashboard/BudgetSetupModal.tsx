@@ -72,10 +72,10 @@ export function BudgetSetupModal({ onComplete }: BudgetSetupModalProps) {
 
       const builtBudgets = [
         { name: "Rent & Utilities", budget: hOpt.value, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Housing", "Utilities"] },
-        { name: "Transport", budget: tOpt.value, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Transport"] },
-        { name: "Dining & Out", budget: dOpt.dining, color: "#f97316", ringColor: "#f97316", txCategories: ["Lifestyle", "Dining Out", "Food"] },
+        { name: "Transport", budget: tOpt.value, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Transport", "Transportation"] },
+        { name: "Dining & Out", budget: dOpt.dining, color: "#f97316", ringColor: "#f97316", txCategories: ["Lifestyle", "Dining Out", "Food", "Food & Dining"] },
         { name: "Groceries", budget: dOpt.groc, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Groceries"] },
-        { name: "Healthcare", budget: 2000, color: "#ef4444", ringColor: "#ef4444", txCategories: ["Healthcare", "Medical"] },
+        { name: "Healthcare", budget: 2000, color: "#ef4444", ringColor: "#ef4444", txCategories: ["Healthcare", "Medical", "Health"] },
         { name: "Savings", budget: 10000, color: "#eab308", ringColor: "#eab308", txCategories: ["Savings", "Investment"] },
       ];
 

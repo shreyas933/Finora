@@ -58,9 +58,10 @@ export default function ChatPage() {
     }
 
     // Format top 5 recent transactions
-    const recentTx = transactions.slice(0, 5).map(t =>
-      `${t.date}: ${t.name} - ${formatCurrency(t.amount)} (${t.category})`
-    ).join("\n      ");
+    const recentTx = transactions.slice(0, 5).map(t => {
+      const cleanName = t.name.includes(" || ") ? t.name.split(" || ")[0] : t.name;
+      return `${t.date}: ${cleanName} - ${formatCurrency(t.amount)} (${t.category})`;
+    }).join("\n      ");
 
     const contextStr = `
     User Financial Context:

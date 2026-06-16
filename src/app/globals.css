@@ -1201,3 +1201,158 @@ td,
   font-weight: 700;
   letter-spacing: -0.025em;
 }
+
+/* ─── Mobile Digital Wallet Redesign ────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.mobile-snap-carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0.5rem 1rem;
+}
+
+.mobile-card-wrapper {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  width: 82%;
+  max-width: 300px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mobile-card-wrapper.inactive {
+  transform: scale(0.91);
+  filter: brightness(0.6) contrast(0.9);
+}
+
+.mobile-add-card-slot {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  width: 82%;
+  max-width: 300px;
+  aspect-ratio: 1.58 / 1;
+  border-radius: 1.25rem;
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+
+.mobile-add-card-slot:active {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(0.97);
+}
+
+.mobile-bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mobile-bottom-sheet-content {
+  background: #0b1329;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-left-radius: 1.75rem;
+  border-top-right-radius: 1.75rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 88vh;
+  padding: 1.5rem;
+  overflow-y: auto;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-bottom-sheet-handle {
+  width: 3rem;
+  height: 0.3rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  margin: 0 auto 1.5rem;
+  flex-shrink: 0;
+}
+
+.mobile-perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mobile-perk-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.mobile-timeline-item {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.mobile-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.mobile-timeline-connector {
+  position: absolute;
+  top: 1.5rem;
+  left: 0.625rem;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mobile-timeline-item:last-child .mobile-timeline-connector {
+  display: none;
+}
+
+.mobile-timeline-marker {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  font-size: 0.6rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.mobile-timeline-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.875rem;
+  border-radius: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+

@@ -28,6 +28,7 @@ class UserIdBridgePlugin : Plugin() {
         val userId = call.getString("userId")
         val accessToken = call.getString("accessToken")
         val apiBase = call.getString("apiBase")
+        val isBudgetSet = call.getBoolean("isBudgetSet") ?: false
         if (userId.isNullOrBlank()) {
             call.reject("userId is required")
             return
@@ -35,6 +36,7 @@ class UserIdBridgePlugin : Plugin() {
 
         val editor = context.getSharedPreferences("finora_prefs", Context.MODE_PRIVATE).edit()
         editor.putString("user_id", userId)
+        editor.putBoolean("is_budget_set", isBudgetSet)
         if (!accessToken.isNullOrBlank()) {
             editor.putString("access_token", accessToken)
         }

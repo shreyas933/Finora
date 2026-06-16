@@ -88,7 +88,30 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           supabase.from("investments").select("*").order("created_at", { ascending: false }),
         ]);
 
-        if (txRes.data) setTransactions(txRes.data);
+        let loadedTxs = txRes.data || [];
+        const savedBudgets = localStorage.getItem("finora_budgets");
+        if (savedBudgets && loadedTxs.length > 0) {
+          const txsToAssign = loadedTxs.filter((t: any) => t.category === "Uncategorized" && t.name.includes(" || "));
+          if (txsToAssign.length > 0) {
+            console.log(`[FINORA] Auto-assigning ${txsToAssign.length} pending transactions on initial load.`);
+            await Promise.all(
+              txsToAssign.map(async (t: any) => {
+                const parts = t.name.split(" || ");
+                const cleanName = parts[0];
+                const designatedCategory = parts[1];
+                await supabase
+                  .from("transactions")
+                  .update({ name: cleanName, category: designatedCategory })
+                  .eq("id", t.id);
+              })
+            );
+            // Re-fetch transactions
+            const freshTxs = await supabase.from("transactions").select("*").order("date", { ascending: false });
+            if (freshTxs.data) loadedTxs = freshTxs.data;
+          }
+        }
+
+        setTransactions(loadedTxs);
         if (goalsRes.data) setGoals(goalsRes.data);
         if (invRes.data) setInvestments(invRes.data);
       } catch (err) {
@@ -115,6 +138,36 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Listen for budget updates to run auto-assignment of pending transactions
+  useEffect(() => {
+    const handleBudgetUpdate = async () => {
+      const savedBudgets = localStorage.getItem("finora_budgets");
+      if (!savedBudgets || transactions.length === 0) return;
+
+      const txsToAssign = transactions.filter((t) => t.category === "Uncategorized" && t.name.includes(" || "));
+      if (txsToAssign.length > 0) {
+        console.log(`[FINORA] Budget update event triggered. Auto-assigning ${txsToAssign.length} pending transactions.`);
+        await Promise.all(
+          txsToAssign.map(async (t) => {
+            const parts = t.name.split(" || ");
+            const cleanName = parts[0];
+            const designatedCategory = parts[1];
+            await supabase
+              .from("transactions")
+              .update({ name: cleanName, category: designatedCategory })
+              .eq("id", t.id);
+          })
+        );
+        // Re-fetch transactions
+        const freshTxs = await supabase.from("transactions").select("*").order("date", { ascending: false });
+        if (freshTxs.data) setTransactions(freshTxs.data);
+      }
+    };
+
+    window.addEventListener("finora_budget_update", handleBudgetUpdate);
+    return () => window.removeEventListener("finora_budget_update", handleBudgetUpdate);
+  }, [transactions, supabase]);
 
   // ── TRANSACTIONS ──
   const addTransaction = async (t: Omit<Transaction, "id">) => {
