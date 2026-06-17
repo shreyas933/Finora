@@ -163,7 +163,38 @@ function mockParseTransaction(raw: string) {
     availableBalance = parseFloat(avlBalMatch[1].replace(/,/g, ""));
   }
 
-  return { name, amount, category, type, ...(availableBalance !== undefined ? { availableBalance } : {}) };
+  // Extract card digits (last 4 digits)
+  let cardDigits: string | undefined = undefined;
+  const cardMatch = raw.match(/\b(?:card|a\/c|ending\s*(?:in)?|xx|x+)\s*\*?([0-9]{4})\b/i);
+  if (cardMatch) {
+    cardDigits = cardMatch[1];
+  }
+
+  // Extract bank / issuer
+  let bank: string | undefined = undefined;
+  const bankMatch = raw.match(/\b(hdfc|icici|sbi|axis|kotak|hsbc|citi|rbl|pnb|bob|yes bank|yesbank|union)\b/i);
+  if (bankMatch) {
+    const b = bankMatch[1].toLowerCase();
+    if (b === 'hdfc') bank = 'HDFC Bank';
+    else if (b === 'icici') bank = 'ICICI Bank';
+    else if (b === 'sbi') bank = 'SBI';
+    else if (b === 'axis') bank = 'Axis Bank';
+    else if (b === 'kotak') bank = 'Kotak Bank';
+    else if (b === 'pnb') bank = 'PNB';
+    else if (b === 'bob') bank = 'Bank of Baroda';
+    else if (b === 'union') bank = 'Union Bank';
+    else bank = b.charAt(0).toUpperCase() + b.slice(1);
+  }
+
+  return {
+    name,
+    amount,
+    category,
+    type,
+    ...(availableBalance !== undefined ? { availableBalance } : {}),
+    ...(cardDigits !== undefined ? { cardDigits } : {}),
+    ...(bank !== undefined ? { bank } : {})
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -226,6 +257,12 @@ Return ONLY the JSON object. Example: {"name":"Zomato","amount":450,"category":"
         parsed.type = localParsed.type;
         if (localParsed.availableBalance !== undefined) {
           parsed.availableBalance = localParsed.availableBalance;
+        }
+        if (localParsed.cardDigits !== undefined) {
+          parsed.cardDigits = localParsed.cardDigits;
+        }
+        if (localParsed.bank !== undefined) {
+          parsed.bank = localParsed.bank;
         }
       }
     }

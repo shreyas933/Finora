@@ -11,7 +11,7 @@ import {
   Plane, Hotel, ShoppingBag, Utensils, Fuel, Wifi, Gift, Star,
   ChevronRight, ChevronDown, Sparkles, Zap, TrendingDown, Home, Car, Dumbbell,
   Tv, Stethoscope, GraduationCap, BarChart3, Wallet,
-  Landmark, Coins, Trash2, CheckCircle2
+  Landmark, Coins, Trash2, CheckCircle2, Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -935,6 +935,7 @@ interface CreditViewProps {
   targetOffset: number;
   addWalletItem: (item: WalletItem) => void;
   deleteWalletItem: (id: string, e: React.MouseEvent) => void;
+  creditCardOutstanding: number;
 }
 
 // ─── Mobile slide-up bottom drawer ──────────────────────────────────────────
@@ -990,7 +991,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
         </div>
 
         <div className="modal-progress-track mb-5 mx-0 bg-slate-800">
-          <div className="modal-progress-fill" style={{ width: step === 1 ? "50%" : "100%" }} />
+          <div className="modal-progress-fill bg-violet-600" style={{ width: step === 1 ? "50%" : "100%" }} />
         </div>
 
         <AnimatePresence mode="wait">
@@ -1034,12 +1035,12 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
             <motion.div key="mstep2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3.5">
               <div className="form-group">
                 <label className="form-label text-[11px]">Card Name *</label>
-                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} />
+                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
               </div>
 
               <div className="form-group">
                 <label className="form-label text-[11px]">Bank / Issuer *</label>
-                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} />
+                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
               </div>
 
               <div className="form-group">
@@ -1049,13 +1050,14 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                   maxLength={4} 
                   value={form.number} 
                   onChange={e => handle("number", e.target.value.replace(/\D/g, ""))} 
+                  className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500"
                 />
               </div>
 
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label text-[11px]">Network</label>
-                  <select className="form-select bg-slate-900 border-white/10" value={form.network} onChange={e => handle("network", e.target.value)}>
+                  <select className="form-select bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 py-1.5 px-3 rounded-md" value={form.network} onChange={e => handle("network", e.target.value)}>
                     <option value="visa">Visa</option>
                     <option value="mastercard">Mastercard</option>
                     <option value="amex">Amex</option>
@@ -1084,23 +1086,23 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label text-[11px]">Credit Limit (₹)</label>
-                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} />
+                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
                   </div>
                   <div className="form-group">
                     <label className="form-label text-[11px]">Billing Date (1–31)</label>
-                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} />
+                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
                   </div>
                 </div>
               ) : (
                 <div className="form-group">
                   <label className="form-label text-[11px]">Linked Account Code / Name</label>
-                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} />
+                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
                 </div>
               )}
 
               <div className="form-group">
                 <label className="form-label text-[11px]">Card Perks / Benefits</label>
-                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} />
+                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
                 <p className="form-hint text-[10px] text-slate-500">Comma-separated keywords.</p>
               </div>
 
@@ -1176,6 +1178,7 @@ function MobileCreditView({
   targetOffset,
   addWalletItem,
   deleteWalletItem,
+  creditCardOutstanding,
 }: CreditViewProps) {
   // Mobile timeline calculations
   const daysWithEvents = useMemo(() => {
@@ -1193,6 +1196,95 @@ function MobileCreditView({
     });
     return events.sort((a, b) => a.day - b.day);
   }, [creditCards]);
+
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [lastTxCount, setLastTxCount] = useState(transactions.length);
+  const [pulseActive, setPulseActive] = useState(false);
+
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [selectedItem?.id]);
+
+  useEffect(() => {
+    if (transactions.length > lastTxCount) {
+      const latestTx = transactions[0];
+      if (latestTx && latestTx.type === "expense" && selectedItem) {
+        const match = latestTx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
+        if (match && match[1] === selectedItem.number) {
+          setPulseActive(true);
+          const timer = setTimeout(() => setPulseActive(false), 2000);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+    setLastTxCount(transactions.length);
+  }, [transactions.length, selectedItem, lastTxCount]);
+
+  const GLOW_COLORS: Record<CardColor, string> = {
+    purple: "rgba(124, 58, 237, 0.15)",
+    blue: "rgba(14, 165, 233, 0.15)",
+    gold: "rgba(217, 119, 6, 0.15)",
+    graphite: "rgba(71, 85, 105, 0.15)",
+    green: "rgba(16, 185, 129, 0.15)",
+    teal: "rgba(20, 184, 166, 0.15)",
+    orange: "rgba(249, 115, 22, 0.15)"
+  };
+
+  const nextBestSwipe = useMemo(() => {
+    if (items.length === 0) return null;
+    const categories = ["Food", "Lifestyle", "Transport", "Travel"];
+    const categoryDetails: Record<string, { label: string, platform: string, icon: any }> = {
+      Food: { label: "Food & Dining", platform: "Zomato / Swiggy", icon: Utensils },
+      Lifestyle: { label: "Shopping", platform: "Amazon / Flipkart", icon: ShoppingBag },
+      Transport: { label: "Fuel stations", platform: "HPCL / BPCL", icon: Fuel },
+      Travel: { label: "Lounge or Flights", platform: "MakeMyTrip / Airport", icon: Plane }
+    };
+    for (const cat of categories) {
+      const bestCard = findOptimalWalletItemForCategory(cat, items);
+      if (bestCard && bestCard.type === "credit") {
+        const details = categoryDetails[cat];
+        const tip = CATEGORY_TIPS[cat] ?? DEFAULT_TIP;
+        const isPerkMatch = bestCard.perks.some(p => p.toLowerCase().includes(tip.idealPerk.toLowerCase()));
+        if (isPerkMatch) {
+          return {
+            cardName: bestCard.name,
+            category: details.label,
+            platform: details.platform,
+            benefit: tip.perk.split(" ")[0] + " rewards",
+            color: bestCard.color,
+            icon: details.icon
+          };
+        }
+      }
+    }
+    const firstCredit = items.find(i => i.type === "credit") || items[0];
+    return {
+      cardName: firstCredit.name,
+      category: "Spends",
+      platform: "Any checkout",
+      benefit: "Standard rewards",
+      color: firstCredit.color,
+      icon: Star
+    };
+  }, [items]);
+
+  // Card outstanding and swipe activity calculations
+  const cardTransactions = useMemo(() => {
+    if (!selectedItem) return [];
+    return transactions.filter(tx => {
+      if (tx.type !== "expense") return false;
+      const match = tx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
+      return match ? match[1] === selectedItem.number : false;
+    });
+  }, [selectedItem, transactions]);
+
+  const cardOutstanding = useMemo(() => {
+    return cardTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+  }, [cardTransactions]);
+
+  const cardLimitNum = selectedItem?.limit ? Number(selectedItem.limit) : 0;
+  const remainingLimit = Math.max(0, cardLimitNum - cardOutstanding);
+  const cardUtilPercent = cardLimitNum > 0 ? Math.min(100, Math.round((cardOutstanding / cardLimitNum) * 100)) : 0;
 
   // Card efficiency analyzer calculations
   const categorySpend: Record<string, number> = {};
@@ -1224,7 +1316,7 @@ function MobileCreditView({
   const scoreNum = Number(currentScore);
 
   return (
-    <div className="space-y-6 pb-20 relative px-1">
+    <div className="space-y-6 pb-28 relative px-4 pt-4 -mx-4 -mt-4 bg-[#080d19] min-h-[calc(100vh-4rem)] text-slate-100">
       {/* Compact Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -1284,6 +1376,55 @@ function MobileCreditView({
       {/* ── Mobile Tab 1: Cards & Perks ── */}
       {activeSegment === "wallet" && (
         <div className="space-y-6 animate-fadeIn">
+          <style>{`
+            @keyframes cardPulse {
+              0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); }
+              70% { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
+              100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+            }
+            .animate-pulse-glow {
+              animation: cardPulse 1.5s infinite;
+            }
+          `}</style>
+
+          {/* Next Best Swipe Banner */}
+          {nextBestSwipe && (
+            <div 
+              className="p-3.5 rounded-2xl border flex items-center gap-3 relative overflow-hidden backdrop-blur-xl transition-all duration-300 active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, rgba(30,41,59,0.5) 0%, rgba(15,23,42,0.6) 100%)",
+                borderColor: `rgba(${nextBestSwipe.color === 'gold' ? '217,119,6' : nextBestSwipe.color === 'purple' ? '124,58,237' : nextBestSwipe.color === 'blue' ? '14,165,233' : '139,92,246'}, 0.25)`,
+                boxShadow: `0 4px 20px rgba(0,0,0,0.3)`
+              }}
+            >
+              <div 
+                className="p-2.5 rounded-xl shrink-0 text-white font-bold"
+                style={{ 
+                  background: CARD_COLORS[nextBestSwipe.color].bg,
+                  boxShadow: `0 0 15px ${GLOW_COLORS[nextBestSwipe.color]}`
+                }}
+              >
+                <nextBestSwipe.icon className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Next Best Swipe</span>
+                <p className="text-[10px] text-white font-bold truncate mt-0.5">
+                  Spend on <span className="text-violet-400">{nextBestSwipe.platform}</span> using <span style={{ color: TAG_COLORS[nextBestSwipe.color] || '#a78bfa' }}>{nextBestSwipe.cardName}</span>
+                </p>
+                <span className="text-[9px] text-emerald-400 font-semibold block mt-0.5">
+                  ✓ Unlocks {nextBestSwipe.benefit}
+                </span>
+              </div>
+              
+              <div className="absolute top-2.5 right-2.5 flex items-center justify-center">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Header controls for Carousel */}
           <div className="flex justify-between items-center px-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Swipe Card Deck</span>
@@ -1318,19 +1459,102 @@ function MobileCreditView({
             <>
               {/* Snap Horizontal Carousel */}
               <div className="mobile-snap-carousel no-scrollbar -mx-4">
-                {filteredItems.map(item => (
-                  <div 
-                    key={item.id} 
-                    className={cn("mobile-card-wrapper", selectedItem?.id !== item.id && "inactive")}
-                  >
-                    <WalletItemVisual 
-                      item={item} 
-                      selected={selectedItem?.id === item.id} 
-                      onClick={() => setSelectedItem(item)}
-                      onDelete={deleteWalletItem}
-                    />
-                  </div>
-                ))}
+                {filteredItems.map(item => {
+                  const cardSelected = selectedItem?.id === item.id;
+                  const cardFlipped = cardSelected && isFlipped;
+
+                  return (
+                    <div 
+                      key={item.id} 
+                      className={cn("mobile-card-wrapper", !cardSelected && "inactive")}
+                      style={{ perspective: 1000 }}
+                    >
+                      <div 
+                        className="relative w-full transition-transform duration-500"
+                        style={{ 
+                          transformStyle: "preserve-3d", 
+                          transform: cardFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                          width: "100%",
+                          height: "100%"
+                        }}
+                        onClick={() => {
+                          if (cardSelected) {
+                            setIsFlipped(!isFlipped);
+                          } else {
+                            setSelectedItem(item);
+                          }
+                        }}
+                      >
+                        {/* Front of Card */}
+                        <div 
+                          style={{ 
+                            backfaceVisibility: "hidden", 
+                            width: "100%", 
+                            height: "100%" 
+                          }}
+                        >
+                          <div className={cn("relative rounded-2xl", cardSelected && pulseActive && "animate-pulse-glow")}>
+                            <WalletItemVisual 
+                              item={item} 
+                              selected={cardSelected} 
+                              onClick={() => {}} 
+                              onDelete={deleteWalletItem}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Back of Card */}
+                        <div 
+                          className="absolute inset-0 rounded-2xl p-4 flex flex-col justify-between border"
+                          style={{ 
+                            backfaceVisibility: "hidden", 
+                            transform: "rotateY(180deg)", 
+                            background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+                            borderColor: "rgba(255,255,255,0.08)",
+                            boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                            width: "100%",
+                            height: "100%"
+                          }}
+                        >
+                          {/* Black Magnetic Strip */}
+                          <div className="w-full h-5 bg-slate-950 -mx-4 mt-2" />
+                          
+                          {/* Signature Area */}
+                          <div className="flex justify-between items-center bg-slate-800/80 px-2 py-1.5 rounded-lg border border-white/5 mt-2">
+                            <span className="text-[7px] text-slate-400 font-mono tracking-widest uppercase">Authorized Signature</span>
+                            <span className="text-[9px] font-bold text-white font-mono bg-white/5 px-2 py-0.5 rounded">CVV: ***</span>
+                          </div>
+
+                          <div className="flex-1 mt-3 space-y-1.5 text-left">
+                            <div className="flex justify-between items-center text-[9px] text-slate-300">
+                              <span>Billing Cycle Closes:</span>
+                              <span className="font-bold text-violet-400">{item.billingDate ? `${item.billingDate}th` : "N/A"}</span>
+                            </div>
+                            {item.type === "credit" ? (
+                              <div className="flex justify-between items-center text-[9px] text-slate-300">
+                                <span>Credit Limit:</span>
+                                <span className="font-bold text-emerald-400">{item.limit ? formatCurrency(Number(item.limit)) : "N/A"}</span>
+                              </div>
+                            ) : (
+                              <div className="flex justify-between items-center text-[9px] text-slate-300">
+                                <span>Linked Account:</span>
+                                <span className="font-bold text-emerald-400 truncate max-w-[100px]">{item.linkedAccount || "N/A"}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between items-center text-[9px] text-slate-300">
+                              <span>Protocol:</span>
+                              <span className="font-bold text-slate-400 uppercase">{item.network} Secure</span>
+                            </div>
+                          </div>
+
+                          <div className="text-[7px] text-slate-500 text-center font-mono mt-1 leading-none">
+                            TAP CARD TO RETURN
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
                 
                 <div 
                   onClick={() => setShowModal(true)} 
@@ -1353,6 +1577,72 @@ function MobileCreditView({
                       •••• {selectedItem.number}
                     </span>
                   </div>
+
+                  {selectedItem.type === "credit" && (
+                    <div 
+                      className="p-3.5 rounded-xl bg-slate-950/60 border transition-all duration-300 space-y-3"
+                      style={{
+                        borderColor: `rgba(${selectedItem.color === 'gold' ? '217,119,6' : selectedItem.color === 'purple' ? '124,58,237' : selectedItem.color === 'blue' ? '14,165,233' : '139,92,246'}, 0.25)`,
+                        boxShadow: `0 4px 20px ${GLOW_COLORS[selectedItem.color] || 'rgba(0,0,0,0)'}`
+                      }}
+                    >
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-400 font-medium">Outstanding Balance</span>
+                        <span className="text-white font-extrabold">{formatCurrency(cardOutstanding)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-400 font-medium">Available Limit</span>
+                        <span className="text-emerald-400 font-bold">{formatCurrency(remainingLimit)} <span className="text-[9px] text-slate-500 font-normal">/ {formatCurrency(cardLimitNum)}</span></span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
+                          <div 
+                            className={cn(
+                              "h-full rounded-full transition-all duration-500",
+                              cardUtilPercent > 50 ? "bg-red-500" : cardUtilPercent > 30 ? "bg-amber-500" : "bg-emerald-500"
+                            )}
+                            style={{ width: `${cardUtilPercent}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[8px] font-bold text-slate-500">
+                          <span>{cardUtilPercent}% Utilized</span>
+                          <span className={cn(cardUtilPercent > 50 ? "text-red-400" : cardUtilPercent > 30 ? "text-amber-400" : "text-emerald-400")}>
+                            {cardUtilPercent > 50 ? "High Utilization Warning" : cardUtilPercent > 30 ? "Approaching Limit" : "Healthy Range"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedItem.type === "credit" && (
+                    <div className="space-y-2">
+                      <h5 className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Recent Swipe Activity</h5>
+                      {cardTransactions.length === 0 ? (
+                        <p className="text-[9px] text-slate-500 italic py-3 text-center bg-slate-950/30 rounded-xl border border-white/5">
+                          No recent swipes logged. Trigger a swipe simulation to check real-time tracking!
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                          {cardTransactions.slice(0, 4).map((tx) => (
+                            <div key={tx.id} className="flex justify-between items-center p-2 rounded-xl bg-slate-950/40 border border-white/5 hover:border-white/10 transition">
+                              <div className="min-w-0">
+                                <span className="text-[10px] font-bold text-white block truncate">
+                                  {tx.name.replace(/\s*\([^)]+\)$/, "")}
+                                </span>
+                                <span className="text-[8px] text-slate-500 block">
+                                  {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-extrabold text-red-400 shrink-0 ml-2">
+                                -{formatCurrency(tx.amount)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="mobile-perks-list">
                     {benefits.map((b, i) => {
@@ -1416,36 +1706,67 @@ function MobileCreditView({
                 </div>
 
                 {topCategories.length === 0 ? (
-                  <p className="text-[10px] text-slate-400 text-center py-2">Add transaction logs to populate recommendations.</p>
+                  <div className="flex flex-col items-center justify-center py-6 text-center gap-2 border border-dashed border-white/10 rounded-xl bg-slate-950/20">
+                    <BarChart3 className="h-6 w-6 text-slate-500 opacity-60" />
+                    <p className="text-[10px] text-slate-400 max-w-[200px] leading-normal">Add transaction expenses in the Dashboard or Transactions section to unlock smart routing tips.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-2 pt-1">
+                  <div className="space-y-3 pt-1">
                     {topCategories.map(([category, amount]) => {
                       const tip = CATEGORY_TIPS[category] ?? DEFAULT_TIP;
                       const Icon = tip.icon;
                       const bestItem = findOptimalWalletItemForCategory(category, items);
                       
                       return (
-                        <div key={category} className="flex justify-between items-center p-2.5 rounded-xl bg-slate-950/40 border border-white/5">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg" style={{ background: `${tip.color}15`, color: tip.color }}>
-                              <Icon className="h-3.5 w-3.5" />
+                        <div 
+                          key={category} 
+                          className="p-3 rounded-xl bg-slate-950/40 border border-white/5 flex flex-col gap-2.5 transition-all active:scale-[0.99]"
+                          style={{ borderLeft: `3px solid ${tip.color}` }}
+                        >
+                          <div className="flex justify-between items-center">
+                            {/* Left Side: Category Icon, Label & Platforms */}
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 rounded-lg shrink-0" style={{ background: `${tip.color}15`, color: tip.color }}>
+                                <Icon className="h-3.5 w-3.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <span className="text-[11px] font-bold text-white block truncate">{tip.label}</span>
+                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                  {tip.platforms.slice(0, 2).map(p => (
+                                    <span key={p} className="text-[8px] bg-white/5 text-slate-400 px-1 py-0.2 rounded border border-white/5">{p}</span>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-[11px] font-bold text-white block">{tip.label}</span>
-                              <span className="text-[9px] text-slate-400">{formatCurrency(amount)} spend</span>
+
+                            {/* Right Side: Spend Amount */}
+                            <div className="text-right shrink-0">
+                              <span className="text-[11px] font-extrabold text-white block">{formatCurrency(amount)}</span>
+                              <span className="text-[8px] text-slate-500 block">Monthly Spend</span>
                             </div>
                           </div>
-                          {bestItem ? (
-                            <div className="text-right">
-                              <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white font-bold inline-flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full" style={{ background: CARD_COLORS[bestItem.color].bg }} />
-                                {bestItem.name.split(" ")[0]}
-                              </span>
-                              <span className="text-[9px] block mt-0.5" style={{ color: tip.color }}>{tip.pointsMultiplier} points</span>
-                            </div>
-                          ) : (
-                            <span className="text-[9px] text-slate-500">No cards</span>
-                          )}
+
+                          {/* Bottom Row: Best Card badge & points multiplier */}
+                          <div className="flex justify-between items-center pt-2 border-t border-white/5 mt-0.5">
+                            {bestItem ? (
+                              <>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Best Card:</span>
+                                  <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white font-bold inline-flex items-center gap-1 truncate max-w-[140px]">
+                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: CARD_COLORS[bestItem.color].bg }} />
+                                    <span className="truncate">{bestItem.name}</span>
+                                  </span>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <span className="text-[9px] font-black flex items-center gap-0.5 justify-end" style={{ color: tip.color }}>
+                                    {tip.pointsMultiplier} multiplier
+                                  </span>
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-[9px] text-slate-500">No cards matched</span>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -1491,6 +1812,57 @@ function MobileCreditView({
               <div className="text-center border-l border-white/5">
                 <span className="text-[9px] text-slate-400 block uppercase tracking-wider font-semibold">Utilization</span>
                 <span className="text-base font-bold text-white">{computedUtil}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Configuration Card */}
+          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-white/5">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Configure Credit Profile</h4>
+              <Smartphone className="h-3.5 w-3.5 text-violet-400" />
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Enter Current Credit Score (300–850)</label>
+                <Input 
+                  type="number" 
+                  placeholder="720" 
+                  value={currentScore}
+                  onChange={e => { 
+                    setCurrentScore(e.target.value); 
+                    setSimulationActive(false); 
+                  }}
+                  min={300} 
+                  max={850}
+                  className="bg-[#0f172a] border-white/10 text-white text-xs h-9 focus:border-violet-500/50"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">
+                  Revolving Utilization (%) {isDynamicUtil && <span className="text-[9px] text-emerald-400 font-bold">(Auto-Calculated)</span>}
+                </label>
+                <Input 
+                  type="number" 
+                  placeholder="30" 
+                  value={isDynamicUtil ? computedUtil.toString() : utilization}
+                  onChange={e => { 
+                    setUtilization(e.target.value); 
+                    setSimulationActive(false); 
+                  }}
+                  disabled={isDynamicUtil}
+                  className={cn(
+                    "text-xs h-9 bg-[#0f172a] border-white/10 text-white focus:border-violet-500/50",
+                    isDynamicUtil && "border-emerald-500/20 text-emerald-400 font-bold opacity-80 cursor-not-allowed bg-slate-950/40"
+                  )}
+                />
+                {isDynamicUtil && (
+                  <span className="text-[8px] text-slate-500 block leading-normal mt-1">
+                    Auto-calculated from total cards limit (₹{totalLimit.toLocaleString("en-IN")}) and active outstanding swipes (₹{creditCardOutstanding.toLocaleString("en-IN")}).
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1557,6 +1929,23 @@ function MobileCreditView({
               </Button>
             )}
           </div>
+
+          {/* Actionable Credit Insights Card */}
+          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4 animate-fadeIn">
+            <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+              <Sparkles className="h-4 w-4 text-violet-400 shrink-0" />
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Actionable Credit Insights</h4>
+            </div>
+
+            <ul className="space-y-3.5">
+              {generatedInsights.map((insight, idx) => (
+                <li key={idx} className="text-[10px] text-slate-400 flex items-start gap-2.5 leading-normal">
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-violet-400 mt-0.5" />
+                  <span>{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
@@ -1569,7 +1958,7 @@ function MobileCreditView({
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Total Cards Limit</span>
               <span className="text-lg font-bold text-white block mt-0.5">{formatCurrency(totalLimit)}</span>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mt-2">Dynamic Utilization</span>
-              <span className="text-lg font-bold text-emerald-400 block mt-0.5">{formatCurrency(monthlyExpenses)} ({computedUtil}%)</span>
+              <span className="text-lg font-bold text-emerald-400 block mt-0.5">{formatCurrency(creditCardOutstanding)} ({computedUtil}%)</span>
             </div>
 
             <div className="relative w-20 h-20 flex items-center justify-center">
@@ -1702,6 +2091,7 @@ function DesktopCreditView({
   targetOffset,
   addWalletItem,
   deleteWalletItem,
+  creditCardOutstanding,
 }: CreditViewProps) {
   const scoreNum = Number(currentScore);
   return (
@@ -2190,13 +2580,25 @@ export default function CreditPage() {
 
   const scoreNum = Number(currentScore);
 
+  const creditCardOutstanding = useMemo(() => {
+    const creditNumbers = new Set(items.filter(i => i.type === "credit").map(i => i.number));
+    return transactions.reduce((sum, tx) => {
+      if (tx.type !== "expense") return sum;
+      const match = tx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
+      if (match && creditNumbers.has(match[1])) {
+        return sum + tx.amount;
+      }
+      return sum;
+    }, 0);
+  }, [items, transactions]);
+
   const totalLimit = items
     .filter(i => i.type === "credit" && i.limit)
     .reduce((acc, i) => acc + Number(i.limit), 0);
 
   const isDynamicUtil = totalLimit > 0;
   const computedUtil = isDynamicUtil 
-    ? Math.min(100, Math.round((monthlyExpenses / totalLimit) * 100))
+    ? Math.min(100, Math.round((creditCardOutstanding / totalLimit) * 100))
     : Number(utilization);
 
   let scoreCategory = "Poor";
@@ -2229,7 +2631,7 @@ export default function CreditPage() {
 
   if (isDynamicUtil) {
     if (computedUtil > 30) {
-      generatedInsights.push(`High Card Utilization: Your dynamic utilization is ${computedUtil}% (₹${monthlyExpenses.toLocaleString("en-IN")} spent against ₹${totalLimit.toLocaleString("en-IN")} limits). Shift minor expenses to your ${debitCards[0]?.name || "Debit Card"} to instantly drop this below 30%!`);
+      generatedInsights.push(`High Card Utilization: Your dynamic utilization is ${computedUtil}% (₹${creditCardOutstanding.toLocaleString("en-IN")} spent against ₹${totalLimit.toLocaleString("en-IN")} limits). Shift minor expenses to your ${debitCards[0]?.name || "Debit Card"} to instantly drop this below 30%!`);
     } else {
       generatedInsights.push(`Good job! Your card utilization is at a healthy ${computedUtil}%. Keeping utilization below 30% acts as a major catalyst for credit growth.`);
     }
@@ -2352,6 +2754,7 @@ export default function CreditPage() {
     targetOffset,
     addWalletItem,
     deleteWalletItem,
+    creditCardOutstanding,
   };
 
   if (isMobileApp) {

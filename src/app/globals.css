@@ -1356,3 +1356,26 @@ td,
   align-items: center;
 }
 
+/* ─── Mobile Bottom Sheet Dark Overrides ──────────────────────────────── */
+.mobile-bottom-sheet-content .form-label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.mobile-bottom-sheet-content .perk-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+.mobile-bottom-sheet-content .perk-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.mobile-bottom-sheet-content .perk-chip.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #a78bfa;
+}
+

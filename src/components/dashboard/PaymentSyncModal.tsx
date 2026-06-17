@@ -7,16 +7,20 @@ import { createClient } from "@/utils/supabase/client";
 
 // ─── Simulated GPay notification strings ──────────────────────────────────────
 const SAMPLE_NOTIFICATIONS = [
-  "\u20B9450 paid to Zomato via UPI. UPI Ref: 412938201. HDFC Bank",
-  "\u20B91,250 paid to Amazon.in via UPI. Ref: 509128374. ICICI Bank",
-  "\u20B985 paid to Uber via UPI. Ref: 301927465. SBI",
-  "\u20B9340 paid to Swiggy via UPI. Ref: 612039812. Axis Bank",
-  "\u20B92,800 paid to MakeMyTrip via UPI. Ref: 718293041. HDFC Bank",
+  "Spent Rs.450.00 on HDFC Bank Credit Card ending 4321 at ZOMATO on 2026-06-17.",
+  "Spent Rs.1,250.00 on SBI Card ending 9876 at Amazon.in on 2026-06-17.",
+  "Txn of INR 85.00 on HDFC Bank Card xx4321 at Uber.",
+  "Spent Rs.340.00 on SBI Card ending 9876 at Swiggy.",
+  "Spent Rs.2,800.00 on HDFC Bank Card ending 4321 at MakeMyTrip.",
   "\u20B9199 paid to Netflix via UPI. Ref: 823910472. Kotak Bank",
   "\u20B9550 paid to Myntra via UPI. Ref: 934812039. ICICI Bank",
 ];
 
 const SAMPLE_SMS = [
+  "Spent Rs.450.00 on HDFC Bank Credit Card ending 4321 at ZOMATO on 2026-06-17.",
+  "Your SBI Card ending in 9876 has been debited by Rs.1200.00 at Amazon.in.",
+  "Txn of INR 50.00 on ICICI Bank Card xx1234 at Chaayos.",
+  "Transaction of Rs 500 on Kotak Debit Card xxxx4321 at Starbucks.",
   "Dear Customer, your A/c XX1293 has been debited by Rs. 850.00 on 2026-05-28 for UPI Ref 610928374829 paid to Swiggy. - HDFC Bank",
   "Union Bank SMS: Rs. 140.00 debited from A/c XX9021. Ref: UPI/6102983746/Zomato. Charges nil.",
   "SBI SMS: Your A/c XX3829 debited by Rs. 2,500.00. UPI Ref 6102837465 paid to MakeMyTrip.",
