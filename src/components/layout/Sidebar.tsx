@@ -70,7 +70,7 @@ export function Sidebar() {
       </div>
 
       {/* ─── Mobile Bottom Navigation Bar (visible only on mobile) ─── */}
-      <div className="md:hidden fixed bottom-3 left-4 right-4 z-50 bg-background/20 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-foreground">
+      <div className="md:hidden fixed bottom-3 left-4 right-4 z-50 bg-background/20 backdrop-blur-2xl border border-border/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-foreground">
         <nav className="flex justify-around items-center h-16 px-4">
           {mobileRoutes.map((route) => {
             const isActive = pathname === route.href;
