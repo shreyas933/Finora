@@ -5,14 +5,14 @@ export const maxDuration = 60;
 // ── Smart mock responses for total offline fallback ──────────────────────────
 function generateMockResponse(userMessage: string, financialContext: string): string {
   const msg = userMessage.toLowerCase();
-  const balanceMatch = financialContext.match(/Balance[:\s₹]+([0-9,]+)/i);
-  const incomeMatch = financialContext.match(/Income[:\s₹]+([0-9,]+)/i);
-  const expensesMatch = financialContext.match(/Expenses[:\s₹]+([0-9,]+)/i);
+  const balanceMatch = financialContext.match(/Balance[:\s]+[^\d]*([0-9,.]+)/i);
+  const incomeMatch = financialContext.match(/Income[:\s]+[^\d]*([0-9,.]+)/i);
+  const expensesMatch = financialContext.match(/Expenses[:\s]+[^\d]*([0-9,.]+)/i);
   const savingsMatch = financialContext.match(/Savings Rate[:\s]+([0-9.]+)/i);
 
-  const balance = balanceMatch ? parseInt(balanceMatch[1].replace(/,/g, "")) : 111300;
-  const income = incomeMatch ? parseInt(incomeMatch[1].replace(/,/g, "")) : 150000;
-  const expenses = expensesMatch ? parseInt(expensesMatch[1].replace(/,/g, "")) : 38700;
+  const balance = balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, "")) : 111300;
+  const income = incomeMatch ? parseFloat(incomeMatch[1].replace(/,/g, "")) : 150000;
+  const expenses = expensesMatch ? parseFloat(expensesMatch[1].replace(/,/g, "")) : 38700;
   const savingsRate = savingsMatch ? parseFloat(savingsMatch[1]) : 74.2;
 
   if (msg.includes("trip") || msg.includes("travel") || msg.includes("vacation")) {
@@ -78,12 +78,12 @@ To fund this purchase cleanly without breaking your cashflow stability, here are
   return `### 👨‍💼 FINORA AI CFO Financial Audit
 
 Here is your current financial snapshot:
-* 💰 **Liquid Balance:** ₹${balance.toLocaleString("en-IN")}
-* 📈 **Monthly Cashflow In:** ₹${income.toLocaleString("en-IN")}
-* 📉 **Active Outlays:** ₹${expenses.toLocaleString("en-IN")}
+* 💰 **Liquid Balance:** ${balance.toLocaleString()}
+* 📈 **Monthly Cashflow In:** ${income.toLocaleString()}
+* 📉 **Active Outlays:** ${expenses.toLocaleString()}
 * 💎 **Savings Ratio:** ${savingsRate.toFixed(1)}%
 
-Ask me specific purchase checkout checks, card vs UPI optimizations, or goals timetables, and I will outline **multiple tailored execution paths** for you!`;
+*(Note: You are currently talking to the **Offline Mock AI** because no Groq or Gemini API keys are configured in your environment variables. This mock AI only responds to specific keywords like "trip", "afford", or "savings".)*`;
 }
 
 // ── Build the full system prompt ─────────────────────────────────────────────
