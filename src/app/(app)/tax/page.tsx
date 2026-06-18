@@ -363,7 +363,7 @@ export default function TaxOptimizationPage() {
             <div className="mt-8 border-t border-white/5 pt-6">
                {!aiLoopholes.length ? (
                   <Button 
-                    className="w-full h-14 bg-violet-600 hover:bg-violet-500 text-white font-bold gap-3 rounded-xl border border-violet-400/30 shadow-[0_0_20px_rgba(139,92,246,0.3)] transition-all"
+                    className="w-full h-14 bg-primary hover:bg-primary text-white font-bold gap-3 rounded-xl border border-primary/30 shadow-[0_0_20px_rgba(139,92,246,0.3)] transition-all"
                     onClick={runAiStrategy}
                     disabled={isGenerating}
                   >
@@ -371,8 +371,8 @@ export default function TaxOptimizationPage() {
                     {isGenerating ? "Executing AI CFO Assessment..." : "Generate AI Loophole Strategy"}
                   </Button>
                ) : (
-                  <div className="flex items-center justify-between bg-violet-500/10 px-4 py-3 rounded-lg border border-violet-500/20">
-                     <span className="text-sm text-violet-300 font-medium"><Sparkles className="h-4 w-4 inline mr-2" /> CFO Active Strategies Deployed</span>
+                  <div className="flex items-center justify-between bg-primary/10 px-4 py-3 rounded-lg border border-primary/20">
+                     <span className="text-sm text-primary font-medium"><Sparkles className="h-4 w-4 inline mr-2" /> CFO Active Strategies Deployed</span>
                      <Button variant="ghost" size="sm" onClick={() => setAiLoopholes([])} className="h-8 text-slate-400 hover:text-white">Clear</Button>
                   </div>
                )}
@@ -386,8 +386,8 @@ export default function TaxOptimizationPage() {
       <AnimatePresence>
         {aiLoopholes.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <Card className="border-violet-500/30 bg-[#0f172a] overflow-hidden shadow-[0_0_40px_rgba(139,92,246,0.1)]">
-              <CardHeader className="bg-violet-500/5">
+            <Card className="border-primary/30 bg-[#0f172a] overflow-hidden shadow-[0_0_40px_rgba(139,92,246,0.1)]">
+              <CardHeader className="bg-primary/5">
                 <CardTitle className="text-slate-200">Data-Driven Generative Loopholes</CardTitle>
                 <CardDescription>
                   These specific avenues were mathematically derived by analyzing your bank velocity & exact cash surplus limit.
@@ -399,13 +399,13 @@ export default function TaxOptimizationPage() {
                     key={hole.id}
                     className={cn(
                       "p-6 rounded-2xl border transition-all flex flex-col md:flex-row gap-6 items-start md:items-center justify-between",
-                      hole.isSupreme ? "bg-violet-900/20 border-violet-500/50" : "bg-[#1e293b]/50 border-white/5"
+                      hole.isSupreme ? "bg-primary/20 border-primary/50" : "bg-[#1e293b]/50 border-white/5"
                     )}
                   >
                     <div className="flex-1 space-y-2">
                        <div className="flex items-center gap-3">
                          {hole.isSupreme && (
-                           <span className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider bg-violet-500 text-white rounded-md flex items-center gap-1">
+                           <span className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider bg-primary text-white rounded-md flex items-center gap-1">
                              <Sparkles className="h-3 w-3" /> CFO Recommended
                            </span>
                          )}
@@ -419,7 +419,7 @@ export default function TaxOptimizationPage() {
                           </div>
                           <div className="px-3 py-1.5 rounded bg-black/30 border border-white/5">
                             <span className="text-xs text-slate-400 block mb-0.5">Surplus Feasibility</span>
-                            <span className="text-sm text-violet-300">{hole.feasibility}</span>
+                            <span className="text-sm text-primary">{hole.feasibility}</span>
                           </div>
                        </div>
                     </div>

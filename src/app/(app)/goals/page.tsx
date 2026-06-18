@@ -7,14 +7,16 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Target, AlertTriangle, CheckCircle2, Plus } from "lucide-react";
+import { Target, AlertTriangle, CheckCircle2, Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import { differenceInMonths } from "date-fns";
 
 export default function GoalsPage() {
-  const { goals, addGoal, monthlyIncome, savingsRate } = useFinance();
+  const { goals, addGoal, updateGoal, deleteGoal, monthlyIncome, savingsRate } = useFinance();
   const { currency } = useCurrency();
   const [isAdding, setIsAdding] = useState(false);
   const [newGoal, setNewGoal] = useState({ name: "", targetAmount: "", targetDate: "" });
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+  const [editGoalData, setEditGoalData] = useState({ name: "", targetAmount: "", currentAmount: "", targetDate: "" });
 
   const monthlySavingsCapacity = (monthlyIncome * savingsRate) / 100;
 
@@ -30,6 +32,27 @@ export default function GoalsPage() {
 
     setNewGoal({ name: "", targetAmount: "", targetDate: "" });
     setIsAdding(false);
+  };
+
+  const startEditing = (goal: any) => {
+    setEditingGoalId(goal.id);
+    setEditGoalData({
+      name: goal.name,
+      targetAmount: goal.target_amount.toString(),
+      currentAmount: goal.current_amount.toString(),
+      targetDate: new Date(goal.target_date).toISOString().split('T')[0]
+    });
+  };
+
+  const handleUpdateGoal = async () => {
+    if (!editingGoalId) return;
+    await updateGoal(editingGoalId, {
+      name: editGoalData.name,
+      target_amount: Number(editGoalData.targetAmount),
+      current_amount: Number(editGoalData.currentAmount),
+      target_date: editGoalData.targetDate
+    });
+    setEditingGoalId(null);
   };
 
   return (
@@ -78,26 +101,72 @@ export default function GoalsPage() {
 
           const isOffTrack = requiredMonthly > monthlySavingsCapacity && amountNeeded > 0;
 
+          if (editingGoalId === goal.id) {
+            return (
+              <Card key={goal.id} className="border-primary">
+                <CardHeader>
+                  <CardTitle className="text-lg flex justify-between items-center">
+                    Edit Goal
+                    <Button variant="ghost" size="sm" onClick={() => setEditingGoalId(null)}><X className="h-4 w-4" /></Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Goal Name</label>
+                      <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Current Amount</label>
+                        <Input type="number" value={editGoalData.currentAmount} onChange={e => setEditGoalData({ ...editGoalData, currentAmount: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Target Amount</label>
+                        <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Target Date</label>
+                      <Input type="date" value={editGoalData.targetDate} onChange={e => setEditGoalData({ ...editGoalData, targetDate: e.target.value })} />
+                    </div>
+                    <Button onClick={handleUpdateGoal} className="w-full gap-2"><Check className="h-4 w-4" /> Save Changes</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }
+
           return (
-            <Card key={goal.id} className={cn("relative overflow-hidden", isOffTrack ? "border-amber-400" : "")}>
+            <Card key={goal.id} className={cn("relative overflow-hidden group", isOffTrack ? "border-amber-400" : "")}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-secondary rounded-lg text-foreground">
                     <Target className="h-5 w-5" />
                   </div>
-                  {progress >= 100 ? (
-                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> Reached
-                    </span>
-                  ) : isOffTrack ? (
-                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" /> Off Track
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                      On Track
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 mr-1">
+                      <button onClick={() => startEditing(goal)} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => deleteGoal(goal.id)} className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {progress >= 100 ? (
+                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> Reached
+                      </span>
+                    ) : isOffTrack ? (
+                      <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> Off Track
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                        On Track
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <CardTitle className="text-xl mt-4">{goal.name}</CardTitle>
                 <div className="flex items-baseline gap-2 mt-1">

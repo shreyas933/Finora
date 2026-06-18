@@ -34,7 +34,7 @@ export function BudgetSetupModal({ onComplete }: BudgetSetupModalProps) {
       id: "transport",
       title: "Your Daily Commute",
       desc: "This will map to your monthly Transport budget.",
-      icon: <Car className="h-6 w-6 text-purple-400" />,
+      icon: <Car className="h-6 w-6 text-primary" />,
       options: [
         { id: "public", label: "Public Transport / Occasional", value: 1000 },
         { id: "car", label: "Personal Car (Fuel, Tolls)", value: 5000 },

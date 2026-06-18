@@ -4,6 +4,7 @@ import { Suspense, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Wallet, LogIn, Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Capacitor } from "@capacitor/core";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -40,7 +41,8 @@ function LoginForm() {
         setError(authError.message);
       } else if (data.session) {
         console.log("[FINORA] Login success, navigating...");
-        window.location.href = "/dashboard";
+        router.refresh();
+        router.push("/dashboard");
       } else {
         setError("Login failed. Please try again.");
       }
@@ -78,7 +80,8 @@ function LoginForm() {
       } else if (!data.session) {
         setMessage("Signup successful! Please check your email to verify your account.");
       } else {
-        window.location.href = "/dashboard";
+        router.refresh();
+        router.push("/dashboard");
       }
     } catch (err: any) {
       setError("Unexpected error: " + (err?.message || String(err)));
@@ -88,170 +91,90 @@ function LoginForm() {
   }, [email, password]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        width: "100%",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        backgroundColor: "#0a0a1a",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Card */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          borderRadius: 20,
-          border: "1px solid rgba(139,92,246,0.25)",
-          boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
-          background: "#111127",
-          position: "relative",
-          zIndex: 10,
-          overflow: "hidden",
-          padding: "32px 28px",
-        }}
-      >
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div
-            style={{
-              margin: "0 auto 16px",
-              width: 56,
-              height: 56,
-              borderRadius: 16,
-              background: "rgba(139,92,246,0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Wallet style={{ width: 28, height: 28, color: "#8b5cf6" }} />
+    <div className="flex flex-col min-h-screen w-full items-center justify-center p-6 bg-background relative font-sans">
+      {/* Top Branding Section */}
+      <div className="text-center mb-12 w-full max-w-md">
+        <h1 className="text-4xl font-extrabold text-foreground tracking-widest mb-2">
+          FINORA
+        </h1>
+        <p className="text-sm text-muted-foreground mb-8">
+          Your AI Personal CFO
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground mb-3">
+          Take control of your money
+        </h2>
+        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+          AI budgeting, smart payments, and goal tracking — all in one place.
+        </p>
+
+        <div className="flex justify-center gap-2 flex-wrap">
+          {["AI Budget", "Smart Pay", "Goal Tracking"].map(pill => (
+            <span key={pill} className="bg-muted text-foreground px-3.5 py-1.5 rounded-full text-xs font-medium">
+              {pill}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Dark Login Card */}
+      <div className="w-full max-w-sm rounded-3xl bg-card p-8 shadow-2xl flex flex-col gap-5 border border-border/50">
+        {/* Floating Icon */}
+        <div className="flex justify-center mb-2">
+          <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center shadow-inner">
+            <Wallet className="w-5 h-5 text-primary" />
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 8px" }}>
-            Welcome to FINORA
-          </h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>
-            Log in to manage your AI Personal CFO
-          </p>
         </div>
 
         {/* Error / success banners */}
         {(authError === "auth_failed" || error) && (
-          <div
-            style={{
-              marginBottom: 16,
-              padding: "12px 16px",
-              borderRadius: 10,
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.25)",
-              color: "#f87171",
-              fontSize: 14,
-              textAlign: "center",
-            }}
-          >
+          <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
             {error || "Authentication failed. Please try again."}
           </div>
         )}
         {message && (
-          <div
-            style={{
-              marginBottom: 16,
-              padding: "12px 16px",
-              borderRadius: 10,
-              background: "rgba(16,185,129,0.1)",
-              border: "1px solid rgba(16,185,129,0.25)",
-              color: "#34d399",
-              fontSize: 14,
-              textAlign: "center",
-            }}
-          >
+          <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-sm text-center">
             {message}
           </div>
         )}
 
-        {/* Email */}
-        <div style={{ marginBottom: 12 }}>
+        {/* Email Input */}
+        <div>
+          <label className="block text-xs font-bold text-muted-foreground mb-1.5 tracking-wider">EMAIL</label>
           <input
             type="email"
-            placeholder="Email address"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            autoCapitalize="none"
-            autoCorrect="off"
             disabled={isLoading}
-            style={{
-              width: "100%",
-              height: 48,
-              padding: "0 16px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#fff",
-              fontSize: 15,
-              outline: "none",
-              boxSizing: "border-box",
-              WebkitAppearance: "none",
-            }}
+            className="w-full h-12 px-4 rounded-xl border border-border bg-muted text-foreground text-sm outline-none focus:border-primary transition-colors"
           />
         </div>
 
-        {/* Password */}
-        <div style={{ marginBottom: 24 }}>
+        {/* Password Input */}
+        <div>
+          <label className="block text-xs font-bold text-muted-foreground mb-1.5 tracking-wider">PASSWORD</label>
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             autoComplete="current-password"
             disabled={isLoading}
-            style={{
-              width: "100%",
-              height: 48,
-              padding: "0 16px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#fff",
-              fontSize: 15,
-              outline: "none",
-              boxSizing: "border-box",
-              WebkitAppearance: "none",
-            }}
+            className="w-full h-12 px-4 rounded-xl border border-border bg-muted text-foreground text-sm outline-none focus:border-primary transition-colors"
           />
         </div>
 
-        {/* Buttons — plain HTML buttons, NO form, NO abstractions */}
-        <div style={{ display: "flex", gap: 12 }}>
+        {/* Buttons */}
+        <div className="flex flex-col gap-3 mt-2">
           <button
             type="button"
             disabled={isLoading}
             onClick={handleLogin}
-            style={{
-              flex: 1,
-              height: 48,
-              borderRadius: 10,
-              border: "none",
-              background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: isLoading ? "not-allowed" : "pointer",
-              opacity: isLoading ? 0.7 : 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              WebkitAppearance: "none",
-              touchAction: "manipulation",
-            }}
+            className="w-full h-12 rounded-xl bg-primary text-primary-foreground text-base font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(129,1,0,0.3)]"
           >
-            <LogIn style={{ width: 18, height: 18 }} />
             Login
           </button>
 
@@ -259,23 +182,14 @@ function LoginForm() {
             type="button"
             disabled={isLoading}
             onClick={handleSignUp}
-            style={{
-              flex: 1,
-              height: 48,
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(255,255,255,0.06)",
-              color: "rgba(255,255,255,0.85)",
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: isLoading ? "not-allowed" : "pointer",
-              opacity: isLoading ? 0.7 : 1,
-              WebkitAppearance: "none",
-              touchAction: "manipulation",
-            }}
+            className="w-full h-12 rounded-xl border border-primary/50 bg-transparent text-foreground text-base font-semibold hover:bg-primary/10 disabled:opacity-50 transition-all"
           >
-            Sign Up
+            Sign up
           </button>
+        </div>
+
+        <div className="text-center mt-3">
+          <a href="#" className="text-primary text-sm hover:underline">forgot password?</a>
         </div>
       </div>
     </div>
@@ -286,8 +200,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#0a0a1a", color: "#fff" }}>
-          Loading...
+        <div className="flex h-screen items-center justify-center bg-background text-foreground">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       }
     >

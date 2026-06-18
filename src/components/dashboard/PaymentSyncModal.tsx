@@ -159,7 +159,7 @@ export function PaymentSyncModal({ onClose }: Props) {
 
   const statusColors: Record<string, string> = {
     idle: "text-slate-400",
-    parsing: "text-violet-400",
+    parsing: "text-primary",
     saving: "text-blue-400",
     done: "text-emerald-400",
     error: "text-red-400",
@@ -183,8 +183,8 @@ export function PaymentSyncModal({ onClose }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-violet-500/20">
-                <Zap className="h-5 w-5 text-violet-400" />
+              <div className="p-2 rounded-xl bg-primary/20">
+                <Zap className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">Payment Sync Hub</h2>
@@ -204,7 +204,7 @@ export function PaymentSyncModal({ onClose }: Props) {
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   activeTab === tab
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                    ? "bg-primary text-white shadow-lg shadow-primary/30"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -222,7 +222,7 @@ export function PaymentSyncModal({ onClose }: Props) {
               <div className="space-y-4">
                 {/* Status */}
                 <div 
-                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-violet-500/30 cursor-pointer transition-all duration-200"
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-primary/30 cursor-pointer transition-all duration-200"
                   onClick={handleConnectAndroid}
                 >
                   <div className="flex items-center gap-3">
@@ -252,8 +252,8 @@ export function PaymentSyncModal({ onClose }: Props) {
                     { icon: CheckCircle2, label: "Transaction auto-logged in your dashboard", sub: "Budget rings, Safe-to-Spend, and analytics update instantly" },
                   ].map(({ icon: Icon, label, sub }, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-white/5">
-                      <div className="p-1.5 rounded-lg bg-violet-500/20 mt-0.5 shrink-0">
-                        <Icon className="h-3.5 w-3.5 text-violet-400" />
+                      <div className="p-1.5 rounded-lg bg-primary/20 mt-0.5 shrink-0">
+                        <Icon className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm text-white font-medium">{label}</p>
@@ -269,7 +269,7 @@ export function PaymentSyncModal({ onClose }: Props) {
                     <button
                       onClick={() => runSimulation("notification")}
                       disabled={simulating || !smsPermissionGranted}
-                      className="py-3 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 shadow-lg shadow-violet-500/20"
+                      className="py-3 px-4 rounded-xl bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 shadow-lg shadow-primary/20"
                     >
                       {simulating ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

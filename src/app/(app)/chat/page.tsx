@@ -172,89 +172,90 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-13rem)] md:h-[calc(100vh-10rem)] max-w-4xl mx-auto">
-      <div className="mb-4">
-        <h2 className="text-3xl font-bold tracking-tight">AI CFO Assistant</h2>
-        <p className="text-muted-foreground">
-          Ask questions about your finances and get data-driven advice.
-        </p>
-      </div>
-
-      <Card className="flex-1 flex flex-col overflow-hidden border-border shadow-level-1">
-        <CardHeader className="bg-secondary/30 py-3 border-b border-border">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Bot className="h-4 w-4 text-foreground" /> Active Session
-            <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground font-normal">
-              <Sparkles className="h-3 w-3 text-violet-600 animate-pulse" /> Powered by Gemini AI
-            </span>
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-secondary/15">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex gap-3",
-                  message.role === "user" ? "ml-auto flex-row-reverse max-w-[85%]" : "max-w-[85%]"
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex shrink-0 h-8 w-8 items-center justify-center rounded-full border border-border shadow-sm",
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-foreground"
-                  )}
-                >
-                  {message.role === "user" ? (
-                    <User className="h-4 w-4" />
-                  ) : (
-                    <Bot className="h-4 w-4" />
-                  )}
+    <div className="flex flex-col h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto bg-background text-foreground font-sans -m-4 md:-m-8 p-4">
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto space-y-6 pb-4 scrollbar-hide">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={cn(
+              "flex flex-col max-w-[90%]",
+              message.role === "user" ? "ml-auto items-end" : "mr-auto items-start"
+            )}
+          >
+            {message.role === "assistant" && (
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="p-1">
+                   <Sparkles className="w-4 h-4 text-primary" />
+                 </div>
+              </div>
+            )}
+            
+            <div
+              className={cn(
+                "rounded-2xl p-4 text-[15px] leading-relaxed shadow-lg",
+                message.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-tr-sm"
+                  : "bg-muted text-foreground rounded-tl-sm border border-border"
+              )}
+            >
+              {message.content ? (
+                <div className="whitespace-pre-wrap">{message.content}</div>
+              ) : (
+                <div className="flex gap-1.5 items-center h-5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce [animation-delay:0.2s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce [animation-delay:0.4s]" />
                 </div>
-                <div
-                  className={cn(
-                    "flex flex-col rounded-lg p-3 text-sm shadow-sm",
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card border border-border text-foreground"
-                  )}
-                >
-                  {message.content ? (
-                    <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                  ) : (
-                    // Typing indicator for empty assistant message (while streaming)
-                    <div className="flex gap-1.5 items-center h-4">
-                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0.2s]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0.4s]" />
+              )}
+            </div>
+
+            {/* Example custom interactive cards for assistant (mocked if content includes certain keywords for demo) */}
+            {message.role === "assistant" && message.content.includes("approach this:") && (
+              <div className="mt-3 bg-card rounded-2xl p-4 border border-border shadow-lg w-full">
+                <div className="space-y-3">
+                  <div className="p-3 rounded-xl border border-border bg-muted/50">
+                    <div className="text-xs font-bold text-foreground mb-1">CASH ACCUMULATION</div>
+                    <div className="text-sm text-muted-foreground">Save ₹8,333/mo for 3 months. Safest, zero debt.</div>
+                  </div>
+                  <div className="p-3 rounded-xl border border-primary/50 bg-primary/10">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-xs font-bold text-foreground">CARD OPTIMIZATION</div>
+                      <div className="text-[10px] font-bold text-red-400 bg-primary/20 px-2 py-0.5 rounded-full">RECOMMENDED</div>
                     </div>
-                  )}
+                    <div className="text-sm text-muted-foreground">HDFC card gives 5% cashback. Pay within grace period.</div>
+                  </div>
+                  <div className="p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+                    <div className="text-xs font-bold text-white mb-1">PAUSE A GOAL</div>
+                    <div className="text-sm text-white/60">Pause Goa Trip temporarily. Delays goal by 9 days.</div>
+                  </div>
                 </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
+            )}
           </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
 
-          <div className="p-4 bg-card border-t border-border">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1"
-                disabled={isLoading}
-              />
-              <Button type="submit" disabled={isLoading || !input.trim()}>
-                <Send className="h-4 w-4" />
-                <span className="sr-only">Send</span>
-              </Button>
-            </form>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Input Area */}
+      <div className="w-full pt-4 pb-2 bg-background z-10 shrink-0">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-muted rounded-full p-2 pl-6 shadow-[0_8px_30px_rgb(0,0,0,0.5)] border border-border">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about your finances..."
+            className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base min-w-0"
+            disabled={isLoading}
+          />
+          <button 
+            type="submit" 
+            disabled={isLoading || !input.trim()}
+            className="bg-primary text-primary-foreground p-3 rounded-full shadow-[0_0_15px_rgb(129,1,0,0.5)] hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
+          >
+            <Send className="w-5 h-5 fill-current" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

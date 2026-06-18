@@ -11,7 +11,7 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType>({
   currency: "INR",
-  setCurrency: () => {},
+  setCurrency: () => { },
   currencySymbol: "₹",
 });
 

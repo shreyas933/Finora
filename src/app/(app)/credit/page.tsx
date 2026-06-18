@@ -95,7 +95,7 @@ const CARD_COLORS: Record<CardColor, { bg: string; text: string; shadow: string 
 };
 
 const TAG_COLORS: Record<string, string> = {
-  emerald: "#10b981", blue: "#3b82f6", amber: "#f59e0b", purple: "#8b5cf6",
+  emerald: "#10b981", blue: "#3b82f6", amber: "#f59e0b", purple: "var(--primary)",
   rose: "#f43f5e", orange: "#f97316", yellow: "#eab308", sky: "#0ea5e9", teal: "#14b8a6",
 };
 
@@ -119,7 +119,7 @@ const CATEGORY_TIPS: Record<string, CategoryTip> = {
     idealPerk: "dining",
   },
   Lifestyle: {
-    icon: ShoppingBag, color: "#8b5cf6", label: "Lifestyle & Shopping",
+    icon: ShoppingBag, color: "var(--primary)", label: "Lifestyle & Shopping",
     perk: "5x reward points on lifestyle spends",
     pointsMultiplier: "5x",
     platforms: ["Amazon", "Flipkart", "Myntra", "Nykaa", "Meesho"],
@@ -275,7 +275,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-5 rounded-2xl bg-slate-900/60 border border-emerald-500/20 backdrop-blur-xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-5 rounded-2xl bg-card border border-emerald-500/20 backdrop-blur-xl">
         <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1">
           <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Card Efficiency</span>
           <span className="text-3xl font-extrabold text-white flex items-center gap-1.5">
@@ -285,7 +285,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
         </div>
         
         <div className="flex justify-center items-center py-2">
-          <div className="w-full max-w-[200px] h-3 bg-slate-800 rounded-full overflow-hidden border border-white/5 relative">
+          <div className="w-full max-w-[200px] h-3 bg-muted rounded-full overflow-hidden border border-white/5 relative">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${efficiencyScore}%` }}
@@ -374,7 +374,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
         })}
       </div>
 
-      <div className="spend-opt-footer bg-slate-900/40 border border-slate-800">
+      <div className="spend-opt-footer bg-card/40 border border-slate-800">
         <TrendingUp className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground leading-normal">
           <strong>Maximize Rewards Tip:</strong> Routing these top spending categories correctly can earn you up to <strong>{Math.round(totalSpend * 3).toLocaleString("en-IN")}</strong> extra reward points every billing cycle. Keep utilization low by clearing the credit outstanding immediately using bank balances!
@@ -512,7 +512,7 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   className={cn("p-6 rounded-xl border flex flex-col items-center justify-center gap-3 cursor-pointer transition-all", 
-                    form.type === "credit" ? "border-primary bg-primary/10 text-white" : "border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
+                    form.type === "credit" ? "border-primary bg-primary/10 text-white" : "border-border bg-card text-muted-foreground hover:bg-muted"
                   )}
                   onClick={() => handle("type", "credit")}
                 >
@@ -522,7 +522,7 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
 
                 <button
                   className={cn("p-6 rounded-xl border flex flex-col items-center justify-center gap-3 cursor-pointer transition-all", 
-                    form.type === "debit" ? "border-primary bg-primary/10 text-white" : "border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
+                    form.type === "debit" ? "border-primary bg-primary/10 text-white" : "border-border bg-card text-muted-foreground hover:bg-muted"
                   )}
                   onClick={() => handle("type", "debit")}
                 >
@@ -713,8 +713,8 @@ function PaymentCalendarSection({
                   className={cn(
                     "flex flex-col items-center justify-between p-2 rounded-xl border min-h-[70px] transition-all",
                     hasEvent 
-                      ? "border-emerald-500/20 bg-[#0f172a]" 
-                      : "border-white/5 bg-slate-900/40"
+                      ? "border-emerald-500/20 bg-card" 
+                      : "border-white/5 bg-card/40"
                   )}
                 >
                   <span className="text-xs font-bold text-slate-400 self-start">{day}</span>
@@ -787,11 +787,11 @@ function PaymentCalendarSection({
                   return (
                     <div 
                       key={card.id} 
-                      className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-slate-900/60"
+                      className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-card"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TAG_COLORS[card.color] || "#8b5cf6" }} />
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TAG_COLORS[card.color] || "var(--primary)" }} />
                           <h4 className="text-xs font-bold text-white truncate">{card.name}</h4>
                           <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
                             •••• {card.number}
@@ -818,7 +818,7 @@ function PaymentCalendarSection({
                         ) : (
                           <Button 
                             size="sm" 
-                            className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs py-1 px-3 h-8 rounded-lg cursor-pointer"
+                            className="bg-primary hover:bg-primary text-white font-bold text-xs py-1 px-3 h-8 rounded-lg cursor-pointer"
                             onClick={() => togglePayment(card.id)}
                           >
                             Mark Paid
@@ -840,7 +840,7 @@ function PaymentCalendarSection({
             <CardDescription>Your current revolving debt ratio against total credit limits.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-6 p-4 rounded-xl bg-slate-900/60 border border-white/5">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-6 p-4 rounded-xl bg-card border border-white/5">
               <div className="flex flex-col items-center sm:items-start gap-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Limit</span>
                 <span className="text-xl font-bold text-white font-mono">{formatCurrency(totalLimit)}</span>
@@ -855,7 +855,7 @@ function PaymentCalendarSection({
                   <circle cx="56" cy="56" r="46" stroke="#1e293b" strokeWidth="6" fill="none" />
                   <circle 
                     cx="56" cy="56" r="46" 
-                    stroke={computedUtil > 30 ? "#ef4444" : "#10b981"} 
+                    stroke={computedUtil > 50 ? "var(--primary)" : computedUtil > 30 ? "#f59e0b" : "#10b981"} 
                     strokeWidth="8" fill="none"
                     strokeDasharray="290"
                     strokeDashoffset={290 - (290 * computedUtil) / 100}
@@ -864,8 +864,8 @@ function PaymentCalendarSection({
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span className="text-xl font-black text-white font-mono">{computedUtil}%</span>
-                  <span className={cn("text-[8px] font-black tracking-wider uppercase", computedUtil > 30 ? "text-red-400" : "text-emerald-400")}>
-                    {computedUtil > 30 ? "High Risk" : "Healthy"}
+                  <span className={cn("text-[8px] font-black tracking-wider uppercase", computedUtil > 50 ? "text-primary" : computedUtil > 30 ? "text-amber-500" : "text-emerald-400")}>
+                    {computedUtil > 50 ? "High Risk" : computedUtil > 30 ? "Moderate" : "Healthy"}
                   </span>
                 </div>
               </div>
@@ -876,9 +876,9 @@ function PaymentCalendarSection({
                 <span className="text-slate-400">Bureau Target Ratio</span>
                 <span className="text-emerald-400">&lt; 30%</span>
               </div>
-              <div className="h-2 bg-slate-800 rounded-full overflow-hidden border border-white/5">
+              <div className="h-2 bg-muted rounded-full overflow-hidden border border-white/5">
                 <div 
-                  className={cn("h-full rounded-full transition-all duration-500", computedUtil > 30 ? "bg-red-500" : "bg-emerald-500")}
+                  className={cn("h-full rounded-full transition-all duration-500", computedUtil > 50 ? "bg-primary" : computedUtil > 30 ? "bg-amber-500" : "bg-emerald-500")}
                   style={{ width: `${computedUtil}%` }}
                 />
               </div>
@@ -990,8 +990,8 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
           </button>
         </div>
 
-        <div className="modal-progress-track mb-5 mx-0 bg-slate-800">
-          <div className="modal-progress-fill bg-violet-600" style={{ width: step === 1 ? "50%" : "100%" }} />
+        <div className="modal-progress-track mb-5 mx-0 bg-muted">
+          <div className="modal-progress-fill bg-primary" style={{ width: step === 1 ? "50%" : "100%" }} />
         </div>
 
         <AnimatePresence mode="wait">
@@ -1002,7 +1002,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
               <div className="grid grid-cols-2 gap-3">
                 <button
                   className={cn("p-5 rounded-xl border flex flex-col items-center justify-center gap-2 cursor-pointer transition-all", 
-                    form.type === "credit" ? "border-primary bg-primary/15 text-white" : "border-white/5 bg-slate-900/60 text-slate-400 hover:bg-slate-800"
+                    form.type === "credit" ? "border-primary bg-primary/15 text-white" : "border-white/5 bg-card text-slate-400 hover:bg-muted"
                   )}
                   onClick={() => handle("type", "credit")}
                 >
@@ -1012,7 +1012,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
 
                 <button
                   className={cn("p-5 rounded-xl border flex flex-col items-center justify-center gap-2 cursor-pointer transition-all", 
-                    form.type === "debit" ? "border-primary bg-primary/15 text-white" : "border-white/5 bg-slate-900/60 text-slate-400 hover:bg-slate-800"
+                    form.type === "debit" ? "border-primary bg-primary/15 text-white" : "border-white/5 bg-card text-slate-400 hover:bg-muted"
                   )}
                   onClick={() => handle("type", "debit")}
                 >
@@ -1035,12 +1035,12 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
             <motion.div key="mstep2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3.5">
               <div className="form-group">
                 <label className="form-label text-[11px]">Card Name *</label>
-                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
+                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
               </div>
 
               <div className="form-group">
                 <label className="form-label text-[11px]">Bank / Issuer *</label>
-                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
+                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
               </div>
 
               <div className="form-group">
@@ -1050,14 +1050,14 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                   maxLength={4} 
                   value={form.number} 
                   onChange={e => handle("number", e.target.value.replace(/\D/g, ""))} 
-                  className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500"
+                  className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500"
                 />
               </div>
 
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label text-[11px]">Network</label>
-                  <select className="form-select bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 py-1.5 px-3 rounded-md" value={form.network} onChange={e => handle("network", e.target.value)}>
+                  <select className="form-select bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 py-1.5 px-3 rounded-md" value={form.network} onChange={e => handle("network", e.target.value)}>
                     <option value="visa">Visa</option>
                     <option value="mastercard">Mastercard</option>
                     <option value="amex">Amex</option>
@@ -1086,23 +1086,23 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label text-[11px]">Credit Limit (₹)</label>
-                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
+                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                   </div>
                   <div className="form-group">
                     <label className="form-label text-[11px]">Billing Date (1–31)</label>
-                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
+                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                   </div>
                 </div>
               ) : (
                 <div className="form-group">
                   <label className="form-label text-[11px]">Linked Account Code / Name</label>
-                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
+                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                 </div>
               )}
 
               <div className="form-group">
                 <label className="form-label text-[11px]">Card Perks / Benefits</label>
-                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-violet-500/50 focus:ring-0 placeholder:text-slate-500" />
+                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                 <p className="form-hint text-[10px] text-slate-500">Comma-separated keywords.</p>
               </div>
 
@@ -1316,31 +1316,31 @@ function MobileCreditView({
   const scoreNum = Number(currentScore);
 
   return (
-    <div className="space-y-6 pb-28 relative px-4 pt-4 -mx-4 -mt-4 bg-[#080d19] min-h-[calc(100vh-4rem)] text-slate-100">
+    <div className="space-y-6 pb-28 relative px-4 pt-4 -mx-4 -mt-4 bg-background min-h-[calc(100vh-4rem)] text-slate-100">
       {/* Compact Header */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-1.5">
-            <Wallet className="text-violet-400 h-6 w-6" /> Digital Wallet
+            <Wallet className="text-primary h-6 w-6" /> Digital Wallet
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Track limits, credit score &amp; routing perks</p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="p-2.5 rounded-xl bg-violet-600/10 text-violet-400 border border-violet-500/25 active:scale-95 transition cursor-pointer"
+          className="p-2.5 rounded-xl bg-primary/10 text-red-400 border border-primary/25 active:scale-95 transition cursor-pointer"
         >
           <Plus className="h-4 w-4" />
         </button>
       </div>
 
       {/* Touch-Friendly Sticky Selector */}
-      <div className="sticky top-0 z-30 flex bg-[#0c1328]/95 backdrop-blur-md p-1 rounded-xl border border-white/5 w-full gap-1 shadow-inner">
+      <div className="sticky top-0 z-30 flex bg-card/95 backdrop-blur-md p-1 rounded-xl border border-white/5 w-full gap-1 shadow-inner">
         <button
           onClick={() => setActiveSegment("wallet")}
           className={cn(
             "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
             activeSegment === "wallet"
-              ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
+              ? "bg-primary/20 text-red-400 border border-primary/30"
               : "text-slate-400 border border-transparent"
           )}
         >
@@ -1409,7 +1409,7 @@ function MobileCreditView({
               <div className="flex-1 min-w-0">
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Next Best Swipe</span>
                 <p className="text-[10px] text-white font-bold truncate mt-0.5">
-                  Spend on <span className="text-violet-400">{nextBestSwipe.platform}</span> using <span style={{ color: TAG_COLORS[nextBestSwipe.color] || '#a78bfa' }}>{nextBestSwipe.cardName}</span>
+                  Spend on <span className="text-primary">{nextBestSwipe.platform}</span> using <span style={{ color: TAG_COLORS[nextBestSwipe.color] || '#a78bfa' }}>{nextBestSwipe.cardName}</span>
                 </p>
                 <span className="text-[9px] text-emerald-400 font-semibold block mt-0.5">
                   ✓ Unlocks {nextBestSwipe.benefit}
@@ -1429,13 +1429,13 @@ function MobileCreditView({
           <div className="flex justify-between items-center px-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Swipe Card Deck</span>
             
-            <div className="flex gap-1 p-0.5 bg-slate-900 border border-slate-800 rounded-lg">
+            <div className="flex gap-1 p-0.5 bg-card border border-slate-800 rounded-lg">
               {(["all", "credit", "debit"] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setFilterTab(tab)}
                   className={cn("px-2 py-0.5 text-[9px] font-bold rounded capitalize transition cursor-pointer",
-                    filterTab === tab ? "bg-violet-600 text-white" : "text-slate-500"
+                    filterTab === tab ? "bg-primary text-white" : "text-slate-500"
                   )}
                 >
                   {tab}
@@ -1520,7 +1520,7 @@ function MobileCreditView({
                           <div className="w-full h-5 bg-slate-950 -mx-4 mt-2" />
                           
                           {/* Signature Area */}
-                          <div className="flex justify-between items-center bg-slate-800/80 px-2 py-1.5 rounded-lg border border-white/5 mt-2">
+                          <div className="flex justify-between items-center bg-muted/80 px-2 py-1.5 rounded-lg border border-white/5 mt-2">
                             <span className="text-[7px] text-slate-400 font-mono tracking-widest uppercase">Authorized Signature</span>
                             <span className="text-[9px] font-bold text-white font-mono bg-white/5 px-2 py-0.5 rounded">CVV: ***</span>
                           </div>
@@ -1528,7 +1528,7 @@ function MobileCreditView({
                           <div className="flex-1 mt-3 space-y-1.5 text-left">
                             <div className="flex justify-between items-center text-[9px] text-slate-300">
                               <span>Billing Cycle Closes:</span>
-                              <span className="font-bold text-violet-400">{item.billingDate ? `${item.billingDate}th` : "N/A"}</span>
+                              <span className="font-bold text-primary">{item.billingDate ? `${item.billingDate}th` : "N/A"}</span>
                             </div>
                             {item.type === "credit" ? (
                               <div className="flex justify-between items-center text-[9px] text-slate-300">
@@ -1567,7 +1567,7 @@ function MobileCreditView({
 
               {/* Perks details container */}
               {selectedItem && (
-                <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+                <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-white/5">
                     <div>
                       <h4 className="text-xs font-bold text-white uppercase tracking-wider">{selectedItem.name} Perks</h4>
@@ -1596,7 +1596,7 @@ function MobileCreditView({
                       </div>
 
                       <div className="space-y-1">
-                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
+                        <div className="w-full h-1.5 bg-card rounded-full overflow-hidden border border-white/5">
                           <div 
                             className={cn(
                               "h-full rounded-full transition-all duration-500",
@@ -1692,7 +1692,7 @@ function MobileCreditView({
               )}
 
               {/* Card Efficiency list optimized for mobile */}
-              <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+              <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1.5">
                     <BarChart3 className="h-4 w-4 text-emerald-400" />
@@ -1782,7 +1782,7 @@ function MobileCreditView({
       {activeSegment === "score" && (
         <div className="space-y-6 animate-fadeIn">
           {/* Radial score card */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center">
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Bureau Rating</span>
             
             <div className="score-circle-container py-4 flex flex-col items-center justify-center relative h-36 w-36">
@@ -1817,10 +1817,10 @@ function MobileCreditView({
           </div>
 
           {/* Profile Configuration Card */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-white/5">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Configure Credit Profile</h4>
-              <Smartphone className="h-3.5 w-3.5 text-violet-400" />
+              <Smartphone className="h-3.5 w-3.5 text-primary" />
             </div>
 
             <div className="space-y-3">
@@ -1836,7 +1836,7 @@ function MobileCreditView({
                   }}
                   min={300} 
                   max={850}
-                  className="bg-[#0f172a] border-white/10 text-white text-xs h-9 focus:border-violet-500/50"
+                  className="bg-card border-white/10 text-white text-xs h-9 focus:border-primary/50"
                 />
               </div>
 
@@ -1854,7 +1854,7 @@ function MobileCreditView({
                   }}
                   disabled={isDynamicUtil}
                   className={cn(
-                    "text-xs h-9 bg-[#0f172a] border-white/10 text-white focus:border-violet-500/50",
+                    "text-xs h-9 bg-card border-white/10 text-white focus:border-primary/50",
                     isDynamicUtil && "border-emerald-500/20 text-emerald-400 font-bold opacity-80 cursor-not-allowed bg-slate-950/40"
                   )}
                 />
@@ -1868,10 +1868,10 @@ function MobileCreditView({
           </div>
 
           {/* Simulator block */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
             <div className="flex justify-between items-center">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Score Simulator</h4>
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-violet-600/15 text-violet-300 font-extrabold uppercase border border-violet-500/25">Simulate</span>
+              <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/15 text-red-400 font-extrabold uppercase border border-primary/25">Simulate</span>
             </div>
             
             <p className="text-[10px] text-slate-400 leading-normal">
@@ -1881,7 +1881,7 @@ function MobileCreditView({
             <div className="space-y-2 pt-1">
               <div className="flex justify-between text-[10px] font-bold">
                 <span className="text-slate-400">Target Ratio</span>
-                <span className="text-violet-400">{simulationActive ? "10%" : `${computedUtil}%`}</span>
+                <span className="text-primary">{simulationActive ? "10%" : `${computedUtil}%`}</span>
               </div>
               
               <input 
@@ -1896,7 +1896,7 @@ function MobileCreditView({
                     setSimulationActive(false);
                   }
                 }}
-                className="w-full accent-violet-600 cursor-pointer h-1 bg-slate-800 rounded-lg appearance-none"
+                className="w-full accent-primary cursor-pointer h-1 bg-muted rounded-lg appearance-none"
               />
             </div>
 
@@ -1923,7 +1923,7 @@ function MobileCreditView({
               <Button 
                 onClick={() => setSimulationActive(true)}
                 variant="outline" 
-                className="w-full text-xs h-9 font-bold hover:bg-slate-800 transition cursor-pointer"
+                className="w-full text-xs h-9 font-bold hover:bg-muted transition cursor-pointer"
               >
                 Simulate 10% Utilization
               </Button>
@@ -1931,16 +1931,16 @@ function MobileCreditView({
           </div>
 
           {/* Actionable Credit Insights Card */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4 animate-fadeIn">
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4 animate-fadeIn">
             <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-              <Sparkles className="h-4 w-4 text-violet-400 shrink-0" />
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Actionable Credit Insights</h4>
             </div>
 
             <ul className="space-y-3.5">
               {generatedInsights.map((insight, idx) => (
                 <li key={idx} className="text-[10px] text-slate-400 flex items-start gap-2.5 leading-normal">
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-violet-400 mt-0.5" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
                   <span>{insight}</span>
                 </li>
               ))}
@@ -1953,7 +1953,7 @@ function MobileCreditView({
       {activeSegment === "calendar" && (
         <div className="space-y-6 animate-fadeIn">
           {/* Credit Utilization card */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex justify-between items-center gap-4">
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-4 flex justify-between items-center gap-4">
             <div>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Total Cards Limit</span>
               <span className="text-lg font-bold text-white block mt-0.5">{formatCurrency(totalLimit)}</span>
@@ -1983,7 +1983,7 @@ function MobileCreditView({
           </div>
 
           {/* Interactive timeline instead of wide calendar grid */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
               <Coins className="h-4 w-4 text-emerald-400" /> Upcoming Card Schedules
             </h3>
@@ -2024,7 +2024,7 @@ function MobileCreditView({
                               <Button 
                                 size="sm" 
                                 onClick={() => togglePayment(evt.card.id)}
-                                className="bg-violet-600 hover:bg-violet-500 text-[9px] px-2 py-0.5 h-6 rounded-lg text-white font-extrabold cursor-pointer"
+                                className="bg-primary hover:bg-primary text-[9px] px-2 py-0.5 h-6 rounded-lg text-white font-extrabold cursor-pointer"
                               >
                                 Mark Paid
                               </Button>
@@ -2109,13 +2109,13 @@ function DesktopCreditView({
       </div>
 
       {/* Segmented Control Selector */}
-      <div className="flex bg-slate-900/80 p-1.5 rounded-2xl border border-white/5 w-full sm:w-fit gap-1 shadow-inner backdrop-blur-md">
+      <div className="flex bg-card/80 p-1.5 rounded-2xl border border-white/5 w-full sm:w-fit gap-1 shadow-inner backdrop-blur-md">
         <button
           onClick={() => setActiveSegment("wallet")}
           className={cn(
             "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
             activeSegment === "wallet"
-              ? "bg-violet-600/20 border border-violet-500/30 text-violet-300 font-semibold shadow-md"
+              ? "bg-primary/20 border border-primary/30 text-red-400 font-semibold shadow-md"
               : "text-slate-400 hover:text-slate-200 border border-transparent"
           )}
         >
@@ -2158,7 +2158,7 @@ function DesktopCreditView({
                 <Wallet className="h-5 w-5 text-primary" /> Wallet Cards
               </h3>
               
-              <div className="flex p-1 bg-slate-900 border border-slate-800 rounded-lg">
+              <div className="flex p-1 bg-card border border-slate-800 rounded-lg">
                 {(["all", "credit", "debit"] as const).map(tab => (
                   <button
                     key={tab}
@@ -2219,7 +2219,7 @@ function DesktopCreditView({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-violet-400" />
+                      <Sparkles className="h-5 w-5 text-primary" />
                       <CardTitle>Where to use your {selectedItem.name}</CardTitle>
                     </div>
                     <motion.div
@@ -2360,7 +2360,7 @@ function DesktopCreditView({
                 <Input type="number" placeholder="30" value={computedUtil.toString()}
                   onChange={e => { setUtilization(e.target.value); setSimulationActive(false); }}
                   disabled={isDynamicUtil}
-                  className={cn(isDynamicUtil && "bg-slate-900 border-emerald-500/30 text-emerald-400 font-bold opacity-90 cursor-not-allowed")}
+                  className={cn(isDynamicUtil && "bg-card border-emerald-500/30 text-emerald-400 font-bold opacity-90 cursor-not-allowed")}
                 />
                 {isDynamicUtil && (
                   <span className="text-[10px] text-muted-foreground block leading-tight">
@@ -2417,7 +2417,7 @@ function DesktopCreditView({
                 </div>
               )}
               
-              <Button onClick={() => setSimulationActive(true)} variant="outline" className="w-full cursor-pointer hover:bg-slate-800 transition">
+              <Button onClick={() => setSimulationActive(true)} variant="outline" className="w-full cursor-pointer hover:bg-muted transition">
                 Simulate dropping utilization to 10%
               </Button>
 
@@ -2441,7 +2441,7 @@ function DesktopCreditView({
 
                   <div className="pt-4 border-t border-border space-y-3">
                     <h5 className="text-sm font-semibold flex items-center gap-2 text-white">
-                      <Sparkles className="h-4 w-4 text-violet-400" /> 
+                      <Sparkles className="h-4 w-4 text-primary" /> 
                       Actionable Improvement Plan (Based on your financial data):
                     </h5>
                     <ul className="space-y-2.5">

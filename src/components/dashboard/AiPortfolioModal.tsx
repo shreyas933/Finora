@@ -176,7 +176,7 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
         <div className="flex items-center justify-between p-5 border-b border-white/10 bg-[#1e293b]/50">
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2 text-white">
-              <BrainCircuit className="h-5 w-5 text-violet-400 animate-pulse" /> AI Statement Uploader
+              <BrainCircuit className="h-5 w-5 text-primary animate-pulse" /> AI Statement Uploader
             </h3>
             <p className="text-xs text-slate-400 mt-1">
               Upload your bank statement PDF to extract investments and calculate your portfolio
@@ -209,25 +209,25 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                 />
                 
                 <div 
-                  className="border-2 border-dashed border-violet-500/30 bg-violet-500/5 rounded-2xl p-12 cursor-pointer hover:border-violet-500/50 hover:bg-violet-500/10 transition-all flex flex-col items-center justify-center group"
+                  className="border-2 border-dashed border-primary/30 bg-primary/5 rounded-2xl p-12 cursor-pointer hover:border-primary/50 hover:bg-primary/10 transition-all flex flex-col items-center justify-center group"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <div className="w-16 h-16 bg-violet-500/20 text-violet-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-16 h-16 bg-primary/20 text-red-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <FileText className="h-8 w-8" />
                   </div>
                   <h4 className="text-lg font-bold mb-1 text-white">Select Bank Statement PDF</h4>
                   <p className="text-sm text-slate-400 max-w-md">
                     Drag and drop or browse to select your bank account statement, Demat portfolio export, or mutual fund transaction statement (PDF or CSV).
                   </p>
-                  <span className="mt-3 text-xs text-violet-400/70 border border-violet-500/20 px-2.5 py-1 rounded-full bg-violet-500/10">
+                  <span className="mt-3 text-xs text-red-400/70 border border-primary/20 px-2.5 py-1 rounded-full bg-primary/10">
                     Supports major banks, Zerodha, Groww, CAMS & more
                   </span>
                 </div>
 
                 {files.length > 0 && (
-                  <div className="mt-6 p-4 bg-violet-950/20 border border-violet-500/20 rounded-xl flex items-center justify-between text-left">
+                  <div className="mt-6 p-4 bg-primary/20 border border-primary/20 rounded-xl flex items-center justify-between text-left">
                     <div className="flex items-center gap-3 min-w-0">
-                      <FileText className="h-8 w-8 text-violet-400 shrink-0" />
+                      <FileText className="h-8 w-8 text-primary shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{files[0].name}</p>
                         <p className="text-xs text-slate-500">{(files[0].size / 1024 / 1024).toFixed(2)} MB</p>
@@ -240,11 +240,11 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                 )}
 
                 <Button 
-                  className="w-full h-12 mt-8 bg-violet-600 hover:bg-violet-500 text-white font-bold gap-2 rounded-xl transition-all"
+                  className="w-full h-12 mt-8 bg-primary hover:bg-primary text-white font-bold gap-2 rounded-xl transition-all"
                   disabled={files.length === 0}
                   onClick={() => setStep("scanning")}
                 >
-                  <Sparkles className="h-4 w-4 text-violet-200" /> Start AI Extraction
+                  <Sparkles className="h-4 w-4 text-primary" /> Start AI Extraction
                 </Button>
               </motion.div>
             )}
@@ -259,11 +259,11 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
               >
                 <div className="relative w-28 h-28 mb-8">
                   {/* Outer spinning radar border */}
-                  <div className="absolute inset-0 border-4 border-violet-500/20 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                   
                   {/* Inside pulsing glow */}
-                  <div className="absolute inset-4 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/30 animate-pulse">
+                  <div className="absolute inset-4 bg-gradient-to-tr from-primary to-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 animate-pulse">
                     <Sparkles className="h-8 w-8 text-white" />
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                 
                 <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-full h-3.5 p-0.5 overflow-hidden">
                   <motion.div 
-                    className="bg-gradient-to-r from-violet-600 to-indigo-500 h-full rounded-full"
+                    className="bg-gradient-to-r from-primary to-indigo-500 h-full rounded-full"
                     style={{ width: `${loadingProgress}%` }}
                     layout
                   />
@@ -322,14 +322,14 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                               <td className="px-4 py-2.5">
                                 <input
                                   type="text"
-                                  className="w-full bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-white font-medium focus:outline-none focus:border-violet-500"
+                                  className="w-full bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-white font-medium focus:outline-none focus:border-primary"
                                   value={asset.name}
                                   onChange={e => handleFieldChange(asset.id, "name", e.target.value)}
                                 />
                               </td>
                               <td className="px-4 py-2.5">
                                 <select
-                                  className="w-full bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                                  className="w-full bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-primary"
                                   value={asset.type}
                                   onChange={e => handleFieldChange(asset.id, "type", e.target.value)}
                                 >
@@ -341,7 +341,7 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                               <td className="px-4 py-2.5 text-right">
                                 <input
                                   type="number"
-                                  className="w-32 bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-right text-white font-mono focus:outline-none focus:border-violet-500"
+                                  className="w-32 bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-right text-white font-mono focus:outline-none focus:border-primary"
                                   value={asset.invested}
                                   onChange={e => handleFieldChange(asset.id, "invested", Number(e.target.value))}
                                 />
@@ -349,7 +349,7 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                               <td className="px-4 py-2.5 text-right">
                                 <input
                                   type="number"
-                                  className="w-32 bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-right text-white font-mono focus:outline-none focus:border-violet-500"
+                                  className="w-32 bg-[#1e293b] border border-white/15 rounded px-2.5 py-1.5 text-sm text-right text-white font-mono focus:outline-none focus:border-primary"
                                   value={asset.current_value}
                                   onChange={e => handleFieldChange(asset.id, "current_value", Number(e.target.value))}
                                 />
@@ -385,7 +385,7 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                   <div className="p-4 bg-[#1e293b]/20 border-t border-white/10 flex justify-between items-center">
                     <button
                       onClick={handleAddNewAsset}
-                      className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 font-bold transition-colors"
+                      className="flex items-center gap-1.5 text-xs text-primary hover:text-primary font-bold transition-colors"
                     >
                       <Plus className="h-4 w-4" /> Add Asset Manually
                     </button>
@@ -405,7 +405,7 @@ export function AiPortfolioModal({ onClose }: AiPortfolioModalProps) {
                     Upload Again
                   </Button>
                   <Button 
-                    className="flex-2 w-full h-12 bg-violet-600 hover:bg-violet-500 text-white font-bold gap-2 rounded-xl transition-all shadow-lg shadow-violet-600/20"
+                    className="flex-2 w-full h-12 bg-primary hover:bg-primary text-white font-bold gap-2 rounded-xl transition-all shadow-lg shadow-primary/20"
                     onClick={handleImport}
                     disabled={isSaving || assets.length === 0}
                   >

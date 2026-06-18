@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { CurrencyProvider } from "@/context/CurrencyContext";
+import { GlobalPermissionHandler } from "@/components/global/GlobalPermissionHandler";
 
 export default function AppLayout({
   children,
@@ -9,9 +10,10 @@ export default function AppLayout({
 }) {
   return (
     <CurrencyProvider>
+      <GlobalPermissionHandler />
       <div className="flex h-screen overflow-hidden bg-background text-foreground relative">
         {/* Global Ethereal Glass Background Orbs */}
-        <div className="absolute top-0 left-1/4 w-[50vw] h-[50vw] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none opacity-60"></div>
+        <div className="absolute top-0 left-1/4 w-[50vw] h-[50vw] bg-primary/5 rounded-full blur-[120px] pointer-events-none opacity-60"></div>
         <div className="absolute bottom-0 right-1/4 w-[40vw] h-[40vw] bg-teal-500/5 rounded-full blur-[150px] pointer-events-none opacity-50"></div>
 
         <Sidebar />
@@ -25,5 +27,3 @@ export default function AppLayout({
     </CurrencyProvider>
   );
 }
-
-

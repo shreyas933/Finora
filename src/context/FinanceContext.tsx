@@ -36,7 +36,7 @@ type FinanceContextType = {
   bulkAddTransactions: (txs: Omit<Transaction, "id">[]) => Promise<void>;
   updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
-  
+
   goals: Goal[];
   addGoal: (g: Omit<Goal, "id">) => Promise<void>;
   updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>;
@@ -120,7 +120,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         setIsLoaded(true);
       }
     }
-    
+
     loadData();
 
     // Listen for auth changes (e.g. login/logout)
@@ -136,7 +136,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Listen for budget updates to run auto-assignment of pending transactions
@@ -180,7 +180,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const payload = txs.map(t => ({ ...t, user_id: userId }));
     const { data, error } = await supabase.from("transactions").insert(payload).select();
     if (data && !error) {
-      setTransactions(prev => [...data, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setTransactions(prev => [...data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   };
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
@@ -249,17 +249,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     // 2. Seed Goals
     const goalsPayload = data.goals.map((g: any) => ({ ...g, user_id: userId }));
     const { data: gData } = await supabase.from("goals").insert(goalsPayload).select();
-    if (gData) setGoals(gData.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    if (gData) setGoals(gData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
     // 3. Seed Investments
     const invPayload = data.investments.map((i: any) => ({ ...i, user_id: userId }));
     const { data: iData } = await supabase.from("investments").insert(invPayload).select();
-    if (iData) setInvestments(iData.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    if (iData) setInvestments(iData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
     // 4. Seed LocalStorage Wealth & Budgets 
     localStorage.setItem("finora_wealth", JSON.stringify(data.wealthHistory));
     localStorage.setItem("finora_budgets", JSON.stringify(data.budgets));
-    
+
     // Simulate credit cards for /credit view
     const simulatedCards = [
       {
@@ -292,7 +292,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       { id: "2", name: "Chase Sapphire Reserve", balance: 1200, mappedTransactions: [] }
     ]));
     localStorage.setItem("finora_wallet_items", JSON.stringify(simulatedCards));
-    
+
     // Trigger global UI re-renders for storage-based graphs
     window.dispatchEvent(new Event("finora_wealth_update"));
     window.dispatchEvent(new Event("finora_budget_update"));
@@ -307,15 +307,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     ? 100
     : Math.min(100, Math.max(0, 50 + (savingsRate * 0.5) + (balance > 100000 ? 10 : 0)));
 
+  const contextValue = useMemo(() => ({
+    isLoaded, userId,
+    transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction,
+    goals, addGoal, updateGoal, deleteGoal,
+    investments, addInvestment, updateInvestment, deleteInvestment,
+    clearAllData, seedInvestorDemo,
+    balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [isLoaded, userId, transactions, goals, investments, balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore]);
+
   return (
-    <FinanceContext.Provider value={{
-      isLoaded, userId,
-      transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction,
-      goals, addGoal, updateGoal, deleteGoal,
-      investments, addInvestment, updateInvestment, deleteInvestment,
-      clearAllData, seedInvestorDemo,
-      balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore
-    }}>
+    <FinanceContext.Provider value={contextValue}>
       {children}
     </FinanceContext.Provider>
   );

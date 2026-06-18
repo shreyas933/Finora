@@ -18,6 +18,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-finora-dark: #0e0d0c;
+  --color-finora-card: #1b0c0a;
+  --color-finora-red: #800000;
+  --color-finora-red-dark: #660000;
+  --color-finora-peach: #ffb9ab;
+  --color-finora-gray: #241c19;
+  --color-finora-chat-ai: #282220;
   --radius-lg: var(--radius);
   --radius-md: 0.5rem;
   --radius-sm: 0.25rem;
@@ -28,24 +35,29 @@
 }
 
 :root {
-  /* Light mode palette - Modern Pro Finance */
-  --background: #f8f9ff;
-  --foreground: #0b1c30;
-  --card: #ffffff;
-  --card-foreground: #0b1c30;
-  --primary: #0f172a; /* Deep Navy #0F172A */
-  --primary-foreground: #ffffff;
-  --secondary: #eff4ff; /* surface-container-low */
-  --secondary-foreground: #0b1c30;
-  --muted: #eff4ff;
-  --muted-foreground: #64748b; /* Slate Grey #64748B */
-  --accent: #e5eeff; /* surface-container */
-  --accent-foreground: #0b1c30;
-  --destructive: #ba1a1a;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0; /* Level 1 card border #E2E8F0 */
-  --input: #ffffff;
-  --ring: #0f172a;
+  /* Global Dark Theme applied to entire app */
+  --background: #1B1716;
+  --foreground: #EDEBDE;
+  --card: #24201F;
+  --card-foreground: #EDEBDE;
+  --primary: #810100;
+  --primary-foreground: #EDEBDE;
+  --secondary: #630102;
+  --secondary-foreground: #EDEBDE;
+  --muted: #262221;
+  --muted-foreground: #B8B8B8;
+  --accent: #630102;
+  --accent-foreground: #EDEBDE;
+  --destructive: #810100;
+  --destructive-foreground: #EDEBDE;
+  --border: #630102;
+  --input: #262221;
+  --ring: #810100;
+  --chart-1: #22c55e;
+  --chart-2: #810100;
+  --chart-3: #3b82f6;
+  --chart-4: #eab308;
+  --chart-5: #ff8c7a;
   --radius: 0.75rem; /* 12px corners */
 }
 

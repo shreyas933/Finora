@@ -17,9 +17,9 @@ async function callAI(prompt: string): Promise<string | null> {
     try {
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          "Authorization": `Bearer ${groqKey}` 
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${groqKey}`
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
@@ -237,7 +237,7 @@ Return ONLY the JSON object. Example: {"name":"Zomato","amount":450,"category":"
     } else {
       // Strip any accidental markdown fences
       const clean = resultText.replace(/```json|```/g, "").trim();
-      
+
       // Find the first { and last } to safely extract JSON if the model added leading/trailing text
       const firstBrace = clean.indexOf("{");
       const lastBrace = clean.lastIndexOf("}");

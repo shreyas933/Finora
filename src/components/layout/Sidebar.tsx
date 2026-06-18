@@ -13,7 +13,11 @@ import {
   MessageSquare,
   Landmark,
   Menu,
-  X
+  X,
+  Home,
+  Wallet,
+  Sparkles,
+  Goal
 } from "lucide-react";
 import { useState } from "react";
 
@@ -29,12 +33,11 @@ const routes = [
 
 // Bottom nav shows a subset of routes (max 6 for mobile)
 const mobileRoutes = [
-  { label: "Home", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Txns", icon: Receipt, href: "/transactions" },
+  { label: "Home", icon: Home, href: "/dashboard" },
+  { label: "Wallet", icon: Wallet, href: "/transactions" },
+  { label: "AI", icon: Sparkles, href: "/chat" },
+  { label: "Goals", icon: Goal, href: "/goals" },
   { label: "Cards", icon: CreditCard, href: "/credit" },
-  { label: "Goals", icon: Target, href: "/goals" },
-  { label: "Invest", icon: LineChart, href: "/investments" },
-  { label: "Chat", icon: MessageSquare, href: "/chat" },
 ];
 
 export function Sidebar() {
@@ -67,8 +70,8 @@ export function Sidebar() {
       </div>
 
       {/* ─── Mobile Bottom Navigation Bar (visible only on mobile) ─── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border safe-area-bottom">
-        <nav className="flex justify-around items-center h-16 px-1">
+      <div className="md:hidden fixed bottom-3 left-4 right-4 z-50 bg-background/20 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-foreground">
+        <nav className="flex justify-around items-center h-16 px-4">
           {mobileRoutes.map((route) => {
             const isActive = pathname === route.href;
             return (
@@ -76,16 +79,13 @@ export function Sidebar() {
                 key={route.href}
                 href={route.href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-xs font-medium transition-all min-w-0 flex-1",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground active:text-foreground"
+                  "relative flex items-center justify-center p-2 rounded-xl transition-all",
+                  isActive ? "text-primary" : "text-muted-foreground active:text-primary"
                 )}
               >
-                <route.icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                <span className="truncate">{route.label}</span>
+                <route.icon className="h-6 w-6 stroke-[1.5]" />
                 {isActive && (
-                  <div className="absolute bottom-1 w-5 h-0.5 rounded-full bg-primary" />
+                  <div className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />
                 )}
               </Link>
             );

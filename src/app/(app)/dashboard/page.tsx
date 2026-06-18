@@ -10,18 +10,40 @@ import Link from "next/link";
 import { format, subDays, getDaysInMonth } from "date-fns";
 import { motion } from "framer-motion";
 import { AIInsights } from "@/components/dashboard/AIInsights";
-import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
 import { StartingBalanceModal } from "@/components/dashboard/StartingBalanceModal";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useEffect, useState, useMemo } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { NameSetupModal } from "@/components/dashboard/NameSetupModal";
 
 export default function DashboardPage() {
   const { balance, monthlyIncome, monthlyExpenses, healthScore, transactions } = useFinance();
   const { currency } = useCurrency();
   const [safeToSpend, setSafeToSpend] = useState<number>(0);
-  const [showSyncModal, setShowSyncModal] = useState(false);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
   const [walletCardsCount, setWalletCardsCount] = useState({ credit: 0, debit: 0 });
+  const [profileName, setProfileName] = useState<string>("");
+  const [greetingText, setGreetingText] = useState<string>("Welcome back");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const firstName = user.user_metadata?.first_name;
+        if (firstName) {
+          setProfileName(firstName);
+        } else {
+          setShowNameModal(true);
+        }
+      }
+    });
+
+    const hour = new Date().getHours();
+    if (hour < 12) setGreetingText("Good morning");
+    else if (hour < 17) setGreetingText("Good afternoon");
+    else setGreetingText("Good evening");
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("finora_wallet_items");
@@ -31,7 +53,7 @@ export default function DashboardPage() {
         const credit = parsed.filter((c: any) => c.type === "credit").length;
         const debit = parsed.filter((c: any) => c.type === "debit").length;
         setWalletCardsCount({ credit, debit });
-      } catch (e) {}
+      } catch (e) { }
     }
   }, []);
 
@@ -49,10 +71,10 @@ export default function DashboardPage() {
       const parsed = JSON.parse(saved);
       const discretionary = parsed.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
       const discretionaryTarget = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
-      
+
       const fixed = parsed.filter((b: any) => ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
       const fixedTarget = fixed.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
-      
+
       const maxDiscretionary = Math.max(0, monthlyIncome - fixedTarget);
       target = Math.min(discretionaryTarget, maxDiscretionary);
     } else {
@@ -80,14 +102,13 @@ export default function DashboardPage() {
     setSafeToSpend(Math.round(remaining / daysLeft));
   }, [transactions, monthlyIncome]);
 
-  // Calculate balance trend based on actual transactions over the last 7 days
   const chartData = useMemo(() => {
     const dates = Array.from({ length: 7 }).map((_, i) => subDays(new Date(), 6 - i));
-    
+
     return dates.map(date => {
       const boundaryTime = new Date(date);
       boundaryTime.setHours(23, 59, 59, 999);
-      
+
       const dayBalance = transactions
         .filter(t => new Date(t.date).getTime() <= boundaryTime.getTime())
         .reduce((acc, t) => {
@@ -101,7 +122,6 @@ export default function DashboardPage() {
     });
   }, [transactions]);
 
-  const recentTransactions = transactions.slice(0, 5);
 
   const totalOverspent = useMemo(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("finora_budgets") : null;
@@ -132,43 +152,25 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 md:space-y-8 pb-8">
+      {showNameModal && (
+        <NameSetupModal 
+          onComplete={(firstName) => {
+            setProfileName(firstName);
+            setShowNameModal(false);
+          }} 
+        />
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Overview</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            {greetingText}{profileName ? `, ${profileName}` : ""}
+          </h2>
           <p className="text-muted-foreground text-sm md:text-base mt-1">Here&apos;s a summary of your financial health.</p>
         </div>
-        <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-          <button
-            onClick={() => setShowSyncModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border"
-            style={{
-              background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.08))",
-              borderColor: "rgba(139,92,246,0.25)",
-              color: "#6d28d9",
-            }}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
-            </span>
-            Connect
-          </button>
-          <button
-            onClick={() => typeof window !== "undefined" && window.print()}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300"
-          >
-            <Download className="h-4 w-4 text-slate-400" />
-            Export PDF
-          </button>
-          <Link href="/transactions">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Add Transaction
-            </Button>
-          </Link>
-        </div>
+
       </div>
 
-      {showSyncModal && <PaymentSyncModal onClose={() => setShowSyncModal(false)} />}
       {showBalanceModal && <StartingBalanceModal onClose={() => setShowBalanceModal(false)} />}
 
       {healthScore < 70 && transactions.length > 0 && (
@@ -182,23 +184,23 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-50/60 via-card to-emerald-50 border border-emerald-200/60 rounded-2xl p-6 md:p-8 shadow-level-1 flex flex-col md:flex-row items-start md:items-center justify-between"
+        className="w-full relative overflow-hidden bg-gradient-to-br from-primary to-secondary rounded-2xl p-6 md:p-8 shadow-level-1 flex flex-col md:flex-row items-start md:items-center justify-between"
       >
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/5 blur-3xl rounded-full"></div>
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/5 blur-3xl rounded-full"></div>
         <div className="relative z-10 max-w-xl">
-          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 block w-max mb-3 mt-2 md:mt-0">
+          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-black/20 text-foreground rounded-full border border-white/10 block w-max mb-3 mt-2 md:mt-0">
             Daily CFO Pacer
           </span>
           <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Safe-To-Spend Today</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-foreground/80 leading-relaxed">
             Based on your rigid math boundaries and days left in the month, if you spend exactly this much today, you will flawlessly land on your budget goals. Zero guesswork.
           </p>
         </div>
-        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-emerald-200/40 pt-4 md:pt-0">
-          <div className="text-5xl md:text-6xl font-mono font-bold text-emerald-600 tracking-tighter drop-shadow-sm break-all">
+        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-white/10 pt-4 md:pt-0">
+          <div className="text-5xl md:text-6xl font-mono font-bold text-foreground tracking-tighter drop-shadow-sm break-all">
             {formatCurrency(safeToSpend, currency)}
           </div>
-          <p className="text-xs font-semibold text-emerald-600 mt-2 uppercase tracking-widest">Resets at midnight</p>
+          <p className="text-xs font-semibold text-foreground/70 mt-2 uppercase tracking-widest">Resets at midnight</p>
         </div>
       </motion.div>
 
@@ -209,7 +211,7 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
               <button
                 onClick={() => setShowBalanceModal(true)}
-                className="text-muted-foreground hover:text-violet-400 p-0.5 rounded transition-colors"
+                className="text-muted-foreground hover:text-primary p-0.5 rounded transition-colors"
                 title="Adjust balance"
               >
                 <Pencil className="h-3 w-3" />
@@ -218,7 +220,7 @@ export default function DashboardPage() {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(balance, currency)}</div>
+            <div className="text-2xl font-bold text-emerald-500">{formatCurrency(balance, currency)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               +2.5% from last month
             </p>
@@ -230,8 +232,8 @@ export default function DashboardPage() {
             <ArrowUpRight className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(monthlyIncome, currency)}</div>
-            <p className="text-xs text-muted-foreground mt-1 text-emerald-500">
+            <div className="text-2xl font-bold text-emerald-500">{formatCurrency(monthlyIncome, currency)}</div>
+            <p className="text-xs text-emerald-500 mt-1">
               On track
             </p>
           </CardContent>
@@ -242,8 +244,8 @@ export default function DashboardPage() {
             <ArrowDownRight className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(monthlyExpenses, currency)}</div>
-            <p className="text-xs text-muted-foreground mt-1 text-destructive">
+            <div className="text-2xl font-bold text-destructive">{formatCurrency(monthlyExpenses, currency)}</div>
+            <p className="text-xs text-destructive mt-1">
               +12% higher than usual
             </p>
           </CardContent>
@@ -270,15 +272,15 @@ export default function DashboardPage() {
           <Link href="/credit" className="block h-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Credit Wallet</CardTitle>
-              <CreditCard className="h-4 w-4 text-violet-500" />
+              <CreditCard className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-mono">
                 {walletCardsCount.credit} Credit / {walletCardsCount.debit} Debit
               </div>
               <p className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
-                <span className="text-violet-400 font-semibold hover:underline">View Perks & Score</span>
-                <ChevronRight className="h-3.5 w-3.5 text-violet-400" />
+                <span className="text-primary font-semibold hover:underline">View Perks & Score</span>
+                <ChevronRight className="h-3.5 w-3.5 text-primary" />
               </p>
             </CardContent>
           </Link>
@@ -288,8 +290,8 @@ export default function DashboardPage() {
       {/* ── AI Insights ── */}
       <AIInsights />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="w-full">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Balance Trend</CardTitle>
           </CardHeader>
@@ -332,44 +334,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-3 overflow-hidden flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>
-                You have {recentTransactions.length} recent transactions
-              </CardDescription>
-            </div>
-            <Link href="/transactions">
-              <Button variant="ghost" size="sm" className="text-xs">View All</Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto pr-2">
-            <div className="space-y-6">
-              {recentTransactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-full",
-                      tx.type === "income" ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
-                    )}>
-                      {tx.type === "income" ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{tx.category}</p>
-                    </div>
-                  </div>
-                  <div className="text-sm font-medium">
-                    {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount, currency)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

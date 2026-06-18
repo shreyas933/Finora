@@ -12,9 +12,10 @@ export default function LandingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // If the app is running natively on a phone via Capacitor, skip the landing page
-    if (Capacitor.isNativePlatform()) {
-      router.replace("/dashboard");
+    // Redirect to login if running natively via Capacitor OR on a mobile device
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (Capacitor.isNativePlatform() || isMobile) {
+      router.replace("/login");
     }
   }, [router]);
 
@@ -114,8 +115,8 @@ export default function LandingPage() {
                 <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hidden sm:block">
                    <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">This Month Volume</p>
                    <p className="text-2xl font-bold text-slate-900">$48,320.00</p>
-                   <div className="w-full h-12 mt-4 bg-purple-100/50 rounded-lg relative overflow-hidden">
-                     <svg className="absolute w-full h-full text-purple-400" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,30 L0,25 Q20,15 40,20 T80,10 T100,20 L100,30 Z" fill="currentColor"/></svg>
+                   <div className="w-full h-12 mt-4 bg-primary/50 rounded-lg relative overflow-hidden">
+                     <svg className="absolute w-full h-full text-primary" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,30 L0,25 Q20,15 40,20 T80,10 T100,20 L100,30 Z" fill="currentColor"/></svg>
                    </div>
                 </div>
               </div>
@@ -162,7 +163,7 @@ export default function LandingPage() {
               <p className="text-[10px] font-semibold text-slate-400 uppercase text-center mb-4">Average spend in half a year</p>
               <div className="flex items-end justify-between h-24 gap-2">
                 {[40, 70, 50, 100, 80, 50].map((h, i) => (
-                  <div key={i} className="w-full bg-[#8b5cf6] rounded-full" style={{ height: `${h}%` }}></div>
+                  <div key={i} className="w-full bg-primary rounded-full" style={{ height: `${h}%` }}></div>
                 ))}
               </div>
               <div className="flex justify-between mt-2 px-1">

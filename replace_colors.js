@@ -1,0 +1,23 @@
+const fs = require('fs');
+const path = require('path');
+
+function walkDir(dir, callback) {
+  fs.readdirSync(dir).forEach(f => {
+    const dirPath = path.join(dir, f);
+    const isDirectory = fs.statSync(dirPath).isDirectory();
+    isDirectory ? walkDir(dirPath, callback) : callback(path.join(dir, f));
+  });
+}
+
+walkDir('./src', function(filePath) {
+  if (filePath.endsWith('.tsx') || filePath.endsWith('.ts') || filePath.endsWith('.css')) {
+    let content = fs.readFileSync(filePath, 'utf8');
+    // Regex for tailwind classes like text-violet-500, bg-purple-600, etc.
+    const regex = /(violet|purple)-\d{3}/g;
+    if (regex.test(content)) {
+      const newContent = content.replace(regex, 'primary');
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      console.log(`Updated: ${filePath}`);
+    }
+  }
+});

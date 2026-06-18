@@ -525,7 +525,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
     return (
       <div key={q.id} className="bg-[#1e293b]/40 border border-white/5 rounded-xl p-4 space-y-3">
         <h4 className="text-sm font-semibold text-white leading-relaxed">
-          <span className="text-violet-400 mr-1.5 font-bold">Q{q.id}.</span> {q.text}
+          <span className="text-primary mr-1.5 font-bold">Q{q.id}.</span> {q.text}
         </h4>
         {q.examples && <p className="text-[10px] text-slate-500 font-semibold italic">{q.examples}</p>}
         <div className="grid grid-cols-1 gap-2">
@@ -536,7 +536,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                 key={opt} 
                 className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
                   isSelected 
-                    ? 'bg-violet-600/20 border-violet-500 text-violet-300 font-semibold' 
+                    ? 'bg-primary/20 border-primary text-red-400 font-semibold' 
                     : 'bg-[#0f172a]/50 border-white/5 text-slate-300 hover:bg-[#1e293b]'
                 }`}
               >
@@ -548,7 +548,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   onChange={() => handleOptionChange(q.id, opt)}
                   className="hidden"
                 />
-                <div className={`w-4 h-4 rounded-full border border-violet-500/50 mr-3 flex items-center justify-center ${isSelected ? 'bg-violet-500 border-violet-500' : ''}`}>
+                <div className={`w-4 h-4 rounded-full border border-primary/50 mr-3 flex items-center justify-center ${isSelected ? 'bg-primary border-primary' : ''}`}>
                   {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                 </div>
                 <span className="text-xs">{opt}</span>
@@ -572,7 +572,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
         <div className="flex items-center justify-between p-5 border-b border-white/10 bg-[#1e293b]/50">
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2">
-              <BrainCircuit className="h-5 w-5 text-violet-400" /> AI Budget Profiler
+              <BrainCircuit className="h-5 w-5 text-primary" /> AI Budget Profiler
             </h3>
             <p className="text-xs text-slate-400 mt-1 font-semibold">
               {step === 1 && "Step 1: Set Income & Framework"}
@@ -602,7 +602,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                       <span className="absolute left-4 top-3 text-slate-400 font-semibold text-lg">₹</span>
                       <input
                         type="number"
-                        className="w-full bg-[#1e293b] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-base text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                        className="w-full bg-[#1e293b] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-base text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         placeholder="e.g. 50000"
                         value={salaryInput}
                         onChange={e => setSalaryInput(e.target.value)}
@@ -614,7 +614,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                 
                 <Button
                   onClick={() => setStep(2)}
-                  className="w-full h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-violet-600/10 flex items-center justify-center gap-1.5"
+                  className="w-full h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-primary/10 flex items-center justify-center gap-1.5"
                 >
                   Continue to Needs <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -649,7 +649,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                         <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                         <input
                           type="number"
-                          className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                          className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-primary"
                           value={need.budget}
                           onChange={e => handleNeedChange(idx, e.target.value)}
                         />
@@ -665,7 +665,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                     placeholder="Custom Need Name"
                     value={newNeedName}
                     onChange={e => setNewNeedName(e.target.value)}
-                    className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                    className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-primary"
                   />
                   <div className="relative w-24">
                     <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
@@ -674,14 +674,14 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                       placeholder="Amt"
                       value={newNeedAmount}
                       onChange={e => setNewNeedAmount(e.target.value)}
-                      className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                      className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-primary"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={addNeed}
                     disabled={!newNeedName.trim()}
-                    className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                    className="px-2.5 py-1 bg-primary hover:bg-primary disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                   >
                     Add
                   </button>
@@ -696,7 +696,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   </button>
                   <Button
                     onClick={() => setStep(3)}
-                    className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-violet-600/10 flex items-center justify-center gap-1.5 text-xs"
+                    className="flex-1 h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-1.5 text-xs"
                   >
                     Continue to Scan <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -717,10 +717,10 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                 <input type="file" accept=".csv,.pdf" multiple className="hidden" ref={fileInputRef} onChange={handleFiles} />
                 
                 <div 
-                  className="border-2 border-dashed border-violet-500/30 bg-violet-500/5 rounded-xl p-8 cursor-pointer hover:border-violet-500/50 hover:bg-violet-500/10 transition-all flex flex-col items-center justify-center group"
+                  className="border-2 border-dashed border-primary/30 bg-primary/5 rounded-xl p-8 cursor-pointer hover:border-primary/50 hover:bg-primary/10 transition-all flex flex-col items-center justify-center group"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <div className="w-12 h-12 bg-violet-500/20 text-violet-400 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-primary/20 text-red-400 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <FileJson className="h-5 w-5" />
                   </div>
                   <h4 className="text-sm font-semibold mb-1 text-white">Select Bank Statements</h4>
@@ -741,7 +741,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                     Back
                   </button>
                   <Button 
-                    className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white font-bold gap-1.5 text-xs"
+                    className="flex-1 h-12 bg-primary hover:bg-primary text-white font-bold gap-1.5 text-xs"
                     disabled={files.length === 0}
                     onClick={processStatementsAndExtractWants}
                   >
@@ -766,7 +766,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   </button>
                   <button
                     onClick={() => setStep("q4_6")}
-                    className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors text-xs flex items-center justify-center gap-1"
+                    className="flex-1 h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-colors text-xs flex items-center justify-center gap-1"
                   >
                     Next <ArrowRight className="h-3.5 w-3.5" />
                   </button>
@@ -789,7 +789,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   </button>
                   <button
                     onClick={() => setStep("q7_9")}
-                    className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors text-xs flex items-center justify-center gap-1"
+                    className="flex-1 h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-colors text-xs flex items-center justify-center gap-1"
                   >
                     Next <ArrowRight className="h-3.5 w-3.5" />
                   </button>
@@ -812,7 +812,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                   </button>
                   <button
                     onClick={() => setStep("q10_12")}
-                    className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors text-xs flex items-center justify-center gap-1"
+                    className="flex-1 h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-colors text-xs flex items-center justify-center gap-1"
                   >
                     Next <ArrowRight className="h-3.5 w-3.5" />
                   </button>
@@ -846,7 +846,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
             {/* Scanning Loader */}
             {step === "scanning" && (
               <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 flex flex-col items-center text-center">
-                <Loader2 className="h-10 w-10 text-violet-500 animate-spin mb-4" />
+                <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
                 <h3 className="text-lg font-bold text-white mb-1">{statusText}</h3>
                 <p className="text-xs text-slate-400 max-w-sm">
                   Analyzing expense files, mapping matching keywords, and constructing historical averages for Wants...
@@ -860,10 +860,10 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                 <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1.5 custom-scrollbar">
                   
                   {/* Summary Recommendation */}
-                  <div className="bg-violet-950/20 border border-violet-500/30 rounded-xl p-4 space-y-2">
+                  <div className="bg-primary/20 border border-primary/30 rounded-xl p-4 space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-violet-400 uppercase tracking-wider">Recommended Wants Budget</span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-violet-600/30 text-violet-300 border border-violet-500/20">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider">Recommended Wants Budget</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-primary/30 text-red-400 border border-primary/20">
                         {answers[1].split(":")[0]} Mode
                       </span>
                     </div>
@@ -909,7 +909,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                             <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                             <input
                               type="number"
-                              className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                              className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-primary"
                               value={want.budget}
                               onChange={e => handleWantChange(idx, e.target.value)}
                             />
@@ -925,7 +925,7 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                         placeholder="Custom Want Name"
                         value={newWantName}
                         onChange={e => setNewWantName(e.target.value)}
-                        className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                        className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-primary"
                       />
                       <div className="relative w-24">
                         <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
@@ -934,14 +934,14 @@ export function AiBudgetModal({ onClose, currentSalary, currentNeeds, currentWan
                           placeholder="Amt"
                           value={newWantAmount}
                           onChange={e => setNewWantAmount(e.target.value)}
-                          className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                          className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-primary"
                         />
                       </div>
                       <button
                         type="button"
                         onClick={addWant}
                         disabled={!newWantName.trim()}
-                        className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                        className="px-2.5 py-1 bg-primary hover:bg-primary disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                       >
                         Add
                       </button>

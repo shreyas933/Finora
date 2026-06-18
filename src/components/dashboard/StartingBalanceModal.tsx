@@ -72,8 +72,8 @@ export function StartingBalanceModal({ onClose }: StartingBalanceModalProps) {
         {/* Header */}
         <div className="bg-[#1e293b]/50 p-6 border-b border-white/10 flex items-center justify-between relative">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-violet-500/10 rounded-xl flex items-center justify-center border border-violet-500/20">
-              <Wallet className="h-5 w-5 text-violet-400" />
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20">
+              <Wallet className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight">Adjust Balance</h2>
@@ -94,8 +94,8 @@ export function StartingBalanceModal({ onClose }: StartingBalanceModalProps) {
             <label htmlFor="target-balance" className="text-sm font-semibold text-slate-300">
               What is your current bank/wallet balance?
             </label>
-            <div className="relative rounded-xl border border-white/10 bg-[#1e293b]/20 focus-within:border-violet-500/50 focus-within:ring-2 focus-within:ring-violet-500/25 transition-all overflow-hidden flex items-center px-4 py-3">
-              <span className="text-2xl font-semibold text-violet-400 mr-2">
+            <div className="relative rounded-xl border border-white/10 bg-[#1e293b]/20 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/25 transition-all overflow-hidden flex items-center px-4 py-3">
+              <span className="text-2xl font-semibold text-primary mr-2">
                 {currency === "INR" ? "₹" : "$"}
               </span>
               <input
@@ -129,7 +129,7 @@ export function StartingBalanceModal({ onClose }: StartingBalanceModalProps) {
             <Button
               type="submit"
               disabled={isSaving}
-              className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center justify-center gap-2"
+              className="w-full h-11 bg-primary hover:bg-primary text-white font-semibold flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <>

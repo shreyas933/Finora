@@ -20,21 +20,21 @@ interface Insight {
 const insightMeta: Record<InsightType, { icon: React.ElementType; color: string; bg: string; border: string }> = {
   warning: {
     icon: TrendingUp,
-    color: "text-violet-400",
-    bg: "rgba(139,92,246,0.08)",
-    border: "rgba(139,92,246,0.18)",
-  },
-  tip: {
-    icon: Lightbulb,
-    color: "text-blue-400",
-    bg: "rgba(59,130,246,0.08)",
-    border: "rgba(59,130,246,0.18)",
-  },
-  alert: {
-    icon: AlertTriangle,
     color: "text-amber-400",
     bg: "rgba(251,191,36,0.08)",
     border: "rgba(251,191,36,0.18)",
+  },
+  tip: {
+    icon: Lightbulb,
+    color: "text-emerald-400",
+    bg: "rgba(16,185,129,0.08)",
+    border: "rgba(16,185,129,0.18)",
+  },
+  alert: {
+    icon: AlertTriangle,
+    color: "text-primary", // Cherry Red
+    bg: "rgba(129,1,0,0.08)",
+    border: "rgba(129,1,0,0.18)",
   },
 };
 

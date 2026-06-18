@@ -285,7 +285,7 @@ export function CsvImportModal({
                             {row.name}
                           </td>
                           <td className="px-4 py-2.5">
-                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs border border-primary/20">
+                            <span className="bg-primary/10 text-red-400 px-2 py-0.5 rounded text-xs border border-primary/20">
                               {row.category}
                             </span>
                           </td>

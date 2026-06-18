@@ -65,7 +65,7 @@ async function callGeminiVision(base64Data: string, mimeType: string, prompt: st
 // Rule-based mock parser fallback
 function getMockBillData(fileName: string) {
   const lowerName = fileName.toLowerCase();
-  
+
   if (lowerName.includes("dinner") || lowerName.includes("restaurant") || lowerName.includes("food") || lowerName.includes("cafe")) {
     return {
       name: "Dinner at Restaurant",
@@ -98,7 +98,7 @@ function getMockBillData(fileName: string) {
       type: "expense"
     };
   }
-  
+
   return {
     name: "Scan Expense",
     amount: 850,

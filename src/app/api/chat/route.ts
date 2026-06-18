@@ -55,7 +55,7 @@ Your current savings rate is **${savingsRate.toFixed(1)}%**. To optimize this, h
   if (msg.includes("afford") || msg.includes("buy") || msg.includes("purchase") || msg.includes("iphone") || /\bcar\b/.test(msg)) {
     const amountMatch = msg.match(/[₹]?\s?([0-9,]+(?:k|lakh|l)?)/i);
     const amount = amountMatch ? parseInt(amountMatch[1].replace(/[k,]/g, "")) * (amountMatch[1].toLowerCase().includes("k") ? 1000 : 1) : 80000;
-    
+
     return `### 🛍️ Large Purchase Analysis: ₹${amount.toLocaleString("en-IN")}
 
 To fund this purchase cleanly without breaking your cashflow stability, here are **3 implementation options**:
@@ -217,10 +217,10 @@ export async function POST(req: Request) {
       }
 
       const contents = [
-        { role: "user",  parts: [{ text: systemPrompt }] },
+        { role: "user", parts: [{ text: systemPrompt }] },
         { role: "model", parts: [{ text: "Understood. I am FINORA, your AI CFO. I will provide tailored, multi-path options outlining financial trade-offs." }] },
         ...geminiHistory,
-        { role: "user",  parts: [{ text: lastMessage.content }] },
+        { role: "user", parts: [{ text: lastMessage.content }] },
       ];
 
       // Try newest models first — all free on Google AI Studio
@@ -237,7 +237,7 @@ export async function POST(req: Request) {
           const r = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
               contents,
               generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
             }),

@@ -1,46 +1,156 @@
 "use client";
 
-import { Bell, UserCircle, LogOut, ChevronDown, Trash2 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { Bell, UserCircle, LogOut, ChevronDown, Trash2, Settings, AlertTriangle, CheckCircle, Info, Sparkles, X, BellRing } from "lucide-react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useCurrency } from "@/context/CurrencyContext";
-import { CURRENCIES } from "@/lib/utils";
+import Link from "next/link";
 import { useFinance } from "@/context/FinanceContext";
 
 export function Header() {
-  const [email, setEmail] = useState<string | null>("Loading...");
-  const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>("Loading...");
   const supabase = createClient();
   const router = useRouter();
-  const { currency, setCurrency, currencySymbol } = useCurrency();
-  const { clearAllData } = useFinance();
-  const [isClearing, setIsClearing] = useState(false);
-  const currencyMenuRef = useRef<HTMLDivElement>(null);
+  const { transactions, balance, goals } = useFinance();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const handleClearData = async () => {
-    if (confirm("Are you SURE you want to permanently delete all your transactions, goals, credit cards, and investments? This cannot be undone.")) {
-      setIsClearing(true);
-      await clearAllData();
-      setIsClearing(false);
-      alert("All account data has been completely erased.");
+  // Persistent notification states
+  const [readIds, setReadIds] = useState<string[]>([]);
+  const [dismissedIds, setDismissedIds] = useState<string[]>([]);
+
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedRead = localStorage.getItem("finora_read_notifications");
+      const savedDismissed = localStorage.getItem("finora_dismissed_notifications");
+      if (savedRead) {
+        try { setReadIds(JSON.parse(savedRead)); } catch (e) { }
+      }
+      if (savedDismissed) {
+        try { setDismissedIds(JSON.parse(savedDismissed)); } catch (e) { }
+      }
     }
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const notifications = useMemo(() => {
+    const list: { id: string; title: string; message: string; time: string; type: "alert" | "info" | "success" }[] = [];
+
+    // 1. Welcome
+    list.push({
+      id: "welcome",
+      title: "Welcome to FINORA",
+      message: "Your premium wealth intelligence suite is active.",
+      time: "Just now",
+      type: "info" as const
+    });
+
+    // 2. Low Balance
+    if (balance > 0 && balance < 5000) {
+      list.push({
+        id: "low-balance",
+        title: "Liquidity Alert",
+        message: `Your account balance is below the ₹5,000 threshold (₹${balance.toLocaleString()}).`,
+        time: "Recent",
+        type: "alert" as const
+      });
+    }
+
+    // 3. Goal Achieved
+    const achievedGoals = goals?.filter(g => g.current_amount >= g.target_amount) || [];
+    if (achievedGoals.length > 0) {
+      achievedGoals.forEach(g => {
+        list.push({
+          id: `goal-achieved-${g.id}`,
+          title: "Milestone Reached! 🎉",
+          message: `Congratulations! You've fully funded your savings goal: "${g.name}".`,
+          time: "Recent",
+          type: "success" as const
+        });
+      });
+    }
+
+    // 4. Large Transaction
+    const recentLargeTxs = transactions?.filter(t => t.type === "expense" && Number(t.amount) > 10000) || [];
+    if (recentLargeTxs.length > 0) {
+      recentLargeTxs.slice(0, 3).forEach(t => {
+        list.push({
+          id: `large-tx-${t.id}`,
+          title: "Significant Outflow",
+          message: `A charge of ₹${Number(t.amount).toLocaleString()} was logged for ${t.name}.`,
+          time: new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+          type: "alert" as const
+        });
+      });
+    }
+
+    return list
+      .filter(n => !dismissedIds.includes(n.id))
+      .map(n => ({
+        ...n,
+        read: readIds.includes(n.id)
+      }));
+  }, [balance, goals, transactions, readIds, dismissedIds]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAsRead = (id: string) => {
+    if (readIds.includes(id)) return;
+    const updated = [...readIds, id];
+    setReadIds(updated);
+    localStorage.setItem("finora_read_notifications", JSON.stringify(updated));
   };
+
+  const markAllAsRead = () => {
+    const allIds = notifications.map(n => n.id);
+    const updated = Array.from(new Set([...readIds, ...allIds]));
+    setReadIds(updated);
+    localStorage.setItem("finora_read_notifications", JSON.stringify(updated));
+  };
+
+  const dismissNotification = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = [...dismissedIds, id];
+    setDismissedIds(updated);
+    localStorage.setItem("finora_dismissed_notifications", JSON.stringify(updated));
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        setEmail(user.email || "Active User");
+        const name = user.user_metadata?.first_name
+          ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ""}`.trim()
+          : user.email;
+        setDisplayName(name || "Active User");
       } else {
-        setEmail("Not logged in");
+        setDisplayName("Not logged in");
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setEmail(session.user.email || "Active User");
+        const name = session.user.user_metadata?.first_name
+          ? `${session.user.user_metadata.first_name} ${session.user.user_metadata.last_name || ""}`.trim()
+          : session.user.email;
+        setDisplayName(name || "Active User");
       } else {
-        setEmail("Not logged in");
+        setDisplayName("Not logged in");
         router.push("/login");
       }
     });
@@ -48,23 +158,14 @@ export function Header() {
     return () => subscription.unsubscribe();
   }, [router, supabase]);
 
-  // Close currency menu on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (currencyMenuRef.current && !currencyMenuRef.current.contains(e.target as Node)) {
-        setShowCurrencyMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
 
-  const selectedCurrency = CURRENCIES.find(c => c.code === currency);
+
 
   return (
     <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-card/85 px-4 md:px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
@@ -73,65 +174,130 @@ export function Header() {
         <h1 className="md:hidden text-xl font-bold tracking-tight text-primary">FINORA</h1>
       </div>
       <div className="flex items-center gap-4">
-        
-        
-        {/* ── Currency Switcher ── */}
-        <div className="relative" ref={currencyMenuRef}>
+
+        {/* Notifications Dropdown */}
+        <div className="relative py-2" ref={notificationsRef}>
           <button
-            onClick={() => setShowCurrencyMenu(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+            className={`text-muted-foreground hover:text-foreground relative p-2 rounded-xl transition-all duration-200 ${showNotifications ? 'bg-secondary text-foreground' : 'hover:bg-secondary/60'}`}
+            onClick={() => setShowNotifications(!showNotifications)}
           >
-            <span className="text-base">{currencySymbol}</span>
-            <span>{currency}</span>
-            <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white border-2 border-card ring-2 ring-primary/10">
+                {unreadCount}
+              </span>
+            )}
           </button>
 
-          {showCurrencyMenu && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
-              <p className="px-3 pt-2 pb-1 text-xs text-muted-foreground font-medium uppercase tracking-wider">Select Currency</p>
-              {CURRENCIES.map(c => (
-                <button
-                  key={c.code}
-                  onClick={() => { setCurrency(c.code); setShowCurrencyMenu(false); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-secondary transition-colors text-left ${c.code === currency ? "text-primary font-semibold bg-primary/5" : "text-foreground"}`}
-                >
-                  <span className="text-base w-6 text-center">{c.symbol}</span>
-                  <div>
-                    <p className="font-medium">{c.code}</p>
-                    <p className="text-xs text-muted-foreground">{c.name}</p>
+          {showNotifications && (
+            <div className="absolute right-[-48px] md:right-0 mt-3 w-80 md:w-96 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl z-50 overflow-hidden transition-all duration-200 scale-100 origin-top-right">
+              <div className="px-4 py-3.5 border-b border-zinc-800/60 flex items-center justify-between bg-zinc-900/30">
+                <div className="flex items-center gap-2">
+                  <BellRing className="h-4 w-4 text-primary animate-pulse" />
+                  <h3 className="font-semibold text-sm text-foreground">Updates & Alerts</h3>
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-[360px] overflow-y-auto divide-y divide-zinc-900">
+                {notifications.length > 0 ? (
+                  notifications.map(notification => (
+                    <div
+                      key={notification.id}
+                      onClick={() => markAsRead(notification.id)}
+                      className={`relative px-4 py-3.5 hover:bg-zinc-900/40 transition-all cursor-pointer flex gap-3 group/item ${!notification.read ? 'bg-primary/5' : ''}`}
+                    >
+                      {/* Unread Left Border Accent */}
+                      {!notification.read && (
+                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />
+                      )}
+
+                      {/* Icon container */}
+                      <div className="flex-shrink-0">
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notification.type === 'alert' ? 'bg-red-500/10 text-red-400' :
+                            notification.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' :
+                              'bg-primary/10 text-primary-foreground'
+                          }`}>
+                          {notification.type === 'alert' && <AlertTriangle className="h-4 w-4" />}
+                          {notification.type === 'success' && <CheckCircle className="h-4 w-4" />}
+                          {notification.type === 'info' && <Sparkles className="h-4 w-4" />}
+                        </div>
+                      </div>
+
+                      {/* Text details */}
+                      <div className="flex-grow min-w-0 pr-4">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p className={`text-xs font-semibold truncate ${!notification.read ? 'text-foreground font-bold' : 'text-zinc-400'}`}>
+                            {notification.title}
+                          </p>
+                          <span className="text-[10px] text-zinc-500 whitespace-nowrap flex-shrink-0">
+                            {notification.time}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-400 leading-normal mt-0.5 font-medium line-clamp-2">
+                          {notification.message}
+                        </p>
+                      </div>
+
+                      {/* Dismiss button */}
+                      <button
+                        onClick={(e) => dismissNotification(notification.id, e)}
+                        className="absolute right-2 top-3.5 p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60 opacity-0 group-hover/item:opacity-100 transition-all"
+                        title="Dismiss"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-12 text-center flex flex-col items-center justify-center">
+                    <div className="h-10 w-10 rounded-full bg-zinc-900 flex items-center justify-center mb-3">
+                      <Bell className="h-5 w-5 text-zinc-600" />
+                    </div>
+                    <p className="text-xs font-medium text-zinc-400">All caught up</p>
+                    <p className="text-[10px] text-zinc-500 mt-1 max-w-[200px]">No new alerts or system updates to review.</p>
                   </div>
-                  {c.code === currency && <span className="ml-auto text-primary">✓</span>}
-                </button>
-              ))}
+                )}
+              </div>
             </div>
           )}
         </div>
+        <div className="relative py-2" ref={profileRef}>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+          >
+            <UserCircle className="h-8 w-8 text-primary" />
+            <div className="hidden md:block">
+              <p className="text-sm font-medium">{displayName}</p>
+            </div>
+          </div>
 
-        <button className="text-muted-foreground hover:text-foreground">
-          <Bell className="h-5 w-5" />
-        </button>
-        <div className="flex items-center gap-2 relative group py-2 cursor-pointer">
-          <UserCircle className="h-8 w-8 text-primary" />
-          <div className="hidden md:block">
-            <p className="text-sm font-medium">{email}</p>
-          </div>
-          
-          <div className="absolute top-full right-0 mt-1 w-52 bg-card border border-border rounded-xl shadow-2xl py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all z-50 translate-y-[-5px] group-hover:translate-y-0">
-            <button 
-              onClick={handleClearData}
-              disabled={isClearing}
-              className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 flex items-center gap-2.5 transition-colors disabled:opacity-50 font-medium"
-            >
-              <Trash2 className="h-4 w-4" /> {isClearing ? "Clearing..." : "Clear Account Data"}
-            </button>
-            <div className="h-px bg-border my-1" />
-            <button 
-              onClick={handleLogout}
-              className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-secondary flex items-center gap-2.5 transition-colors"
-            >
-              <LogOut className="h-4 w-4" /> Logout
-            </button>
-          </div>
+          {showProfileMenu && (
+            <div className="absolute top-full right-0 mt-1 w-52 bg-card border border-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <Link
+                href="/settings"
+                onClick={() => setShowProfileMenu(false)}
+                className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-secondary flex items-center gap-2.5 transition-colors font-medium"
+              >
+                <Settings className="h-4 w-4" /> Settings
+              </Link>
+              <div className="h-px bg-border my-1" />
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-secondary flex items-center gap-2.5 transition-colors"
+              >
+                <LogOut className="h-4 w-4" /> Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -10,12 +10,12 @@ import {
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
   RefreshCw, AlertCircle, Camera, Loader2,
-  BrainCircuit, CheckCircle2, Trash2
+  BrainCircuit, CheckCircle2, Trash2,
+  Music, Smartphone, Wifi, Shield, Zap, Sparkles, Gamepad2, Activity
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
 import { AIInsights } from "@/components/dashboard/AIInsights";
-import { Sparkles } from "lucide-react";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
 type BudgetCategory = {
@@ -53,13 +53,88 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Housing":    "bg-blue-500/20 text-blue-400",
   "Food":       "bg-green-500/20 text-green-400",
   "Groceries":  "bg-green-500/20 text-green-400",
-  "Transport":  "bg-purple-500/20 text-purple-400",
+  "Transport":  "bg-primary/20 text-red-400",
   "Lifestyle":  "bg-orange-500/20 text-orange-400",
   "Dining Out": "bg-orange-500/20 text-orange-400",
   "Entertainment": "bg-pink-500/20 text-pink-400",
   "Healthcare": "bg-red-500/20 text-red-400",
   "Savings":    "bg-yellow-500/20 text-yellow-400",
 };
+
+// Helper to get visual theme for known subscription services
+function getSubscriptionVisuals(name: string) {
+  const nm = name.toLowerCase();
+  
+  if (/netflix|prime|youtube|hulu|disney|hbo|apple tv|video|twitch/.test(nm)) {
+    return {
+      icon: <Tv className="h-5 w-5" />,
+      bgColor: "bg-red-500/10 text-red-400",
+      borderColor: "border-red-500/20"
+    };
+  }
+  if (/spotify|apple music|pandora|music|deezer|soundcloud/.test(nm)) {
+    return {
+      icon: <Music className="h-5 w-5" />,
+      bgColor: "bg-emerald-500/10 text-emerald-400",
+      borderColor: "border-emerald-500/20"
+    };
+  }
+  if (/amazon|flipkart|shop|delivery|instamart|blinkit|swiggy|zomato/.test(nm)) {
+    return {
+      icon: <ShoppingCart className="h-5 w-5" />,
+      bgColor: "bg-amber-500/10 text-amber-400",
+      borderColor: "border-amber-500/20"
+    };
+  }
+  if (/gym|membership|fitness|gold's|cult|workout|active|health/.test(nm)) {
+    return {
+      icon: <Activity className="h-5 w-5" />,
+      bgColor: "bg-teal-500/10 text-teal-400",
+      borderColor: "border-teal-500/20"
+    };
+  }
+  if (/internet|dewa|broadband|wifi|cable/.test(nm)) {
+    return {
+      icon: <Wifi className="h-5 w-5" />,
+      bgColor: "bg-sky-500/10 text-sky-400",
+      borderColor: "border-sky-500/20"
+    };
+  }
+  if (/mobile|phone|jio|airtel|vi|sim|telecom/.test(nm)) {
+    return {
+      icon: <Smartphone className="h-5 w-5" />,
+      bgColor: "bg-indigo-500/10 text-indigo-400",
+      borderColor: "border-indigo-500/20"
+    };
+  }
+  if (/insurance|security|protect|shield/.test(nm)) {
+    return {
+      icon: <Shield className="h-5 w-5" />,
+      bgColor: "bg-blue-500/10 text-blue-400",
+      borderColor: "border-blue-500/20"
+    };
+  }
+  if (/chatgpt|openai|copilot|midjourney|claude|github|cursor|notion|sparkles|ai/.test(nm)) {
+    return {
+      icon: <Sparkles className="h-5 w-5" />,
+      bgColor: "bg-rose-500/10 text-rose-400",
+      borderColor: "border-rose-500/20"
+    };
+  }
+  if (/playstation|xbox|nintendo|steam|epic|game|ea|ubisoft/.test(nm)) {
+    return {
+      icon: <Gamepad2 className="h-5 w-5" />,
+      bgColor: "bg-violet-500/10 text-violet-400",
+      borderColor: "border-violet-500/20"
+    };
+  }
+
+  return {
+    icon: <Zap className="h-5 w-5" />,
+    bgColor: "bg-primary/10 text-red-400",
+    borderColor: "border-primary/20"
+  };
+}
 
 // ── Circular Progress Ring ────────────────────────────────────────────────────
 function CircleRing({ percent, color, overBudget }: { percent: number; color: string; overBudget: boolean }) {
@@ -101,7 +176,7 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
   };
 
   return (
-    <div className="flex items-center gap-4 bg-[#0f172a] border border-white/5 rounded-xl p-4 hover:border-white/10 transition-colors">
+    <div className="flex items-center gap-4 bg-card border border-white/5 rounded-xl p-4 hover:border-white/10 transition-colors">
       <div className="relative flex-shrink-0">
         <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
         <span
@@ -121,7 +196,7 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
           {editing ? (
             <div className="flex items-center gap-1">
               <input
-                className="w-20 text-xs bg-[#1e293b] border border-border rounded px-1.5 py-0.5 text-white"
+                className="w-20 text-xs bg-muted border border-border rounded px-1.5 py-0.5 text-white"
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 autoFocus
@@ -429,6 +504,7 @@ export default function TransactionsPage() {
 
   const filtered = useMemo(() => {
     return transactions.filter(t => {
+      if (t.name === "Starting Balance Adjustment") return false;
       if (filterType !== "all" && t.type !== filterType) return false;
       if (filterCategory !== "all" && t.category !== filterCategory) return false;
       return true;
@@ -492,45 +568,60 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-8 pb-10">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-white/5 pb-6">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Transactions</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#EDEBDE]">Transactions</h2>
           <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-          <input
-            type="file"
-            id="bill-image-upload"
-            accept="image/*"
-            className="hidden"
-            onChange={handleBillUpload}
-            disabled={scanning}
-          />
-          <button 
-            onClick={() => document.getElementById("bill-image-upload")?.click()}
-            disabled={scanning}
-            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {scanning ? (
-              <Loader2 className="h-4 w-4 animate-spin text-violet-400" />
-            ) : (
-              <Camera className="h-4 w-4 text-violet-400" />
-            )}
-            Scan Bill
-          </button>
-          <button 
-            onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
-          >
-            <Upload className="h-4 w-4" /> Import CSV
-          </button>
+        
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          {/* Secondary Actions Group (Import / Export) */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+            <button 
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
+            >
+              <Upload className="h-4 w-4 text-slate-400" /> Import CSV
+            </button>
+            
+            <button
+              onClick={() => typeof window !== "undefined" && window.print()}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
+            >
+              <Download className="h-4 w-4 text-slate-400" /> Export PDF
+            </button>
+          </div>
 
-          <button
-            onClick={() => setShowAddForm(v => !v)}
-            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors font-medium"
-          >
-            <Plus className="h-4 w-4" /> Add Transaction
-          </button>
+          {/* Primary Actions Group (Scan / Add) */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+            <input
+              type="file"
+              id="bill-image-upload"
+              accept="image/*"
+              className="hidden"
+              onChange={handleBillUpload}
+              disabled={scanning}
+            />
+            <button 
+              onClick={() => document.getElementById("bill-image-upload")?.click()}
+              disabled={scanning}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-primary/20 bg-primary/10 hover:bg-primary/20 text-red-400 hover:text-red-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer"
+            >
+              {scanning ? (
+                <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+              ) : (
+                <Camera className="h-4 w-4 text-red-400" />
+              )}
+              Scan Bill
+            </button>
+
+            <button
+              onClick={() => setShowAddForm(v => !v)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl bg-primary text-white hover:bg-red-700 transition-all active:scale-95 font-bold shadow-lg shadow-primary/10 cursor-pointer"
+            >
+              <Plus className="h-4 w-4" /> Add Transaction
+            </button>
+          </div>
         </div>
       </div>
 
@@ -541,10 +632,10 @@ export default function TransactionsPage() {
             ? "border-red-500/20 bg-red-500/10 text-red-400" 
             : scanMessage.text.startsWith("✓") 
               ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
-              : "border-violet-500/20 bg-violet-500/10 text-violet-300 animate-pulse"
+              : "border-primary/20 bg-primary/10 text-red-400 animate-pulse"
         )}>
           {scanning ? (
-            <Loader2 className="h-4 w-4 animate-spin text-violet-400 flex-shrink-0" />
+            <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
           ) : scanMessage.isError ? (
             <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
           ) : null}
@@ -555,22 +646,22 @@ export default function TransactionsPage() {
 
       {/* ── Add Transaction Form ── */}
       {showAddForm && (
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 bg-[#0f172a] border border-primary/30 rounded-xl p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 bg-card border border-primary/30 rounded-xl p-4">
           <input
-            className="sm:col-span-2 bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary"
+            className="sm:col-span-2 bg-muted border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary"
             placeholder="Description"
             value={newTx.name}
             onChange={e => setNewTx(p => ({ ...p, name: e.target.value }))}
           />
           <input
             type="number"
-            className="bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary"
+            className="bg-muted border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-primary"
             placeholder="Amount (₹)"
             value={newTx.amount}
             onChange={e => setNewTx(p => ({ ...p, amount: e.target.value }))}
           />
           <select
-            className="bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+            className="bg-muted border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
             value={newTx.category}
             onChange={e => setNewTx(p => ({ ...p, category: e.target.value }))}
           >
@@ -580,7 +671,7 @@ export default function TransactionsPage() {
           </select>
           <div className="flex gap-2">
             <select
-              className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2 py-2 text-sm text-white focus:outline-none focus:border-primary"
+              className="flex-1 bg-muted border border-white/10 rounded-lg px-2 py-2 text-sm text-white focus:outline-none focus:border-primary"
               value={newTx.type}
               onChange={e => setNewTx(p => ({ ...p, type: e.target.value as "income" | "expense" }))}
             >
@@ -608,9 +699,9 @@ export default function TransactionsPage() {
             </button>
             <button 
               onClick={() => setShowCustomBudgetModal(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-red-400 transition-colors"
             >
-              <Plus className="h-3.5 w-3.5 text-violet-400" /> Add Budget
+              <Plus className="h-3.5 w-3.5 text-primary" /> Add Budget
             </button>
             {hasCustomBudget && (
               <button 
@@ -629,7 +720,7 @@ export default function TransactionsPage() {
         {hasCustomBudget ? (
           <div className="space-y-6 animate-fadeIn">
             {/* Topmost Salary, Needs & Remaining summary */}
-            <div className="bg-[#0f172a]/75 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-md">
+            <div className="bg-card/75 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-md">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[40px] rounded-full pointer-events-none"></div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
@@ -651,7 +742,7 @@ export default function TransactionsPage() {
             </div>
 
             {/* Clickable section tabs toggle */}
-            <div className="flex bg-[#0f172a]/85 p-1.5 rounded-2xl border border-white/5 w-fit gap-1 shadow-inner backdrop-blur-md">
+            <div className="flex bg-card/85 p-1.5 rounded-2xl border border-white/5 w-fit gap-1 shadow-inner backdrop-blur-md">
               <button
                 onClick={() => setCustomBudgetTab("needs")}
                 className={cn(
@@ -734,7 +825,7 @@ export default function TransactionsPage() {
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-slate-500" />
             <select
-              className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
+              className="bg-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
               value={filterType}
               onChange={e => setFilterType(e.target.value as "all" | "income" | "expense")}
             >
@@ -743,7 +834,7 @@ export default function TransactionsPage() {
               <option value="expense">Expense</option>
             </select>
             <select
-              className="bg-[#0f172a] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
+              className="bg-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
             >
@@ -754,7 +845,7 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <div className="bg-[#0f172a] border border-white/5 rounded-xl overflow-hidden">
+        <div className="bg-card border border-white/5 rounded-xl overflow-hidden">
           {filtered.length === 0 ? (
             <div className="py-16 text-center text-slate-500">No transactions found.</div>
           ) : (
@@ -764,7 +855,7 @@ export default function TransactionsPage() {
                 const tagClass = CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400";
                 return (
                   <div key={tx.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02] transition-colors">
-                    <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-[#1e293b] text-slate-300">
+                    <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
                       <Icon />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -795,65 +886,98 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      {/* Feature 2: Predictive Bills Radar (Moved to Bottom) */}
-      <div className="mt-12 bg-[#0f172a]/80 border border-violet-500/20 rounded-3xl p-8 relative overflow-hidden backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-violet-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+      {/* Feature 2: Active Subscriptions Section */}
+      <div className="mt-12 bg-[#24201F]/80 border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden backdrop-blur-xl shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-white/5 pb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <div className="p-2 bg-violet-500/20 rounded-lg">
-                <RefreshCw className="h-5 w-5 text-violet-400" />
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-white/5 pb-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="p-2 bg-primary/10 border border-primary/20 rounded-xl">
+                <RefreshCw className="h-5 w-5 text-red-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight">Active Subscriptions</h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 tracking-wider border border-violet-500/20 uppercase">Valid AI Target</span>
+              <h3 className="text-xl md:text-2xl font-bold text-[#EDEBDE] tracking-tight">Active Subscriptions</h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-red-400 border border-primary/20 tracking-wider uppercase">
+                {upcomingBills.length} detected
+              </span>
               <button
                 onClick={() => setShowAddSubModal(true)}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 transition-colors ml-auto sm:ml-2"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.8 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-red-400 transition-all active:scale-95 cursor-pointer ml-auto sm:ml-2"
               >
-                <Plus className="h-3.5 w-3.5 text-violet-400" /> Add Subscription
+                <Plus className="h-3.5 w-3.5 text-red-400" /> Add Subscription
               </button>
             </div>
-            <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
-              Targeted digital vendor analysis. Expect these static charges against your ongoing balance. By strictly tracing exact entities like Netflix or Amazon, we eliminate noise and calculate true recurring outlays.
+            <p className="text-xs md:text-sm text-slate-400 max-w-xl leading-relaxed">
+              Consolidated view of recurring commitments identified from bank ledgers and manual additions. Helps audit billing cycles and manage outlays.
             </p>
           </div>
           
-          <div className="flex flex-col items-start md:items-end bg-violet-900/20 p-4 rounded-xl border border-violet-500/30 min-w-[200px]">
-            <span className="text-xs font-bold text-violet-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-              <AlertCircle className="h-3.5 w-3.5" /> Upcoming Draft
+          <div className="bg-[#1B1716]/60 p-4 md:p-5 rounded-2xl border border-white/5 min-w-[220px] flex flex-col self-start lg:self-auto">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <AlertCircle className="h-3.5 w-3.5 text-red-400" /> Total Monthly Outflow
             </span>
-            <span className="text-3xl font-bold font-mono text-violet-300 drop-shadow-md">
+            <span className="text-2xl md:text-3xl font-bold font-mono text-[#EDEBDE] tracking-tight">
               {formatCurrency(upcomingBills.reduce((acc, b) => acc + b.amount, 0), currency)}
             </span>
           </div>
         </div>
 
         {upcomingBills.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
-            {upcomingBills.map((bill, idx) => (
-              <div key={idx} className="bg-[#1e293b]/60 p-5 rounded-2xl border border-white/5 flex flex-col justify-between hover:bg-[#1e293b] transition-all hover:-translate-y-1 hover:shadow-xl hover:border-violet-500/30 group relative">
-                <button
-                  onClick={() => handleDeleteSubscription(bill)}
-                  className="absolute top-2 right-2 p-1 text-slate-500 hover:text-red-400 rounded-lg bg-white/0 hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                  title="Remove Subscription"
+          <div className="space-y-3 relative z-10">
+            {upcomingBills.map((bill, idx) => {
+              const visuals = getSubscriptionVisuals(bill.name);
+              return (
+                <div 
+                  key={idx} 
+                  className="flex items-center justify-between gap-4 p-4 bg-[#1B1716]/40 hover:bg-[#1B1716]/80 border border-white/5 hover:border-white/10 rounded-2xl transition-all"
                 >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-                <span className="text-sm font-semibold text-slate-300 truncate mb-3 group-hover:text-white transition-colors pr-4">{bill.name}</span>
-                <div className="flex items-baseline justify-between mt-auto">
-                  <span className="text-xl font-bold font-mono text-violet-300">{formatCurrency(bill.amount, currency)}</span>
-                  {bill.isCustom && (
-                    <span className="text-[9px] font-bold text-violet-400 uppercase tracking-widest bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-500/20">Custom</span>
-                  )}
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border", visuals.bgColor, visuals.borderColor)}>
+                      {visuals.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm md:text-base font-semibold text-[#EDEBDE] truncate">
+                        {bill.name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {bill.isCustom ? (
+                          <span className="text-[9px] font-bold text-red-400 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-wider">
+                            Custom
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-wider">
+                            Auto-detected
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 md:gap-4 shrink-0">
+                    <div className="text-right">
+                      <p className="text-sm md:text-base font-bold font-mono text-[#EDEBDE]">
+                        {formatCurrency(bill.amount, currency)}
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                        Renews monthly
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteSubscription(bill)}
+                      className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all border border-transparent hover:border-red-500/20 active:scale-95 cursor-pointer"
+                      title="Remove Subscription"
+                    >
+                      <Trash2 className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <div className="bg-[#1e293b]/40 border border-white/5 p-8 rounded-2xl text-center relative z-10">
+          <div className="bg-[#1B1716]/40 border border-white/5 p-8 rounded-2xl text-center relative z-10">
             <p className="text-base text-slate-300 font-medium">Zero recognized subscription drafts.</p>
-            <p className="text-sm text-slate-500 mt-2">Check back later or import more rich CSV data to reliably trace digital vendors.</p>
+            <p className="text-sm text-slate-500 mt-2">Add custom subscriptions or sync account data to automatically list digital vendors.</p>
           </div>
         )}
       </div>
@@ -908,27 +1032,32 @@ export default function TransactionsPage() {
       {showAddSubModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={() => setShowAddSubModal(false)}>
           <div 
-            className="bg-[#0f172a] w-full max-w-md rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
+            className="bg-[#24201F] w-full max-w-md rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(129,1,0,0.2)] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-5 border-b border-white/10 bg-[#1e293b]/50">
+            <div className="flex items-center justify-between p-5 border-b border-white/5 bg-[#1B1716]/60">
               <div>
-                <h3 className="text-xl font-bold flex items-center gap-2 text-white">
-                  <Plus className="h-5 w-5 text-violet-400" /> Add Custom Subscription
+                <h3 className="text-xl font-bold flex items-center gap-2 text-[#EDEBDE]">
+                  <Plus className="h-5 w-5 text-red-400" /> Add Custom Subscription
                 </h3>
-                <p className="text-xs text-slate-400 mt-1 font-semibold">
+                <p className="text-xs text-slate-400 mt-1 font-medium">
                   Manually track recurring services
                 </p>
               </div>
-              <button onClick={() => setShowAddSubModal(false)}><X className="h-5 w-5 text-slate-400 hover:text-white" /></button>
+              <button 
+                onClick={() => setShowAddSubModal(false)}
+                className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-5 bg-[#24201F]">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Subscription Name</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Subscription Name</label>
                 <input
                   type="text"
-                  className="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                  className="w-full bg-[#1B1716] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#EDEBDE] placeholder:text-slate-500 font-semibold focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition-all"
                   placeholder="e.g. Netflix, Spotify, Gym"
                   value={subName}
                   onChange={e => setSubName(e.target.value)}
@@ -937,12 +1066,12 @@ export default function TransactionsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly Amount</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Monthly Amount</label>
                 <div className="relative">
                   <span className="absolute left-4 top-3 text-slate-400 font-semibold text-base">₹</span>
                   <input
                     type="number"
-                    className="w-full bg-[#1e293b] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 font-mono"
+                    className="w-full bg-[#1B1716] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-[#EDEBDE] placeholder:text-slate-500 font-semibold focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition-all font-mono"
                     placeholder="e.g. 199"
                     value={subAmount}
                     onChange={e => setSubAmount(e.target.value)}
@@ -956,13 +1085,13 @@ export default function TransactionsPage() {
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setShowAddSubModal(false)}
-                  className="flex-1 h-12 border border-white/10 text-slate-300 hover:bg-white/5 rounded-xl font-semibold transition-colors"
+                  className="flex-1 h-12 border border-white/10 text-slate-300 hover:bg-white/5 rounded-xl font-semibold transition-all active:scale-95 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddSubscription}
-                  className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-violet-600/10"
+                  className="flex-1 h-12 bg-primary hover:bg-red-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-primary/10 active:scale-95 cursor-pointer"
                 >
                   <Check className="h-4 w-4" /> Add Subscription
                 </button>
@@ -1061,13 +1190,13 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={onClose}>
       <div 
-        className="bg-[#0f172a] w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
+        className="bg-card w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-white/10 bg-[#1e293b]/50">
+        <div className="flex items-center justify-between p-5 border-b border-white/10 bg-muted/50">
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2 text-white">
-              <BrainCircuit className="h-5 w-5 text-violet-400" /> Budget Setup
+              <BrainCircuit className="h-5 w-5 text-primary" /> Budget Setup
             </h3>
             <p className="text-xs text-slate-400 mt-1 font-semibold">
               {step === 1 ? "Step 1: Set Income" : step === 2 ? "Step 2: Commit Needs" : "Step 3: Setup Wants"}
@@ -1088,7 +1217,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                   <span className="absolute left-4 top-3.5 text-slate-400 font-semibold text-lg">₹</span>
                   <input
                     type="number"
-                    className="w-full bg-[#1e293b] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-lg text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    className="w-full bg-muted border border-white/10 rounded-xl pl-9 pr-4 py-3 text-lg text-white placeholder:text-slate-500 font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     placeholder="e.g. 50000"
                     value={salaryInput}
                     onChange={e => setSalaryInput(e.target.value)}
@@ -1099,7 +1228,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
               
               <button
                 onClick={() => setStep(2)}
-                className="w-full h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-violet-600/10"
+                className="w-full h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-primary/10"
               >
                 Continue to Needs
               </button>
@@ -1117,7 +1246,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
 
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1.5 custom-scrollbar">
                 {needsList.map((need, idx) => (
-                  <div key={need.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
+                  <div key={need.name} className="flex items-center justify-between gap-4 bg-muted/40 border border-white/5 rounded-xl px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -1133,7 +1262,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                       <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                       <input
                         type="number"
-                        className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                        className="w-full bg-muted/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-primary"
                         value={need.budget}
                         onChange={e => handleNeedChange(idx, e.target.value)}
                       />
@@ -1143,13 +1272,13 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
               </div>
 
               {/* Add Custom Need Inline Form */}
-              <div className="flex items-center gap-2 p-2 bg-[#1e293b]/20 border border-white/5 rounded-xl">
+              <div className="flex items-center gap-2 p-2 bg-muted/20 border border-white/5 rounded-xl">
                 <input
                   type="text"
                   placeholder="Custom Need Name"
                   value={newNeedName}
                   onChange={e => setNewNeedName(e.target.value)}
-                  className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                  className="flex-1 bg-muted border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-primary"
                 />
                 <div className="relative w-24">
                   <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
@@ -1158,14 +1287,14 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                     placeholder="Amt"
                     value={newNeedAmount}
                     onChange={e => setNewNeedAmount(e.target.value)}
-                    className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                    className="w-full bg-muted border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-primary"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={addNeed}
                   disabled={!newNeedName.trim()}
-                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                  className="px-2.5 py-1 bg-primary hover:bg-primary disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                 >
                   Add
                 </button>
@@ -1180,7 +1309,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="flex-1 h-12 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-violet-600/10"
+                  className="flex-1 h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-colors shadow-lg shadow-primary/10"
                 >
                   Continue to Wants
                 </button>
@@ -1199,7 +1328,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
 
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1.5 custom-scrollbar">
                 {wantsList.map((want, idx) => (
-                  <div key={want.name} className="flex items-center justify-between gap-4 bg-[#1e293b]/40 border border-white/5 rounded-xl px-4 py-2.5">
+                  <div key={want.name} className="flex items-center justify-between gap-4 bg-muted/40 border border-white/5 rounded-xl px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -1216,7 +1345,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                       <span className="absolute left-3 top-1.5 text-xs text-slate-400">₹</span>
                       <input
                         type="number"
-                        className="w-full bg-[#1e293b]/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-violet-500"
+                        className="w-full bg-muted/60 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white text-right font-mono focus:outline-none focus:border-primary"
                         value={want.budget}
                         onChange={e => handleWantChange(idx, e.target.value)}
                       />
@@ -1226,13 +1355,13 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
               </div>
 
               {/* Add Custom Want Inline Form */}
-              <div className="flex items-center gap-2 p-2 bg-[#1e293b]/20 border border-white/5 rounded-xl">
+              <div className="flex items-center gap-2 p-2 bg-muted/20 border border-white/5 rounded-xl">
                 <input
                   type="text"
                   placeholder="Custom Want Name"
                   value={newWantName}
                   onChange={e => setNewWantName(e.target.value)}
-                  className="flex-1 bg-[#1e293b] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                  className="flex-1 bg-muted border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-primary"
                 />
                 <div className="relative w-24">
                   <span className="absolute left-2 top-1 text-xs text-slate-400">₹</span>
@@ -1241,14 +1370,14 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                     placeholder="Amt"
                     value={newWantAmount}
                     onChange={e => setNewWantAmount(e.target.value)}
-                    className="w-full bg-[#1e293b] border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                    className="w-full bg-muted border border-white/10 rounded-lg pl-5 pr-2 py-1 text-xs text-white focus:outline-none focus:border-primary"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={addWant}
                   disabled={!newWantName.trim()}
-                  className="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
+                  className="px-2.5 py-1 bg-primary hover:bg-primary disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                 >
                   Add
                 </button>
