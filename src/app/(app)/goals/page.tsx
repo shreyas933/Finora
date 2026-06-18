@@ -68,7 +68,7 @@ export default function GoalsPage() {
       </div>
 
       {isAdding && (
-        <Card className="border-transparent bg-[#dc143c] text-white">
+        <Card className="border-transparent bg-gradient-to-br from-primary to-secondary text-white">
           <CardHeader>
             <CardTitle className="text-lg text-white">Create New Goal</CardTitle>
           </CardHeader>
@@ -86,7 +86,7 @@ export default function GoalsPage() {
                 <label className="text-sm font-medium text-red-100">Target Date</label>
                 <Input className="bg-white/10 border-white/20 text-white" type="date" value={newGoal.targetDate} onChange={e => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
               </div>
-              <Button className="bg-white text-[#dc143c] hover:bg-white/90" onClick={handleAddGoal}>Save Goal</Button>
+              <Button className="bg-white text-primary hover:bg-white/90" onClick={handleAddGoal}>Save Goal</Button>
             </div>
           </CardContent>
         </Card>
@@ -103,7 +103,7 @@ export default function GoalsPage() {
 
           if (editingGoalId === goal.id) {
             return (
-              <Card key={goal.id} className="border-transparent bg-[#dc143c] text-white">
+              <Card key={goal.id} className="border-transparent bg-gradient-to-br from-primary to-secondary text-white">
                 <CardHeader>
                   <CardTitle className="text-lg flex justify-between items-center text-white">
                     Edit Goal
@@ -130,7 +130,7 @@ export default function GoalsPage() {
                       <label className="text-sm font-medium text-red-100">Target Date</label>
                       <Input className="bg-white/10 border-white/20 text-white" type="date" value={editGoalData.targetDate} onChange={e => setEditGoalData({ ...editGoalData, targetDate: e.target.value })} />
                     </div>
-                    <Button onClick={handleUpdateGoal} className="w-full gap-2 bg-white text-[#dc143c] hover:bg-white/90"><Check className="h-4 w-4" /> Save Changes</Button>
+                    <Button onClick={handleUpdateGoal} className="w-full gap-2 bg-white text-primary hover:bg-white/90"><Check className="h-4 w-4" /> Save Changes</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -138,7 +138,7 @@ export default function GoalsPage() {
           }
 
           return (
-            <Card key={goal.id} className={cn("relative overflow-hidden group bg-[#dc143c] border-transparent text-white shadow-lg", isOffTrack ? "border-yellow-400 border-2" : "")}>
+            <Card key={goal.id} className="relative overflow-hidden group bg-gradient-to-br from-primary to-secondary border-transparent text-white shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-white/20 rounded-lg text-white">

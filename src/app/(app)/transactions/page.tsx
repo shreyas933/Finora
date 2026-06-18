@@ -27,44 +27,44 @@ type BudgetCategory = {
 };
 
 const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { name: "Food & Dining",    budget: 0, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
-  { name: "Shopping",         budget: 0, color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle"] },
-  { name: "Entertainment",    budget: 0, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment"] },
-  { name: "Transportation",   budget: 0, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Transportation", "Transport"] },
-  { name: "Health",           budget: 0, color: "#ef4444", ringColor: "#ef4444", txCategories: ["Health", "Healthcare", "Medical"] },
-  { name: "Travel",           budget: 0, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel"] },
+  { name: "Food & Dining", budget: 0, color: "#22c55e", ringColor: "#22c55e", txCategories: ["Food & Dining", "Food", "Groceries", "Dining Out", "Dining"] },
+  { name: "Shopping", budget: 0, color: "#f97316", ringColor: "#f97316", txCategories: ["Shopping", "Lifestyle"] },
+  { name: "Entertainment", budget: 0, color: "#a855f7", ringColor: "#a855f7", txCategories: ["Entertainment"] },
+  { name: "Transportation", budget: 0, color: "#3b82f6", ringColor: "#3b82f6", txCategories: ["Transportation", "Transport"] },
+  { name: "Health", budget: 0, color: "#ef4444", ringColor: "#ef4444", txCategories: ["Health", "Healthcare", "Medical"] },
+  { name: "Travel", budget: 0, color: "#eab308", ringColor: "#eab308", txCategories: ["Travel"] },
 ];
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  "Salary":     <Briefcase className="h-4 w-4" />,
-  "Housing":    <Home className="h-4 w-4" />,
-  "Food":       <ShoppingCart className="h-4 w-4" />,
-  "Groceries":  <ShoppingCart className="h-4 w-4" />,
-  "Transport":  <Car className="h-4 w-4" />,
-  "Lifestyle":  <Tv className="h-4 w-4" />,
+  "Salary": <Briefcase className="h-4 w-4" />,
+  "Housing": <Home className="h-4 w-4" />,
+  "Food": <ShoppingCart className="h-4 w-4" />,
+  "Groceries": <ShoppingCart className="h-4 w-4" />,
+  "Transport": <Car className="h-4 w-4" />,
+  "Lifestyle": <Tv className="h-4 w-4" />,
   "Dining Out": <UtensilsCrossed className="h-4 w-4" />,
   "Entertainment": <Tv className="h-4 w-4" />,
   "Healthcare": <Heart className="h-4 w-4" />,
-  "Savings":    <Wallet className="h-4 w-4" />,
+  "Savings": <Wallet className="h-4 w-4" />,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Salary":     "bg-emerald-500/20 text-emerald-400",
-  "Housing":    "bg-blue-500/20 text-blue-400",
-  "Food":       "bg-green-500/20 text-green-400",
-  "Groceries":  "bg-green-500/20 text-green-400",
-  "Transport":  "bg-primary/20 text-red-400",
-  "Lifestyle":  "bg-orange-500/20 text-orange-400",
+  "Salary": "bg-emerald-500/20 text-emerald-400",
+  "Housing": "bg-blue-500/20 text-blue-400",
+  "Food": "bg-green-500/20 text-green-400",
+  "Groceries": "bg-green-500/20 text-green-400",
+  "Transport": "bg-primary/20 text-red-400",
+  "Lifestyle": "bg-orange-500/20 text-orange-400",
   "Dining Out": "bg-orange-500/20 text-orange-400",
   "Entertainment": "bg-pink-500/20 text-pink-400",
   "Healthcare": "bg-red-500/20 text-red-400",
-  "Savings":    "bg-yellow-500/20 text-yellow-400",
+  "Savings": "bg-yellow-500/20 text-yellow-400",
 };
 
 // Helper to get visual theme for known subscription services
 function getSubscriptionVisuals(name: string) {
   const nm = name.toLowerCase();
-  
+
   if (/netflix|prime|youtube|hulu|disney|hbo|apple tv|video|twitch/.test(nm)) {
     return {
       icon: <Tv className="h-5 w-5" />,
@@ -142,11 +142,11 @@ function CircleRing({ percent, color, overBudget }: { percent: number; color: st
   const circumference = 2 * Math.PI * radius;
   const filled = Math.min(1, percent / 100);
   const strokeDashoffset = circumference * (1 - filled);
-  const displayColor = overBudget ? "#ef4444" : color;
+  const displayColor = overBudget ? "#fbbf24" : color;
 
   return (
     <svg width="84" height="84" viewBox="0 0 84 84" className="rotate-[-90deg]">
-      <circle cx="42" cy="42" r={radius} fill="none" stroke="#1e293b" strokeWidth="8" />
+      <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
       <circle
         cx="42" cy="42" r={radius}
         fill="none"
@@ -176,11 +176,11 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
   };
 
   return (
-    <div className="flex items-center gap-4 bg-card border border-white/5 rounded-xl p-4 hover:border-white/10 transition-colors">
+    <div className="flex items-center gap-4 bg-gradient-to-br from-primary to-secondary border border-transparent rounded-xl p-4 hover:brightness-105 transition-all text-white shadow-md">
       <div className="relative flex-shrink-0">
         <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
         <span
-          className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold", overBudget ? "text-red-400" : "text-white")}
+          className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold", overBudget ? "text-yellow-300" : "text-white")}
           style={{ transform: "rotate(90deg)" }}
         >
           {percent}%
@@ -196,26 +196,26 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
           {editing ? (
             <div className="flex items-center gap-1">
               <input
-                className="w-20 text-xs bg-muted border border-border rounded px-1.5 py-0.5 text-white"
+                className="w-20 text-xs bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-white"
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 autoFocus
                 onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setEditing(false); }}
               />
-              <button onClick={handleSave} className="text-emerald-400 hover:text-emerald-300"><Check className="h-3.5 w-3.5" /></button>
-              <button onClick={() => setEditing(false)} className="text-red-400 hover:text-red-300"><X className="h-3.5 w-3.5" /></button>
+              <button onClick={handleSave} className="text-emerald-300 hover:text-emerald-200"><Check className="h-3.5 w-3.5" /></button>
+              <button onClick={() => setEditing(false)} className="text-yellow-300 hover:text-yellow-200"><X className="h-3.5 w-3.5" /></button>
             </div>
           ) : (
-            <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-slate-500 hover:text-slate-300 transition-colors">
+            <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-white/60 hover:text-white transition-colors">
               <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
-        <p className="text-xs text-slate-300">{formatCurrency(spent, currency)} / {formatCurrency(cat.budget, currency)}</p>
+        <p className="text-xs text-red-100">{formatCurrency(spent, currency)} / {formatCurrency(cat.budget, currency)}</p>
         {overBudget ? (
-          <p className="text-xs text-red-400 font-medium mt-0.5">Over by {formatCurrency(-remaining, currency)}</p>
+          <p className="text-xs text-yellow-300 font-bold mt-0.5">Over by {formatCurrency(-remaining, currency)}</p>
         ) : (
-          <p className="text-xs text-slate-500 mt-0.5">{formatCurrency(remaining, currency)} remaining</p>
+          <p className="text-xs text-red-200 mt-0.5">{formatCurrency(remaining, currency)} remaining</p>
         )}
       </div>
     </div>
@@ -365,7 +365,7 @@ export default function TransactionsPage() {
         const data = await res.json();
         if (data.success && data.transaction) {
           const tx = data.transaction;
-          
+
           addTransaction({
             date: new Date().toISOString(),
             amount: Number(tx.amount),
@@ -421,7 +421,7 @@ export default function TransactionsPage() {
         setBudgetCategories(BUDGET_CATEGORIES);
       }
     };
-    
+
     const loadCustomBudgets = () => {
       const hasCustom = localStorage.getItem("finora_has_custom_budget");
       if (hasCustom === "true") {
@@ -475,7 +475,7 @@ export default function TransactionsPage() {
         localStorage.setItem("finora_custom_wants", JSON.stringify(updatedWants));
         updated = true;
       }
-      
+
       if (updated) return;
     }
 
@@ -519,7 +519,7 @@ export default function TransactionsPage() {
       // Clean string and strip dates if present to group accurately
       const cleanName = e.name.includes(" || ") ? e.name.split(" || ")[0] : e.name;
       const nm = cleanName.toLowerCase().replace(/\d/g, '').trim();
-      
+
       // Match against known subscription keywords deeply
       if (SUB_KEYWORDS.some(k => nm.includes(k))) {
         // Exclude if the subscription name is dismissed
@@ -573,17 +573,17 @@ export default function TransactionsPage() {
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#EDEBDE]">Transactions</h2>
           <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           {/* Secondary Actions Group (Import / Export) */}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
-            <button 
+            <button
               onClick={() => setShowImportModal(true)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
             >
               <Upload className="h-4 w-4 text-slate-400" /> Import CSV
             </button>
-            
+
             <button
               onClick={() => typeof window !== "undefined" && window.print()}
               className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
@@ -602,7 +602,7 @@ export default function TransactionsPage() {
               onChange={handleBillUpload}
               disabled={scanning}
             />
-            <button 
+            <button
               onClick={() => document.getElementById("bill-image-upload")?.click()}
               disabled={scanning}
               className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-primary/20 bg-primary/10 hover:bg-primary/20 text-red-400 hover:text-red-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer"
@@ -628,9 +628,9 @@ export default function TransactionsPage() {
       {scanMessage && (
         <div className={cn(
           "flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300",
-          scanMessage.isError 
-            ? "border-red-500/20 bg-red-500/10 text-red-400" 
-            : scanMessage.text.startsWith("✓") 
+          scanMessage.isError
+            ? "border-red-500/20 bg-red-500/10 text-red-400"
+            : scanMessage.text.startsWith("✓")
               ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
               : "border-primary/20 bg-primary/10 text-red-400 animate-pulse"
         )}>
@@ -665,7 +665,7 @@ export default function TransactionsPage() {
             value={newTx.category}
             onChange={e => setNewTx(p => ({ ...p, category: e.target.value }))}
           >
-            {["Salary","Housing","Food","Transport","Lifestyle","Dining Out","Entertainment","Healthcare","Savings"].map(c => (
+            {["Salary", "Housing", "Food", "Transport", "Lifestyle", "Dining Out", "Entertainment", "Healthcare", "Savings"].map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
@@ -691,20 +691,20 @@ export default function TransactionsPage() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">Budget Tracker</h3>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={() => setShowAiModal(true)}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> AI Budget Profiler
             </button>
-            <button 
+            <button
               onClick={() => setShowCustomBudgetModal(true)}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-red-400 transition-colors"
             >
               <Plus className="h-3.5 w-3.5 text-primary" /> Add Budget
             </button>
             {hasCustomBudget && (
-              <button 
+              <button
                 onClick={() => {
                   localStorage.removeItem("finora_has_custom_budget");
                   setHasCustomBudget(false);
@@ -720,21 +720,21 @@ export default function TransactionsPage() {
         {hasCustomBudget ? (
           <div className="space-y-6 animate-fadeIn">
             {/* Topmost Salary, Needs & Remaining summary */}
-            <div className="bg-card/75 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-md">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[40px] rounded-full pointer-events-none"></div>
-              
+            <div className="bg-gradient-to-br from-primary to-secondary border border-transparent rounded-2xl p-5 relative overflow-hidden shadow-lg text-white">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-[40px] rounded-full pointer-events-none"></div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Salary Credited</span>
-                  <span className="text-2xl font-black text-emerald-400 font-mono">{formatCurrency(salaryCredited, currency)}</span>
+                  <span className="text-[10px] font-bold text-red-100 uppercase tracking-widest">Salary Credited</span>
+                  <span className="text-2xl font-black text-white font-mono">{formatCurrency(salaryCredited, currency)}</span>
                 </div>
                 <div className="flex flex-col space-y-1 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Needs Deducted</span>
-                  <span className="text-2xl font-black text-red-400 font-mono">-{formatCurrency(needsDeducted, currency)}</span>
+                  <span className="text-[10px] font-bold text-red-100 uppercase tracking-widest">Needs Deducted</span>
+                  <span className="text-2xl font-black text-white font-mono">-{formatCurrency(needsDeducted, currency)}</span>
                 </div>
                 <div className="flex flex-col space-y-1 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Remaining Salary</span>
-                  <span className={cn("text-2xl font-black font-mono", remainingSalary >= 0 ? "text-emerald-400" : "text-red-400")}>
+                  <span className="text-[10px] font-bold text-red-100 uppercase tracking-widest">Remaining Salary</span>
+                  <span className="text-2xl font-black font-mono text-white">
                     {formatCurrency(remainingSalary, currency)}
                   </span>
                 </div>
@@ -887,32 +887,32 @@ export default function TransactionsPage() {
       </div>
 
       {/* Feature 2: Active Subscriptions Section */}
-      <div className="mt-12 bg-[#24201F]/80 border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-        
+      <div className="mt-12 bg-gradient-to-br from-primary to-secondary rounded-3xl p-6 md:p-8 relative overflow-hidden backdrop-blur-xl shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none"></div>
+
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-white/5 pb-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="p-2 bg-primary/10 border border-primary/20 rounded-xl">
+              <div className="p-2 bg-black/20 border border-white/10 rounded-xl">
                 <RefreshCw className="h-5 w-5 text-red-400" />
               </div>
               <h3 className="text-xl md:text-2xl font-bold text-[#EDEBDE] tracking-tight">Active Subscriptions</h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-red-400 border border-primary/20 tracking-wider uppercase">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/20 text-[#EDEBDE] border border-white/10 tracking-wider uppercase">
                 {upcomingBills.length} detected
               </span>
               <button
                 onClick={() => setShowAddSubModal(true)}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.8 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-red-400 transition-all active:scale-95 cursor-pointer ml-auto sm:ml-2"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.8 rounded-xl border border-white/25 bg-white/10 hover:bg-white/20 text-[#EDEBDE] transition-all active:scale-95 cursor-pointer ml-auto sm:ml-2"
               >
-                <Plus className="h-3.5 w-3.5 text-red-400" /> Add Subscription
+                <Plus className="h-3.5 w-3.5 text-white" /> Add Subscription
               </button>
             </div>
-            <p className="text-xs md:text-sm text-slate-400 max-w-xl leading-relaxed">
+            <p className="text-xs md:text-sm text-foreground/80 max-w-xl leading-relaxed">
               Consolidated view of recurring commitments identified from bank ledgers and manual additions. Helps audit billing cycles and manage outlays.
             </p>
           </div>
-          
-          <div className="bg-[#1B1716]/60 p-4 md:p-5 rounded-2xl border border-white/5 min-w-[220px] flex flex-col self-start lg:self-auto">
+
+          <div className="bg-black/40 p-4 md:p-5 rounded-2xl border border-white/10 min-w-[220px] flex flex-col self-start lg:self-auto">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
               <AlertCircle className="h-3.5 w-3.5 text-red-400" /> Total Monthly Outflow
             </span>
@@ -927,8 +927,8 @@ export default function TransactionsPage() {
             {upcomingBills.map((bill, idx) => {
               const visuals = getSubscriptionVisuals(bill.name);
               return (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className="flex items-center justify-between gap-4 p-4 bg-[#1B1716]/40 hover:bg-[#1B1716]/80 border border-white/5 hover:border-white/10 rounded-2xl transition-all"
                 >
                   <div className="flex items-center gap-3 md:gap-4 min-w-0">
@@ -983,7 +983,7 @@ export default function TransactionsPage() {
       </div>
 
       {showImportModal && (
-        <CsvImportModal 
+        <CsvImportModal
           onClose={() => setShowImportModal(false)}
           onImport={(rows) => bulkAddTransactions(rows)}
         />
@@ -1031,7 +1031,7 @@ export default function TransactionsPage() {
 
       {showAddSubModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={() => setShowAddSubModal(false)}>
-          <div 
+          <div
             className="bg-[#24201F] w-full max-w-md rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(129,1,0,0.2)] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
@@ -1044,7 +1044,7 @@ export default function TransactionsPage() {
                   Manually track recurring services
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowAddSubModal(false)}
                 className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
@@ -1189,7 +1189,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fadeIn" onClick={onClose}>
-      <div 
+      <div
         className="bg-card w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] flex flex-col overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
@@ -1225,7 +1225,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                   />
                 </div>
               </div>
-              
+
               <button
                 onClick={() => setStep(2)}
                 className="w-full h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-primary/10"

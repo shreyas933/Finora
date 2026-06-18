@@ -193,19 +193,17 @@ export default function ChatPage() {
             
             <div
               className={cn(
-                "rounded-2xl p-4 text-[15px] leading-relaxed shadow-lg",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-tr-sm"
-                  : "bg-muted text-foreground rounded-tl-sm border border-border"
+                "rounded-2xl p-4 text-[15px] leading-relaxed shadow-lg bg-gradient-to-br from-primary to-secondary text-white",
+                message.role === "user" ? "rounded-tr-sm" : "rounded-tl-sm"
               )}
             >
               {message.content ? (
                 <div className="whitespace-pre-wrap">{message.content}</div>
               ) : (
                 <div className="flex gap-1.5 items-center h-5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce [animation-delay:0.4s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:0.2s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:0.4s]" />
                 </div>
               )}
             </div>
