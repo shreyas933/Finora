@@ -134,6 +134,8 @@ function mockParseTransaction(raw: string) {
     }
   }
 
+  // Clean whitespace (newlines, tabs, double spaces) before splitting and capitalizing
+  name = name.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
   // Capitalize merchant name
   name = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
