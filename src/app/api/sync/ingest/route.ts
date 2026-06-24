@@ -56,11 +56,6 @@ export async function POST(req: NextRequest) {
       finalName = `${name} (${cardSuffix})`;
     }
 
-    if (isBudgetSet === false) {
-      finalCategory = "Uncategorized";
-      finalName = `${finalName} || ${category}`;
-    }
-
     const { error: insertError } = await supabase.from("transactions").insert({
       user_id: userId,
       name: finalName,

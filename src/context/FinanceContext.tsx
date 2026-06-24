@@ -139,6 +139,55 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Real-Time Supabase Database Synchronization ─────────────────────────────
+  // Listen for realtime insert, update, and delete events on the transactions table
+  // for the authenticated user, keeping the local UI completely in sync.
+  useEffect(() => {
+    if (!userId) return;
+
+    console.log(`[FINORA] Subscribing to realtime transactions for user: ${userId}`);
+
+    const channel = supabase
+      .channel(`public:transactions:user_id=eq.${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "transactions",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("[FINORA] Realtime transaction change:", payload);
+
+          if (payload.eventType === "INSERT") {
+            const newTx = payload.new as Transaction;
+            setTransactions((prev) => {
+              const exists = prev.some((t) => t.id === newTx.id);
+              if (exists) return prev;
+              // Sort chronologically descending
+              const updatedList = [newTx, ...prev];
+              return updatedList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            });
+          } else if (payload.eventType === "UPDATE") {
+            const updatedTx = payload.new as Transaction;
+            setTransactions((prev) =>
+              prev.map((t) => (t.id === updatedTx.id ? updatedTx : t))
+            );
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = payload.old.id;
+            setTransactions((prev) => prev.filter((t) => t.id !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log(`[FINORA] Unsubscribing from realtime transactions for user: ${userId}`);
+      supabase.removeChannel(channel);
+    };
+  }, [userId, supabase]);
+
   // Listen for budget updates to run auto-assignment of pending transactions
   useEffect(() => {
     const handleBudgetUpdate = async () => {

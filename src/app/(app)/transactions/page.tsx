@@ -16,6 +16,7 @@ import {
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
 import { AIInsights } from "@/components/dashboard/AIInsights";
+import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
 type BudgetCategory = {
@@ -238,6 +239,7 @@ export default function TransactionsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [newTx, setNewTx] = useState({ name: "", amount: "", category: "Food", type: "expense" as "income" | "expense" });
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(BUDGET_CATEGORIES);
 
@@ -512,9 +514,8 @@ export default function TransactionsPage() {
   // Algorithm: sort all (real) transactions oldest→newest, accumulate a running balance,
   // store it in a map keyed by transaction id, then apply filters & reverse for display.
   const filteredWithBalance = useMemo(() => {
-    // Step 1: exclude the synthetic "Starting Balance Adjustment" row and sort oldest→newest
+    // Step 1: Sort ALL transactions (including Starting Balance Adjustment) oldest→newest
     const allSorted = [...transactions]
-      .filter(t => t.name !== "Starting Balance Adjustment")
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // Step 2: walk in chronological order, accumulating the running balance
@@ -525,9 +526,10 @@ export default function TransactionsPage() {
       balanceMap.set(tx.id, running);
     }
 
-    // Step 3: apply user filters, then attach the pre-computed balance
+    // Step 3: exclude Starting Balance Adjustment from display, apply user filters, and attach running balance
     const result = allSorted
       .filter(t => {
+        if (t.name === "Starting Balance Adjustment") return false;
         if (filterType !== "all" && t.type !== filterType) return false;
         if (filterCategory !== "all" && t.category !== filterCategory) return false;
         return true;
@@ -602,8 +604,15 @@ export default function TransactionsPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-          {/* Secondary Actions Group (Import / Export) */}
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+          {/* Secondary Actions Group (Import / Export / Sync) */}
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-2">
+            <button
+              onClick={() => setShowSyncModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-primary/20 bg-primary/10 hover:bg-primary/20 text-red-400 hover:text-red-300 transition-all active:scale-95 font-semibold cursor-pointer"
+            >
+              <Smartphone className="h-4 w-4 text-red-400" /> Sync Hub
+            </button>
+
             <button
               onClick={() => setShowImportModal(true)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
@@ -1102,6 +1111,12 @@ export default function TransactionsPage() {
         <CsvImportModal
           onClose={() => setShowImportModal(false)}
           onImport={(rows) => bulkAddTransactions(rows)}
+        />
+      )}
+
+      {showSyncModal && (
+        <PaymentSyncModal
+          onClose={() => setShowSyncModal(false)}
         />
       )}
 

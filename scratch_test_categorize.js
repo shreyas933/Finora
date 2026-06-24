@@ -1,6 +1,16 @@
 const fs = require('fs');
 
-const raw = "Sent Rs.1.00 From HDFC Bank A/C *5866 To KARTHIK VIVEK On 12/06/26 Ref 616351384396 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808";
+const raw = `Sent Rs.60.00
+From HDFC Bank A/C
+*5866
+To VENDEKIN
+TECHNOLOGIES PRI
+On 22/06/26
+Ref 125131610979
+Not You?
+Call 18002586161/SMS
+BLOCK UPI to
+7308080808`;
 
 async function testCategorize() {
   console.log('Sending categorize request to local Next.js server...');
