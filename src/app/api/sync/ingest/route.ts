@@ -99,6 +99,7 @@ export async function POST(req: NextRequest) {
               .update({
                 amount: newAmount,
                 type: newType,
+                date: "1970-01-01T00:00:00.000Z",
               })
               .eq("id", adjustmentTx.id);
             if (updateError) {
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
                 category: "Savings",
                 amount: newAmount,
                 type: newType,
-                date: new Date().toISOString(),
+                date: "1970-01-01T00:00:00.000Z",
               });
             if (adjustInsertError) {
               console.error("[ingest] Error inserting Starting Balance Adjustment:", adjustInsertError.message);

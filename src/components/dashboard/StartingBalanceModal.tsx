@@ -37,9 +37,10 @@ export function StartingBalanceModal({ onClose }: StartingBalanceModalProps) {
         const baseBalance = balance - adjustmentAmountSigned;
         const newAmountSigned = targetBalance - baseBalance;
 
-        const updates: { amount: number; type: "income" | "expense" } = {
+        const updates = {
           amount: Math.abs(newAmountSigned),
-          type: newAmountSigned >= 0 ? "income" : "expense",
+          type: newAmountSigned >= 0 ? "income" : "expense" as "income" | "expense",
+          date: "1970-01-01T00:00:00.000Z",
         };
         await updateTransaction(existingAdjustment.id, updates);
       } else {
@@ -50,7 +51,7 @@ export function StartingBalanceModal({ onClose }: StartingBalanceModalProps) {
           amount: Math.abs(newAmountSigned),
           type: newAmountSigned >= 0 ? "income" : "expense",
           category: "Savings",
-          date: new Date().toISOString().split("T")[0],
+          date: "1970-01-01T00:00:00.000Z",
         });
       }
       onClose();

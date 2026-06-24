@@ -514,9 +514,18 @@ export default function TransactionsPage() {
   // Algorithm: sort all (real) transactions oldest→newest, accumulate a running balance,
   // store it in a map keyed by transaction id, then apply filters & reverse for display.
   const filteredWithBalance = useMemo(() => {
-    // Step 1: Sort ALL transactions (including Starting Balance Adjustment) oldest→newest
-    const allSorted = [...transactions]
+    // Step 1: Separate Starting Balance Adjustment and other transactions
+    const adjustmentTx = transactions.find(t => t.name === "Starting Balance Adjustment");
+    const otherTxs = transactions.filter(t => t.name !== "Starting Balance Adjustment");
+
+    // Sort other transactions oldest→newest
+    const sortedOthers = [...otherTxs]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Place the Starting Balance Adjustment at the very beginning of all sorted transactions
+    const allSorted = adjustmentTx 
+      ? [adjustmentTx, ...sortedOthers]
+      : sortedOthers;
 
     // Step 2: walk in chronological order, accumulating the running balance
     let running = 0;
