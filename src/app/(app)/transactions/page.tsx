@@ -10,7 +10,7 @@ import {
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
   RefreshCw, AlertCircle, Camera, Loader2,
-  BrainCircuit, CheckCircle2, Trash2,
+  BrainCircuit, CheckCircle2, Trash2, Plane, TrendingUp,
   Music, Smartphone, Wifi, Shield, Zap, Sparkles, Gamepad2, Activity
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
@@ -224,8 +224,14 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function TransactionsPage() {
-  const { transactions, addTransaction, bulkAddTransactions, deleteTransaction, monthlyIncome, monthlyExpenses, balance } = useFinance();
+  const { transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction, monthlyIncome, monthlyExpenses, balance } = useFinance();
   const { currency } = useCurrency();
+
+  // ── Inline category picker state ──────────────────────────────────────────
+  // id of the row whose category-picker is expanded
+  const [inlineCategorizeId, setInlineCategorizeId] = useState<string | null>(null);
+  // id of the row currently being saved (shows spinner on the badge)
+  const [inlineSavingId, setInlineSavingId] = useState<string | null>(null);
 
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -873,42 +879,121 @@ export default function TransactionsPage() {
             <div className="divide-y divide-white/5">
               {filteredWithBalance.map((tx) => {
                 const Icon = () => CATEGORY_ICONS[tx.category] ?? <Wallet className="h-4 w-4" />;
-                const tagClass = CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400";
+                const isUncategorized = tx.category === "Uncategorized" || tx.category === "Other";
+                const tagClass = isUncategorized
+                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/30 cursor-pointer hover:bg-amber-500/25 transition-colors"
+                  : (CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400");
                 const balIsPositive = tx.runningBalance >= 0;
+                const isExpanded = inlineCategorizeId === tx.id;
+                const isSaving = inlineSavingId === tx.id;
+
+                const INLINE_CATEGORIES = [
+                  { name: "Food & Dining",  icon: <UtensilsCrossed className="h-3 w-3" /> },
+                  { name: "Shopping",       icon: <ShoppingCart    className="h-3 w-3" /> },
+                  { name: "Transportation", icon: <Car             className="h-3 w-3" /> },
+                  { name: "Entertainment",  icon: <Tv              className="h-3 w-3" /> },
+                  { name: "Health",         icon: <Heart           className="h-3 w-3" /> },
+                  { name: "Travel",         icon: <Plane           className="h-3 w-3" /> },
+                  { name: "Utilities",      icon: <Zap             className="h-3 w-3" /> },
+                  { name: "Income",         icon: <Briefcase       className="h-3 w-3" /> },
+                  { name: "Investment",     icon: <TrendingUp      className="h-3 w-3" /> },
+                  { name: "Other",          icon: <Wallet          className="h-3 w-3" /> },
+                ];
+
+                const handleInlinePick = async (category: string) => {
+                  setInlineSavingId(tx.id);
+                  setInlineCategorizeId(null);
+                  try {
+                    // Strip the " || originalCategory" suffix from name if present
+                    const cleanName = tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name;
+                    await updateTransaction(tx.id, { category, name: cleanName });
+                  } finally {
+                    setInlineSavingId(null);
+                  }
+                };
+
                 return (
-                  <div key={tx.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02] transition-colors">
-                    <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
-                      <Icon />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate pr-2">
-                        {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 overflow-hidden">
-                        <span className={cn("text-[10px] md:text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap", tagClass)}>
-                          {tx.category}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {format(new Date(tx.date), "MMM dd, yyyy")}
+                  <div key={tx.id} className="transition-colors">
+                    {/* ── Main row ── */}
+                    <div className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02]">
+                      <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
+                        <Icon />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate pr-2">
+                          {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 overflow-hidden flex-wrap">
+                          {/* Category badge — tappable when uncategorized */}
+                          {isSaving ? (
+                            <span className="flex items-center gap-1 text-[10px] md:text-xs px-2 py-0.5 rounded font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                              <Loader2 className="h-2.5 w-2.5 animate-spin" /> Saving…
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => isUncategorized
+                                ? setInlineCategorizeId(isExpanded ? null : tx.id)
+                                : undefined
+                              }
+                              className={cn(
+                                "text-[10px] md:text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap",
+                                tagClass,
+                                isUncategorized ? "flex items-center gap-1" : ""
+                              )}
+                            >
+                              {isUncategorized && <Pencil className="h-2.5 w-2.5" />}
+                              {isExpanded ? "Choose category ▲" : tx.category}
+                            </button>
+                          )}
+                          <span className="text-xs text-slate-500">
+                            {format(new Date(tx.date), "MMM dd, yyyy")}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Amount + Running Balance */}
+                      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                        <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-400" : "text-white")}>
+                          {tx.type === "income" ? (
+                            <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
+                          ) : (
+                            <><ArrowDownRight className="h-4 w-4 text-red-400" />-{formatCurrency(tx.amount, currency)}</>
+                          )}
+                        </div>
+                        <span className={cn(
+                          "text-[10px] font-semibold font-mono tracking-tight",
+                          balIsPositive ? "text-slate-500" : "text-red-400"
+                        )}>
+                          Bal:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
                         </span>
                       </div>
                     </div>
-                    {/* Amount + Running Balance */}
-                    <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                      <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-400" : "text-white")}>
-                        {tx.type === "income" ? (
-                          <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
-                        ) : (
-                          <><ArrowDownRight className="h-4 w-4 text-red-400" />-{formatCurrency(tx.amount, currency)}</>
-                        )}
+
+                    {/* ── Inline category picker (expands below the row) ── */}
+                    {isExpanded && (
+                      <div className="px-4 md:px-5 pb-4 pt-1 bg-amber-500/5 border-t border-amber-500/10 animate-fadeIn">
+                        <p className="text-[10px] text-amber-400/70 font-semibold uppercase tracking-wider mb-2.5">
+                          What was this transaction for?
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {INLINE_CATEGORIES.map((cat) => (
+                            <button
+                              key={cat.name}
+                              onClick={() => handleInlinePick(cat.name)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20 hover:text-white active:scale-95 transition-all cursor-pointer"
+                            >
+                              {cat.icon}
+                              {cat.name}
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => setInlineCategorizeId(null)}
+                          className="mt-2 text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-medium"
+                        >
+                          Cancel
+                        </button>
                       </div>
-                      <span className={cn(
-                        "text-[10px] font-semibold font-mono tracking-tight",
-                        balIsPositive ? "text-slate-500" : "text-red-400"
-                      )}>
-                        Bal:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
-                      </span>
-                    </div>
+                    )}
                   </div>
                 );
               })}
