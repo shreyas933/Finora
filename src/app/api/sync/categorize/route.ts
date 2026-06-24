@@ -208,7 +208,14 @@ export async function POST(req: NextRequest) {
 
     // Fast-path local parsing check to optimize response speed and bypass API rate limits
     const localParsed = mockParseTransaction(raw);
-    if (localParsed && localParsed.amount > 0 && localParsed.name !== "Other Merchant" && localParsed.name.length > 1) {
+    if (
+      localParsed &&
+      localParsed.amount > 0 &&
+      localParsed.name !== "Other Merchant" &&
+      localParsed.name.length > 1 &&
+      localParsed.category !== "Other" &&
+      localParsed.category !== "Uncategorized"
+    ) {
       console.log("[FINORA sync/categorize] Local parser fast-path hit. Bypassing AI models.");
       return NextResponse.json({ success: true, transaction: localParsed });
     }

@@ -222,7 +222,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   // When the SMS parser can't identify the category, the transaction lands as
   // "Other" or "Uncategorized". We fire a custom event so CategoryPickerToast
   // can prompt the user to pick a category immediately.
-  const prevNewestIdRef = useRef<string | null>(null);
+  const seenTxIdsRef = useRef<Set<string>>(new Set());
   const initialLoadDoneRef = useRef(false);
 
   useEffect(() => {
@@ -230,26 +230,34 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
 
     if (!initialLoadDoneRef.current) {
-      // First time isLoaded flips to true: record existing newest tx without firing toast
+      // First time isLoaded flips to true: record existing tx IDs without firing toast
       initialLoadDoneRef.current = true;
-      prevNewestIdRef.current = transactions[0]?.id ?? null;
+      seenTxIdsRef.current = new Set(transactions.map((t) => t.id));
       return;
     }
 
-    const newest = transactions[0];
-    if (!newest) return;
-    if (newest.id === prevNewestIdRef.current) return; // no new tx
+    // Identify genuinely new transaction arrivals (IDs not in our seen set)
+    const newArrivals: Transaction[] = [];
+    for (const tx of transactions) {
+      if (!seenTxIdsRef.current.has(tx.id)) {
+        newArrivals.push(tx);
+        seenTxIdsRef.current.add(tx.id);
+      }
+    }
 
-    // A genuinely new transaction just arrived — check if it needs categorizing
-    prevNewestIdRef.current = newest.id;
+    // Process new arrivals (exclude Starting Balance Adjustment)
+    for (const newest of newArrivals) {
+      if (newest.name === "Starting Balance Adjustment") continue;
 
-    const needsCategorization =
-      newest.category === "Other" || newest.category === "Uncategorized";
+      const needsCategorization =
+        newest.category === "Other" || newest.category === "Uncategorized";
 
-    if (needsCategorization) {
-      window.dispatchEvent(
-        new CustomEvent("finora_uncategorized_tx", { detail: newest })
-      );
+      if (needsCategorization) {
+        console.log("[FINORA] Broadcasting newly arrived uncategorized transaction:", newest);
+        window.dispatchEvent(
+          new CustomEvent("finora_uncategorized_tx", { detail: newest })
+        );
+      }
     }
   }, [transactions, isLoaded]);
 

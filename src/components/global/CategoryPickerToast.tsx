@@ -38,7 +38,7 @@ type PendingTx = {
 type ToastState = "shown" | "saving" | "success" | "idle";
 
 export function CategoryPickerToast() {
-  const { updateTransaction } = useFinance();
+  const { updateTransaction, transactions, isLoaded } = useFinance();
   const { currency } = useCurrency();
 
   // Queue of pending uncategorized transactions
@@ -52,16 +52,61 @@ export function CategoryPickerToast() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initializedRef = useRef(false);
 
-  // ── Listen for new uncategorized transactions ───────────────────────────────
+  // ── Load existing recent uncategorized transactions on mount ───────────────
+  useEffect(() => {
+    if (!isLoaded || initializedRef.current) return;
+    initializedRef.current = true;
+
+    // Load seen IDs from localStorage
+    const saved = localStorage.getItem("finora_seen_uncategorized_ids") ?? "";
+    const seenIds = new Set(saved.split(",").filter(Boolean));
+
+    // Find all recent (last 7 days) uncategorized transactions
+    const now = new Date().getTime();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+    const existingUncat = transactions
+      .filter((tx) => {
+        const isUncat = tx.category === "Uncategorized" || tx.category === "Other";
+        if (tx.name === "Starting Balance Adjustment") return false;
+        if (seenIds.has(tx.id)) return false;
+        const txTime = new Date(tx.date).getTime();
+        return isUncat && txTime >= sevenDaysAgo;
+      })
+      // Sort oldest-to-newest so they get processed chronologically
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((tx) => ({
+        id: tx.id,
+        name: tx.name,
+        amount: tx.amount,
+        type: tx.type,
+        category: tx.category,
+      }));
+
+    if (existingUncat.length > 0) {
+      setQueue((prev) => {
+        const merged = [...prev];
+        for (const item of existingUncat) {
+          if (!merged.some((m) => m.id === item.id)) {
+            merged.push(item);
+          }
+        }
+        return merged;
+      });
+    }
+  }, [transactions, isLoaded]);
+
+  // ── Listen for new uncategorized transactions (real-time) ───────────────────
   useEffect(() => {
     const handler = (e: Event) => {
       const tx = (e as CustomEvent<PendingTx>).detail;
       if (!tx?.id) return;
 
-      // Deduplication: skip if already seen in this session
-      const seen = sessionStorage.getItem("finora_categorized_ids") ?? "";
-      const seenIds = new Set(seen.split(",").filter(Boolean));
+      // Deduplication: skip if already seen/dismissed
+      const saved = localStorage.getItem("finora_seen_uncategorized_ids") ?? "";
+      const seenIds = new Set(saved.split(",").filter(Boolean));
       if (seenIds.has(tx.id)) return;
 
       setQueue((prev) => {
@@ -74,6 +119,21 @@ export function CategoryPickerToast() {
     window.addEventListener("finora_uncategorized_tx", handler);
     return () => window.removeEventListener("finora_uncategorized_tx", handler);
   }, []);
+
+  // ── Synchronize queue if a transaction's category is updated externally ─────
+  useEffect(() => {
+    if (!isLoaded || queue.length === 0) return;
+
+    setQueue((prev) => {
+      const updated = prev.filter((item) => {
+        // Keep in queue only if it still exists and is still "Other" or "Uncategorized" in the main transactions list
+        const tx = transactions.find((t) => t.id === item.id);
+        if (!tx) return false; // deleted
+        return tx.category === "Other" || tx.category === "Uncategorized";
+      });
+      return updated;
+    });
+  }, [transactions, isLoaded]);
 
   // ── Show toast when current changes ────────────────────────────────────────
   useEffect(() => {
@@ -109,10 +169,10 @@ export function CategoryPickerToast() {
 
   // ── Dismiss helpers ─────────────────────────────────────────────────────────
   const markSeen = useCallback((id: string) => {
-    const seen = sessionStorage.getItem("finora_categorized_ids") ?? "";
-    const seenIds = new Set(seen.split(",").filter(Boolean));
+    const saved = localStorage.getItem("finora_seen_uncategorized_ids") ?? "";
+    const seenIds = new Set(saved.split(",").filter(Boolean));
     seenIds.add(id);
-    sessionStorage.setItem("finora_categorized_ids", [...seenIds].join(","));
+    localStorage.setItem("finora_seen_uncategorized_ids", [...seenIds].join(","));
   }, []);
 
   const dismissCurrent = useCallback(() => {
