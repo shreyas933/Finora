@@ -169,6 +169,41 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("finora_budget_update", handleBudgetUpdate);
   }, [transactions, supabase]);
 
+  // ── Watch for newly-logged uncategorized transactions ──────────────────────
+  // When the SMS parser can't identify the category, the transaction lands as
+  // "Other" or "Uncategorized". We fire a custom event so CategoryPickerToast
+  // can prompt the user to pick a category immediately.
+  const prevNewestIdRef = useRef<string | null>(null);
+  const initialLoadDoneRef = useRef(false);
+
+  useEffect(() => {
+    // Skip the initial data load (we only want to react to NEW arrivals)
+    if (!isLoaded) return;
+
+    if (!initialLoadDoneRef.current) {
+      // First time isLoaded flips to true: record existing newest tx without firing toast
+      initialLoadDoneRef.current = true;
+      prevNewestIdRef.current = transactions[0]?.id ?? null;
+      return;
+    }
+
+    const newest = transactions[0];
+    if (!newest) return;
+    if (newest.id === prevNewestIdRef.current) return; // no new tx
+
+    // A genuinely new transaction just arrived — check if it needs categorizing
+    prevNewestIdRef.current = newest.id;
+
+    const needsCategorization =
+      newest.category === "Other" || newest.category === "Uncategorized";
+
+    if (needsCategorization) {
+      window.dispatchEvent(
+        new CustomEvent("finora_uncategorized_tx", { detail: newest })
+      );
+    }
+  }, [transactions, isLoaded]);
+
   // ── TRANSACTIONS ──
   const addTransaction = async (t: Omit<Transaction, "id">) => {
     if (!userId) return;
