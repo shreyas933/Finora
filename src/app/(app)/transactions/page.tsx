@@ -502,13 +502,34 @@ export default function TransactionsPage() {
     return ["all", ...Array.from(new Set(transactions.map(t => t.category)))];
   }, [transactions]);
 
-  const filtered = useMemo(() => {
-    return transactions.filter(t => {
-      if (t.name === "Starting Balance Adjustment") return false;
-      if (filterType !== "all" && t.type !== filterType) return false;
-      if (filterCategory !== "all" && t.category !== filterCategory) return false;
-      return true;
-    });
+  // Compute running balance per transaction
+  // Algorithm: sort all (real) transactions oldest→newest, accumulate a running balance,
+  // store it in a map keyed by transaction id, then apply filters & reverse for display.
+  const filteredWithBalance = useMemo(() => {
+    // Step 1: exclude the synthetic "Starting Balance Adjustment" row and sort oldest→newest
+    const allSorted = [...transactions]
+      .filter(t => t.name !== "Starting Balance Adjustment")
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Step 2: walk in chronological order, accumulating the running balance
+    let running = 0;
+    const balanceMap = new Map<string, number>();
+    for (const tx of allSorted) {
+      running += tx.type === "income" ? Number(tx.amount) : -Number(tx.amount);
+      balanceMap.set(tx.id, running);
+    }
+
+    // Step 3: apply user filters, then attach the pre-computed balance
+    const result = allSorted
+      .filter(t => {
+        if (filterType !== "all" && t.type !== filterType) return false;
+        if (filterCategory !== "all" && t.category !== filterCategory) return false;
+        return true;
+      })
+      .map(t => ({ ...t, runningBalance: balanceMap.get(t.id) ?? 0 }));
+
+    // Step 4: reverse to newest-first for display
+    return result.reverse();
   }, [transactions, filterType, filterCategory]);
 
   const SUB_KEYWORDS = ["netflix", "amazon", "prime", "spotify", "hulu", "disney", "youtube", "apple", "gym", "membership", "internet", "dewa", "broadband", "mobile", "telecom", "utility", "insurance"];
@@ -846,13 +867,14 @@ export default function TransactionsPage() {
         </div>
 
         <div className="bg-card border border-white/5 rounded-xl overflow-hidden">
-          {filtered.length === 0 ? (
+          {filteredWithBalance.length === 0 ? (
             <div className="py-16 text-center text-slate-500">No transactions found.</div>
           ) : (
             <div className="divide-y divide-white/5">
-              {filtered.map((tx: Transaction) => {
+              {filteredWithBalance.map((tx) => {
                 const Icon = () => CATEGORY_ICONS[tx.category] ?? <Wallet className="h-4 w-4" />;
                 const tagClass = CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400";
+                const balIsPositive = tx.runningBalance >= 0;
                 return (
                   <div key={tx.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02] transition-colors">
                     <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
@@ -871,12 +893,21 @@ export default function TransactionsPage() {
                         </span>
                       </div>
                     </div>
-                    <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1 flex-shrink-0", tx.type === "income" ? "text-emerald-400" : "text-white")}>
-                      {tx.type === "income" ? (
-                        <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
-                      ) : (
-                        <>-{formatCurrency(tx.amount, currency)}</>
-                      )}
+                    {/* Amount + Running Balance */}
+                    <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                      <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-400" : "text-white")}>
+                        {tx.type === "income" ? (
+                          <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
+                        ) : (
+                          <><ArrowDownRight className="h-4 w-4 text-red-400" />-{formatCurrency(tx.amount, currency)}</>
+                        )}
+                      </div>
+                      <span className={cn(
+                        "text-[10px] font-semibold font-mono tracking-tight",
+                        balIsPositive ? "text-slate-500" : "text-red-400"
+                      )}>
+                        Bal:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
+                      </span>
                     </div>
                   </div>
                 );
