@@ -113,7 +113,12 @@ function categorizeTransaction(
   merchantMemory: Record<string, string>
 ): { category: string; confidence: number } {
   const normName = normalizeMerchantName(name);
-  if (!normName) return { category: "Uncategorized", confidence: 30 };
+  if (!normName) {
+    const defaultCat = type === "income"
+      ? (activeCategories.find(ac => ac.toLowerCase().includes("income")) || "Income")
+      : (activeCategories.find(ac => ac.toLowerCase() === "other") || "Other");
+    return { category: defaultCat, confidence: 30 };
+  }
 
   // 1. Exact Match in merchant learning memory (100% confidence)
   for (const [memMerchant, cat] of Object.entries(merchantMemory)) {
@@ -198,7 +203,8 @@ function categorizeTransaction(
     if (incomeCat) return { category: incomeCat, confidence: 60 };
   }
 
-  return { category: "Uncategorized", confidence: 30 };
+  const otherCat = activeCategories.find(ac => ac.toLowerCase() === "other") || "Other";
+  return { category: otherCat, confidence: 30 };
 }
 
 function getActiveCategories(): string[] {
@@ -348,15 +354,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 activeCategories,
                 merchantCategoriesRef.current
               );
-              if (confidence >= 50) {
-                supabase
-                  .from("transactions")
-                  .update({ category: matchedCategory })
-                  .eq("id", newTx.id)
-                  .then(({ error }) => {
-                    if (error) console.error("[FINORA realtime auto-categorize] error:", error);
-                  });
-              } else {
+              supabase
+                .from("transactions")
+                .update({ category: matchedCategory })
+                .eq("id", newTx.id)
+                .then(({ error }) => {
+                  if (error) console.error("[FINORA realtime auto-categorize] error:", error);
+                });
+
+              if (confidence < 50) {
                 const onboardingDone = typeof window !== "undefined" && localStorage.getItem("finora_onboarding_done") === "true";
                 if (onboardingDone) {
                   setReviewTxIds(prev => {
@@ -414,20 +420,22 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     await Promise.all(uncatTxs.map(async (t) => {
       const { category: matchedCategory, confidence } = categorizeTransaction(t.name, t.type, activeCategories, merchantCategories);
-      if (confidence >= 50) {
+      
+      if (t.category !== matchedCategory) {
         transactionsChanged = true;
-        
+        await supabase
+          .from("transactions")
+          .update({ category: matchedCategory })
+          .eq("id", t.id);
+      }
+
+      if (confidence >= 50) {
         const wasInReview = updatedReviewIds.includes(t.id);
         if (wasInReview) {
           const idx = updatedReviewIds.indexOf(t.id);
           updatedReviewIds.splice(idx, 1);
           reviewIdsChanged = true;
         }
-
-        await supabase
-          .from("transactions")
-          .update({ category: matchedCategory })
-          .eq("id", t.id);
       } else {
         const alreadyInReview = updatedReviewIds.includes(t.id);
         if (!alreadyInReview) {
@@ -516,10 +524,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         activeCategories,
         merchantCategories
       );
-      if (confidence >= 50) {
-        finalCategory = matchedCategory;
-      } else {
-        finalCategory = "Uncategorized";
+      finalCategory = matchedCategory;
+      if (confidence < 50) {
         const onboardingDone = typeof window !== "undefined" && localStorage.getItem("finora_onboarding_done") === "true";
         if (onboardingDone) {
           needsReview = true;
@@ -556,10 +562,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           activeCategories,
           merchantCategories
         );
-        if (confidence >= 50) {
-          finalCategory = matchedCategory;
-        } else {
-          finalCategory = "Uncategorized";
+        finalCategory = matchedCategory;
+        if (confidence < 50) {
           if (onboardingDone) {
             needsReview = true;
           }

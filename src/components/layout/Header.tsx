@@ -130,15 +130,14 @@ export function Header() {
 
     // 5. Uncategorized Transactions (Needs Review)
     const reviewTxs = transactions?.filter(t => 
-      reviewTxIds?.includes(t.id) &&
-      (t.category === "Uncategorized" || t.category === "Other" || t.category === "Other Merchant")
+      reviewTxIds?.includes(t.id)
     ) || [];
 
     reviewTxs.forEach(t => {
       list.push({
         id: `review-tx-${t.id}`,
-        title: "Uncategorized Transaction",
-        message: "We couldn't determine the category for this transaction.",
+        title: "Transaction Review",
+        message: `Currently classified as "${t.category}". Tap below to confirm or correct.`,
         time: "Needs Review",
         type: "alert" as const,
         isReview: true,
