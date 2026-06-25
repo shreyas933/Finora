@@ -363,15 +363,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 });
 
               if (confidence < 50) {
-                const onboardingDone = typeof window !== "undefined" && localStorage.getItem("finora_onboarding_done") === "true";
-                if (onboardingDone) {
-                  setReviewTxIds(prev => {
-                    if (prev.includes(newTx.id)) return prev;
-                    const updated = [...prev, newTx.id];
-                    localStorage.setItem("finora_review_tx_ids", JSON.stringify(updated));
-                    return updated;
-                  });
-                }
+                setReviewTxIds(prev => {
+                  if (prev.includes(newTx.id)) return prev;
+                  const updated = [...prev, newTx.id];
+                  localStorage.setItem("finora_review_tx_ids", JSON.stringify(updated));
+                  return updated;
+                });
               }
             }
 
@@ -402,8 +399,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   const reprocessUncategorizedTransactions = React.useCallback(async (txList: Transaction[]) => {
     const activeCategories = getActiveCategories();
-    const onboardingDone = typeof window !== "undefined" && localStorage.getItem("finora_onboarding_done") === "true";
-    if (!onboardingDone) return; // Case 1: no categories exist, do not reprocess yet
 
     // Filter uncategorized transactions
     const uncatTxs = txList.filter(t => 
@@ -526,10 +521,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       );
       finalCategory = matchedCategory;
       if (confidence < 50) {
-        const onboardingDone = typeof window !== "undefined" && localStorage.getItem("finora_onboarding_done") === "true";
-        if (onboardingDone) {
-          needsReview = true;
-        }
+        needsReview = true;
       }
     }
 
@@ -550,7 +542,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (!userId || txs.length === 0) return;
 
     const activeCategories = getActiveCategories();
-    const onboardingDone = typeof window !== "undefined" && localStorage.getItem("finora_onboarding_done") === "true";
 
     const payload = txs.map(t => {
       let finalCategory = t.category;
@@ -564,9 +555,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         );
         finalCategory = matchedCategory;
         if (confidence < 50) {
-          if (onboardingDone) {
-            needsReview = true;
-          }
+          needsReview = true;
         }
       }
       return { ...t, category: finalCategory, user_id: userId, _tempNeedsReview: needsReview };
