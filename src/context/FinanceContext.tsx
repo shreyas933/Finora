@@ -230,8 +230,28 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const supabase = stableSupabase;
 
   // Intelligent Categorization memory & review lists
-  const [merchantCategories, setMerchantCategories] = useState<Record<string, string>>({});
-  const [reviewTxIds, setReviewTxIds] = useState<string[]>([]);
+  const [merchantCategories, setMerchantCategories] = useState<Record<string, string>>(() => {
+    if (typeof window !== "undefined") {
+      const savedMemory = localStorage.getItem("finora_merchant_categories");
+      if (savedMemory) {
+        try {
+          return JSON.parse(savedMemory);
+        } catch {}
+      }
+    }
+    return {};
+  });
+  const [reviewTxIds, setReviewTxIds] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedReviews = localStorage.getItem("finora_review_tx_ids");
+      if (savedReviews) {
+        try {
+          return JSON.parse(savedReviews);
+        } catch {}
+      }
+    }
+    return [];
+  });
 
   // Stable references for realtime event closures
   const merchantCategoriesRef = useRef(merchantCategories);
@@ -244,19 +264,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     reviewTxIdsRef.current = reviewTxIds;
   }, [reviewTxIds]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedMemory = localStorage.getItem("finora_merchant_categories");
-      if (savedMemory) {
-        try { setMerchantCategories(JSON.parse(savedMemory)); } catch {}
-      }
-      const savedReviews = localStorage.getItem("finora_review_tx_ids");
-      if (savedReviews) {
-        try { setReviewTxIds(JSON.parse(savedReviews)); } catch {}
-      }
-    }
-  }, []);
 
   // Load User Authentication & Initial Data
   useEffect(() => {
