@@ -1,17 +1,35 @@
 "use client";
 
-import { Bell, UserCircle, LogOut, ChevronDown, Trash2, Settings, AlertTriangle, CheckCircle, Info, Sparkles, X, BellRing } from "lucide-react";
+import {
+  Bell, UserCircle, LogOut, ChevronDown, Trash2, Settings, AlertTriangle,
+  CheckCircle, Info, Sparkles, X, BellRing, UtensilsCrossed, ShoppingCart,
+  Car, Tv, Heart, Plane, Zap, Briefcase, TrendingUp, Wallet
+} from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useFinance } from "@/context/FinanceContext";
+import { cn } from "@/lib/utils";
+
+const CATEGORIES_LIST = [
+  { name: "Food & Dining",  icon: <UtensilsCrossed className="h-3 w-3" /> },
+  { name: "Shopping",       icon: <ShoppingCart    className="h-3 w-3" /> },
+  { name: "Transportation", icon: <Car             className="h-3 w-3" /> },
+  { name: "Entertainment",  icon: <Tv              className="h-3 w-3" /> },
+  { name: "Health",         icon: <Heart           className="h-3 w-3" /> },
+  { name: "Travel",         icon: <Plane           className="h-3 w-3" /> },
+  { name: "Utilities",      icon: <Zap             className="h-3 w-3" /> },
+  { name: "Income",         icon: <Briefcase       className="h-3 w-3" /> },
+  { name: "Investment",     icon: <TrendingUp      className="h-3 w-3" /> },
+  { name: "Other",          icon: <Wallet          className="h-3 w-3" /> }
+];
 
 export function Header() {
   const [displayName, setDisplayName] = useState<string | null>("Loading...");
   const supabase = createClient();
   const router = useRouter();
-  const { transactions, balance, goals } = useFinance();
+  const { transactions, balance, goals, reviewTxIds, updateTransaction } = useFinance();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -49,7 +67,18 @@ export function Header() {
   }, []);
 
   const notifications = useMemo(() => {
-    const list: { id: string; title: string; message: string; time: string; type: "alert" | "info" | "success" }[] = [];
+    const list: ({
+      id: string;
+      title: string;
+      message: string;
+      time: string;
+      type: "alert" | "info" | "success";
+      isReview?: boolean;
+      txId?: string;
+      merchant?: string;
+      amountStr?: string;
+      txType?: "income" | "expense";
+    })[] = [];
 
     // 1. Welcome
     list.push({
@@ -99,13 +128,34 @@ export function Header() {
       });
     }
 
+    // 5. Uncategorized Transactions (Needs Review)
+    const reviewTxs = transactions?.filter(t => 
+      reviewTxIds?.includes(t.id) &&
+      (t.category === "Uncategorized" || t.category === "Other" || t.category === "Other Merchant")
+    ) || [];
+
+    reviewTxs.forEach(t => {
+      list.push({
+        id: `review-tx-${t.id}`,
+        title: "Uncategorized Transaction",
+        message: "We couldn't determine the category for this transaction.",
+        time: "Needs Review",
+        type: "alert" as const,
+        isReview: true,
+        txId: t.id,
+        merchant: t.name,
+        amountStr: `₹${Number(t.amount).toLocaleString()}`,
+        txType: t.type
+      });
+    });
+
     return list
       .filter(n => !dismissedIds.includes(n.id))
       .map(n => ({
         ...n,
         read: readIds.includes(n.id)
       }));
-  }, [balance, goals, transactions, readIds, dismissedIds]);
+  }, [balance, goals, transactions, readIds, dismissedIds, reviewTxIds]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -128,6 +178,14 @@ export function Header() {
     const updated = [...dismissedIds, id];
     setDismissedIds(updated);
     localStorage.setItem("finora_dismissed_notifications", JSON.stringify(updated));
+  };
+
+  const handleReviewPick = async (txId: string, category: string, merchantName: string) => {
+    try {
+      await updateTransaction(txId, { category });
+    } catch (e) {
+      console.error("[FINORA review pick] error:", e);
+    }
   };
 
 
@@ -241,9 +299,37 @@ export function Header() {
                             {notification.time}
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-400 leading-normal mt-0.5 font-medium line-clamp-2">
+                        <p className={cn("text-[11px] text-zinc-400 leading-normal mt-0.5 font-medium", !notification.isReview && "line-clamp-2")}>
                           {notification.message}
                         </p>
+
+                        {notification.isReview && (
+                          <div className="mt-2.5 space-y-2 border-t border-white/5 pt-2.5">
+                            <div className="flex justify-between items-center text-[10px] text-zinc-400 font-mono bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/5">
+                              <span className="truncate max-w-[140px] font-semibold text-zinc-200">{notification.merchant}</span>
+                              <span className={cn("font-bold", notification.txType === "income" ? "text-emerald-400" : "text-red-400")}>
+                                {notification.txType === "income" ? "+" : "-"}{notification.amountStr}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {CATEGORIES_LIST.map((cat) => (
+                                <button
+                                  key={cat.name}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (notification.txId) {
+                                      handleReviewPick(notification.txId, cat.name, notification.merchant || "");
+                                    }
+                                  }}
+                                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all active:scale-95 cursor-pointer"
+                                >
+                                  {cat.icon}
+                                  <span>{cat.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Dismiss button */}
