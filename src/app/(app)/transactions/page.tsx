@@ -228,6 +228,19 @@ export default function TransactionsPage() {
   const { transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction, monthlyIncome, monthlyExpenses, balance } = useFinance();
   const { currency } = useCurrency();
 
+  // State for showing/hiding running balance
+  const [showRunningBalance, setShowRunningBalance] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("finora_show_running_balance");
+      return saved !== null ? saved === "true" : true;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("finora_show_running_balance", String(showRunningBalance));
+  }, [showRunningBalance]);
+
   // ── Inline category picker state ──────────────────────────────────────────
   // id of the row whose category-picker is expanded
   const [inlineCategorizeId, setInlineCategorizeId] = useState<string | null>(null);
@@ -867,7 +880,7 @@ export default function TransactionsPage() {
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h3 className="text-xl font-bold">All Transactions</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-slate-500" />
             <select
               className="bg-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
@@ -887,6 +900,15 @@ export default function TransactionsPage() {
                 <option key={c} value={c}>{c === "all" ? "All Categories" : c}</option>
               ))}
             </select>
+            <label className="flex items-center gap-2 text-xs md:text-sm text-slate-400 hover:text-slate-200 select-none cursor-pointer border border-white/10 rounded-lg px-3 py-1.5 bg-[#1B1716]/80 hover:bg-[#1B1716] transition-all">
+              <input
+                type="checkbox"
+                checked={showRunningBalance}
+                onChange={(e) => setShowRunningBalance(e.target.checked)}
+                className="rounded border-white/20 bg-muted text-primary focus:ring-primary focus:ring-offset-0 h-4 w-4 accent-red-500 cursor-pointer"
+              />
+              Show Running Balance
+            </label>
           </div>
         </div>
 
@@ -977,12 +999,14 @@ export default function TransactionsPage() {
                             <><ArrowDownRight className="h-4 w-4 text-red-400" />-{formatCurrency(tx.amount, currency)}</>
                           )}
                         </div>
-                        <span className={cn(
-                          "text-[10px] font-semibold font-mono tracking-tight",
-                          balIsPositive ? "text-slate-500" : "text-red-400"
-                        )}>
-                          Bal:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
-                        </span>
+                        {showRunningBalance && (
+                          <span className={cn(
+                            "text-[10px] font-semibold font-mono tracking-tight",
+                            balIsPositive ? "text-slate-500" : "text-red-400"
+                          )}>
+                            Balance:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
+                          </span>
+                        )}
                       </div>
                     </div>
 
