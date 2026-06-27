@@ -9,7 +9,7 @@ import {
   Upload, Download, Plus, Filter, Pencil, Check, X,
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
-  RefreshCw, AlertCircle, Camera, Loader2,
+  RefreshCw, AlertCircle, Loader2,
   BrainCircuit, CheckCircle2, Trash2, Plane, TrendingUp,
   Music, Smartphone, Wifi, Shield, Zap, Sparkles, Gamepad2, Activity
 } from "lucide-react";
@@ -626,15 +626,8 @@ export default function TransactionsPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-          {/* Secondary Actions Group (Import / Export / Sync) */}
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-2">
-            <button
-              onClick={() => setShowSyncModal(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-primary/20 bg-primary/10 hover:bg-primary/20 text-red-400 hover:text-red-300 transition-all active:scale-95 font-semibold cursor-pointer"
-            >
-              <Smartphone className="h-4 w-4 text-red-400" /> Sync Hub
-            </button>
-
+          {/* Secondary Actions Group (Import / Export) */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
             <button
               onClick={() => setShowImportModal(true)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
@@ -650,32 +643,11 @@ export default function TransactionsPage() {
             </button>
           </div>
 
-          {/* Primary Actions Group (Scan / Add) */}
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
-            <input
-              type="file"
-              id="bill-image-upload"
-              accept="image/*"
-              className="hidden"
-              onChange={handleBillUpload}
-              disabled={scanning}
-            />
-            <button
-              onClick={() => document.getElementById("bill-image-upload")?.click()}
-              disabled={scanning}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-primary/20 bg-primary/10 hover:bg-primary/20 text-red-400 hover:text-red-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer"
-            >
-              {scanning ? (
-                <Loader2 className="h-4 w-4 animate-spin text-red-400" />
-              ) : (
-                <Camera className="h-4 w-4 text-red-400" />
-              )}
-              Scan Bill
-            </button>
-
+          {/* Primary Actions Group (Add) */}
+          <div className="flex w-full sm:w-auto">
             <button
               onClick={() => setShowAddForm(v => !v)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl bg-primary text-white hover:bg-red-700 transition-all active:scale-95 font-bold shadow-lg shadow-primary/10 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl bg-primary text-white hover:bg-red-700 transition-all active:scale-95 font-bold shadow-lg shadow-primary/10 cursor-pointer"
             >
               <Plus className="h-4 w-4" /> Add Transaction
             </button>
