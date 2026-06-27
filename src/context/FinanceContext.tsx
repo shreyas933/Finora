@@ -263,9 +263,20 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Listen for window focus to refetch data (fixes SMS sync issue if Realtime is not enabled)
+    const handleFocus = () => {
+      loadData();
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener("focus", handleFocus);
+    }
+
     return () => {
       subscription.unsubscribe();
       if (txChannel) supabase.removeChannel(txChannel);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener("focus", handleFocus);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -336,6 +347,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const assignCategory = async (txId: string, category: string, merchantName: string) => {
     if (!userId) return;
 
+    // Optimistically update UI instantly
+    setTransactions(prev => prev.map(t => 
+      t.id === txId ? { ...t, category, needs_review: false, suggested_category: null } : t
+    ));
+
     // 1. Update the transaction
     const { data, error } = await supabase.from("transactions").update({
       category,
@@ -343,7 +359,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       suggested_category: null,
     }).eq("id", txId).select().single();
 
-    if (data && !error) {
+    if (error) {
+      console.error("[FINORA] Error assigning category:", error);
+    } else if (data) {
       setTransactions(prev => prev.map(t => t.id === txId ? data : t));
     }
 
