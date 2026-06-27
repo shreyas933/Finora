@@ -536,13 +536,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   };
 
   // ── COMPUTED METRICS ──
-  const monthlyIncome = transactions.filter(t => t.type === "income").reduce((acc, t) => acc + Number(t.amount), 0);
-  const monthlyExpenses = transactions.filter(t => t.type === "expense").reduce((acc, t) => acc + Number(t.amount), 0);
-  const balance = transactions.reduce((acc, t) => t.type === "income" ? acc + Number(t.amount) : acc - Number(t.amount), 0);
-  const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100 : 0;
-  const healthScore = transactions.length === 0
-    ? 100
-    : Math.min(100, Math.max(0, 50 + (savingsRate * 0.5) + (balance > 100000 ? 10 : 0)));
+  const { monthlyIncome, monthlyExpenses, balance, savingsRate, healthScore } = useMemo(() => {
+    const mIncome = transactions.filter(t => t.type === "income").reduce((acc, t) => acc + Number(t.amount), 0);
+    const mExpenses = transactions.filter(t => t.type === "expense").reduce((acc, t) => acc + Number(t.amount), 0);
+    const bal = transactions.reduce((acc, t) => t.type === "income" ? acc + Number(t.amount) : acc - Number(t.amount), 0);
+    const sRate = mIncome > 0 ? ((mIncome - mExpenses) / mIncome) * 100 : 0;
+    const hScore = transactions.length === 0
+      ? 100
+      : Math.min(100, Math.max(0, 50 + (sRate * 0.5) + (bal > 100000 ? 10 : 0)));
+    return { monthlyIncome: mIncome, monthlyExpenses: mExpenses, balance: bal, savingsRate: sRate, healthScore: hScore };
+  }, [transactions]);
 
   // ── Needs Review Computations ──
   const needsReviewTransactions = useMemo(() =>

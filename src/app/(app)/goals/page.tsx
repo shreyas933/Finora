@@ -203,7 +203,7 @@ export default function GoalsPage() {
 
                 {isOffTrack && progress < 100 && (
                   <div className="mt-4 p-3 rounded-lg bg-red-900/50 border border-red-800 text-xs text-red-100">
-                    Suggestion: You need to increase your savings rate from {savingsRate.toFixed(1)}% to {((requiredMonthly / monthlyIncome) * 100).toFixed(1)}% to hit this goal on time, or extend the deadline.
+                    Suggestion: You need to increase your savings rate from {savingsRate.toFixed(1)}% to {monthlyIncome > 0 ? ((requiredMonthly / monthlyIncome) * 100).toFixed(1) : "100"}% to hit this goal on time, or extend the deadline.
                   </div>
                 )}
               </CardContent>
