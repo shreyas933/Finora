@@ -128,6 +128,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   // Load User Authentication & Initial Data
   useEffect(() => {
+    let txChannel: any = null;
+
     async function loadData() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -222,6 +224,23 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (goalsRes.data) setGoals(goalsRes.data);
         if (invRes.data) setInvestments(invRes.data);
 
+        // Setup realtime subscription for new SMS/API transactions
+        if (txChannel) supabase.removeChannel(txChannel);
+        txChannel = supabase
+          .channel('public:transactions')
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
+            (payload) => {
+              console.log("[FINORA] Realtime transaction received:", payload.new);
+              setTransactions(prev => {
+                if (prev.some(t => t.id === payload.new.id)) return prev;
+                return [payload.new as Transaction, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+              });
+            }
+          )
+          .subscribe();
+
       } catch (err) {
         console.error("[FINORA] Error loading data:", err);
       } finally {
@@ -244,7 +263,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (txChannel) supabase.removeChannel(txChannel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

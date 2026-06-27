@@ -226,7 +226,7 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function TransactionsPage() {
-  const { transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction, monthlyIncome, monthlyExpenses, balance, needsReviewCount } = useFinance();
+  const { transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction, monthlyIncome, monthlyExpenses, balance, needsReviewCount, assignCategory } = useFinance();
   const { currency } = useCurrency();
 
   // State for showing/hiding running balance
@@ -950,7 +950,7 @@ export default function TransactionsPage() {
                   try {
                     // Strip the " || originalCategory" suffix from name if present
                     const cleanName = tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name;
-                    await updateTransaction(tx.id, { category, name: cleanName });
+                    await assignCategory(tx.id, category, cleanName);
                   } finally {
                     setInlineSavingId(null);
                   }
