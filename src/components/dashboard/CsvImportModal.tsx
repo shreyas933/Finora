@@ -128,6 +128,7 @@ export function CsvImportModal({
           // If the CSV provides an explicit Category column, attempt to respect and standardize it
           const rawCategory = row["Category"] || row["category"] || "";
           let finalCategory = "";
+          let finalConfidence = 0;
 
           if (rawCategory && rawCategory.trim().toLowerCase() !== "other") {
             const c = rawCategory.trim();

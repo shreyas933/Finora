@@ -17,6 +17,7 @@ import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
 import { AIInsights } from "@/components/dashboard/AIInsights";
 import { NeedsReviewBanner } from "@/components/dashboard/NeedsReviewBanner";
+import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
 type BudgetCategory = {
@@ -225,7 +226,7 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function TransactionsPage() {
-  const { transactions, addTransaction, bulkAddTransactions, deleteTransaction, monthlyIncome, monthlyExpenses, balance, needsReviewCount } = useFinance();
+  const { transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction, monthlyIncome, monthlyExpenses, balance, needsReviewCount } = useFinance();
   const { currency } = useCurrency();
 
   // State for showing/hiding running balance

@@ -9,7 +9,7 @@ import { Home, Wallet, Sparkles, Goal, CreditCard } from "lucide-react";
 // Use the exact routes from the mobile app
 const mobileRoutes = [
   { id: 0, label: "Home", icon: <Home size={22} />, href: "/dashboard" },
-  { id: 1, label: "Wallet", icon: <Wallet size={22} />, href: "/transactions" },
+  { id: 1, label: "Transactions", icon: <Wallet size={22} />, href: "/transactions" },
   { 
     id: 2, 
     label: "AI CFO", 

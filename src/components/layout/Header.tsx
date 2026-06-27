@@ -29,7 +29,7 @@ export function Header() {
   const [displayName, setDisplayName] = useState<string | null>("Loading...");
   const supabase = createClient();
   const router = useRouter();
-  const { transactions, balance, goals, needsReviewCount } = useFinance();
+  const { transactions, balance, goals, needsReviewCount, needsReviewTransactions, assignCategory } = useFinance();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -129,9 +129,7 @@ export function Header() {
     }
 
     // 5. Uncategorized Transactions (Needs Review)
-    const reviewTxs = transactions?.filter(t => 
-      reviewTxIds?.includes(t.id)
-    ) || [];
+    const reviewTxs = needsReviewTransactions || [];
 
     reviewTxs.forEach(t => {
       list.push({
@@ -154,7 +152,7 @@ export function Header() {
         ...n,
         read: readIds.includes(n.id)
       }));
-  }, [balance, goals, transactions, readIds, dismissedIds, reviewTxIds]);
+  }, [balance, goals, transactions, readIds, dismissedIds, needsReviewTransactions]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -181,7 +179,7 @@ export function Header() {
 
   const handleReviewPick = async (txId: string, category: string, merchantName: string) => {
     try {
-      await updateTransaction(txId, { category });
+      await assignCategory(txId, category, merchantName);
     } catch (e) {
       console.error("[FINORA review pick] error:", e);
     }
