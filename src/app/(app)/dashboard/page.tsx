@@ -220,7 +220,15 @@ export default function DashboardPage() {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-500">{formatCurrency(balance, currency)}</div>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="text-2xl font-bold text-emerald-500">{formatCurrency(balance, currency)}</div>
+              <button
+                onClick={() => setShowBalanceModal(true)}
+                className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="h-3 w-3" /> Set Balance
+              </button>
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
               +2.5% from last month
             </p>

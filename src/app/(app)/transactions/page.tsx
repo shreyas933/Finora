@@ -10,7 +10,7 @@ import {
   ShoppingCart, UtensilsCrossed, Car, Home, Tv, Heart,
   Briefcase, Wallet, ArrowUpRight, ArrowDownRight,
   RefreshCw, AlertCircle, Camera, Loader2,
-  BrainCircuit, CheckCircle2, Trash2,
+  BrainCircuit, CheckCircle2, Trash2, Plane, TrendingUp,
   Music, Smartphone, Wifi, Shield, Zap, Sparkles, Gamepad2, Activity
 } from "lucide-react";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
@@ -228,11 +228,31 @@ export default function TransactionsPage() {
   const { transactions, addTransaction, bulkAddTransactions, deleteTransaction, monthlyIncome, monthlyExpenses, balance, needsReviewCount } = useFinance();
   const { currency } = useCurrency();
 
+  // State for showing/hiding running balance
+  const [showRunningBalance, setShowRunningBalance] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("finora_show_running_balance");
+      return saved !== null ? saved === "true" : true;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("finora_show_running_balance", String(showRunningBalance));
+  }, [showRunningBalance]);
+
+  // ── Inline category picker state ──────────────────────────────────────────
+  // id of the row whose category-picker is expanded
+  const [inlineCategorizeId, setInlineCategorizeId] = useState<string | null>(null);
+  // id of the row currently being saved (shows spinner on the badge)
+  const [inlineSavingId, setInlineSavingId] = useState<string | null>(null);
+
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [newTx, setNewTx] = useState({ name: "", amount: "", category: "Food", type: "expense" as "income" | "expense" });
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(BUDGET_CATEGORIES);
 
@@ -503,13 +523,43 @@ export default function TransactionsPage() {
     return ["all", ...Array.from(new Set(transactions.map(t => t.category)))];
   }, [transactions]);
 
-  const filtered = useMemo(() => {
-    return transactions.filter(t => {
-      if (t.name === "Starting Balance Adjustment") return false;
-      if (filterType !== "all" && t.type !== filterType) return false;
-      if (filterCategory !== "all" && t.category !== filterCategory) return false;
-      return true;
-    });
+  // Compute running balance per transaction
+  // Algorithm: sort all (real) transactions oldest→newest, accumulate a running balance,
+  // store it in a map keyed by transaction id, then apply filters & reverse for display.
+  const filteredWithBalance = useMemo(() => {
+    // Step 1: Separate Starting Balance Adjustment and other transactions
+    const adjustmentTx = transactions.find(t => t.name === "Starting Balance Adjustment");
+    const otherTxs = transactions.filter(t => t.name !== "Starting Balance Adjustment");
+
+    // Sort other transactions oldest→newest
+    const sortedOthers = [...otherTxs]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Place the Starting Balance Adjustment at the very beginning of all sorted transactions
+    const allSorted = adjustmentTx 
+      ? [adjustmentTx, ...sortedOthers]
+      : sortedOthers;
+
+    // Step 2: walk in chronological order, accumulating the running balance
+    let running = 0;
+    const balanceMap = new Map<string, number>();
+    for (const tx of allSorted) {
+      running += tx.type === "income" ? Number(tx.amount) : -Number(tx.amount);
+      balanceMap.set(tx.id, running);
+    }
+
+    // Step 3: exclude Starting Balance Adjustment from display, apply user filters, and attach running balance
+    const result = allSorted
+      .filter(t => {
+        if (t.name === "Starting Balance Adjustment") return false;
+        if (filterType !== "all" && t.type !== filterType) return false;
+        if (filterCategory !== "all" && t.category !== filterCategory) return false;
+        return true;
+      })
+      .map(t => ({ ...t, runningBalance: balanceMap.get(t.id) ?? 0 }));
+
+    // Step 4: reverse to newest-first for display
+    return result.reverse();
   }, [transactions, filterType, filterCategory]);
 
   const SUB_KEYWORDS = ["netflix", "amazon", "prime", "spotify", "hulu", "disney", "youtube", "apple", "gym", "membership", "internet", "dewa", "broadband", "mobile", "telecom", "utility", "insurance"];
@@ -576,8 +626,15 @@ export default function TransactionsPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-          {/* Secondary Actions Group (Import / Export) */}
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+          {/* Secondary Actions Group (Import / Export / Sync) */}
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-2">
+            <button
+              onClick={() => setShowSyncModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-primary/20 bg-primary/10 hover:bg-primary/20 text-red-400 hover:text-red-300 transition-all active:scale-95 font-semibold cursor-pointer"
+            >
+              <Smartphone className="h-4 w-4 text-red-400" /> Sync Hub
+            </button>
+
             <button
               onClick={() => setShowImportModal(true)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
@@ -826,7 +883,7 @@ export default function TransactionsPage() {
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h3 className="text-xl font-bold">All Transactions</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-slate-500" />
             <select
               className="bg-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
@@ -846,42 +903,142 @@ export default function TransactionsPage() {
                 <option key={c} value={c}>{c === "all" ? "All Categories" : c}</option>
               ))}
             </select>
+            <label className="flex items-center gap-2 text-xs md:text-sm text-slate-400 hover:text-slate-200 select-none cursor-pointer border border-white/10 rounded-lg px-3 py-1.5 bg-[#1B1716]/80 hover:bg-[#1B1716] transition-all">
+              <input
+                type="checkbox"
+                checked={showRunningBalance}
+                onChange={(e) => setShowRunningBalance(e.target.checked)}
+                className="rounded border-white/20 bg-muted text-primary focus:ring-primary focus:ring-offset-0 h-4 w-4 accent-red-500 cursor-pointer"
+              />
+              Show Running Balance
+            </label>
           </div>
         </div>
 
         <div className="bg-card border border-white/5 rounded-xl overflow-hidden">
-          {filtered.length === 0 ? (
+          {filteredWithBalance.length === 0 ? (
             <div className="py-16 text-center text-slate-500">No transactions found.</div>
           ) : (
             <div className="divide-y divide-white/5">
-              {filtered.map((tx: Transaction) => {
+              {filteredWithBalance.map((tx) => {
                 const Icon = () => CATEGORY_ICONS[tx.category] ?? <Wallet className="h-4 w-4" />;
-                const tagClass = CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400";
+                const isUncategorized = tx.category === "Uncategorized" || tx.category === "Other";
+                const tagClass = isUncategorized
+                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/30 cursor-pointer hover:bg-amber-500/25 transition-colors"
+                  : (CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400");
+                const balIsPositive = tx.runningBalance >= 0;
+                const isExpanded = inlineCategorizeId === tx.id;
+                const isSaving = inlineSavingId === tx.id;
+
+                const INLINE_CATEGORIES = [
+                  { name: "Food & Dining",  icon: <UtensilsCrossed className="h-3 w-3" /> },
+                  { name: "Shopping",       icon: <ShoppingCart    className="h-3 w-3" /> },
+                  { name: "Transportation", icon: <Car             className="h-3 w-3" /> },
+                  { name: "Entertainment",  icon: <Tv              className="h-3 w-3" /> },
+                  { name: "Health",         icon: <Heart           className="h-3 w-3" /> },
+                  { name: "Travel",         icon: <Plane           className="h-3 w-3" /> },
+                  { name: "Utilities",      icon: <Zap             className="h-3 w-3" /> },
+                  { name: "Income",         icon: <Briefcase       className="h-3 w-3" /> },
+                  { name: "Investment",     icon: <TrendingUp      className="h-3 w-3" /> },
+                  { name: "Other",          icon: <Wallet          className="h-3 w-3" /> },
+                ];
+
+                const handleInlinePick = async (category: string) => {
+                  setInlineSavingId(tx.id);
+                  setInlineCategorizeId(null);
+                  try {
+                    // Strip the " || originalCategory" suffix from name if present
+                    const cleanName = tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name;
+                    await updateTransaction(tx.id, { category, name: cleanName });
+                  } finally {
+                    setInlineSavingId(null);
+                  }
+                };
+
                 return (
-                  <div key={tx.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02] transition-colors">
-                    <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
-                      <Icon />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate pr-2">
-                        {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 overflow-hidden">
-                        <span className={cn("text-[10px] md:text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap", tagClass)}>
-                          {tx.category}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {format(new Date(tx.date), "MMM dd, yyyy")}
-                        </span>
+                  <div key={tx.id} className="transition-colors">
+                    {/* ── Main row ── */}
+                    <div className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02]">
+                      <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
+                        <Icon />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate pr-2">
+                          {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 overflow-hidden flex-wrap">
+                          {/* Category badge — tappable when uncategorized */}
+                          {isSaving ? (
+                            <span className="flex items-center gap-1 text-[10px] md:text-xs px-2 py-0.5 rounded font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                              <Loader2 className="h-2.5 w-2.5 animate-spin" /> Saving…
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => isUncategorized
+                                ? setInlineCategorizeId(isExpanded ? null : tx.id)
+                                : undefined
+                              }
+                              className={cn(
+                                "text-[10px] md:text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap",
+                                tagClass,
+                                isUncategorized ? "flex items-center gap-1" : ""
+                              )}
+                            >
+                              {isUncategorized && <Pencil className="h-2.5 w-2.5" />}
+                              {isExpanded ? "Choose category ▲" : tx.category}
+                            </button>
+                          )}
+                          <span className="text-xs text-slate-500">
+                            {format(new Date(tx.date), "MMM dd, yyyy")}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Amount + Running Balance */}
+                      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                        <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-400" : "text-white")}>
+                          {tx.type === "income" ? (
+                            <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
+                          ) : (
+                            <><ArrowDownRight className="h-4 w-4 text-red-400" />-{formatCurrency(tx.amount, currency)}</>
+                          )}
+                        </div>
+                        {showRunningBalance && (
+                          <span className={cn(
+                            "text-[10px] font-semibold font-mono tracking-tight",
+                            balIsPositive ? "text-slate-500" : "text-red-400"
+                          )}>
+                            Balance:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1 flex-shrink-0", tx.type === "income" ? "text-emerald-400" : "text-white")}>
-                      {tx.type === "income" ? (
-                        <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
-                      ) : (
-                        <>-{formatCurrency(tx.amount, currency)}</>
-                      )}
-                    </div>
+
+                    {/* ── Inline category picker (expands below the row) ── */}
+                    {isExpanded && (
+                      <div className="px-4 md:px-5 pb-4 pt-1 bg-amber-500/5 border-t border-amber-500/10 animate-fadeIn">
+                        <p className="text-[10px] text-amber-400/70 font-semibold uppercase tracking-wider mb-2.5">
+                          What was this transaction for?
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {INLINE_CATEGORIES.map((cat) => (
+                            <button
+                              key={cat.name}
+                              onClick={() => handleInlinePick(cat.name)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20 hover:text-white active:scale-95 transition-all cursor-pointer"
+                            >
+                              {cat.icon}
+                              {cat.name}
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => setInlineCategorizeId(null)}
+                          className="mt-2 text-[10px] text-slate-600 hover:text-slate-400 transition-colors font-medium"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -990,6 +1147,12 @@ export default function TransactionsPage() {
         <CsvImportModal
           onClose={() => setShowImportModal(false)}
           onImport={(rows) => bulkAddTransactions(rows)}
+        />
+      )}
+
+      {showSyncModal && (
+        <PaymentSyncModal
+          onClose={() => setShowSyncModal(false)}
         />
       )}
 

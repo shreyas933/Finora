@@ -14,6 +14,7 @@ const SAMPLE_NOTIFICATIONS = [
   "Spent Rs.2,800.00 on HDFC Bank Card ending 4321 at MakeMyTrip.",
   "\u20B9199 paid to Netflix via UPI. Ref: 823910472. Kotak Bank",
   "\u20B9550 paid to Myntra via UPI. Ref: 934812039. ICICI Bank",
+  "Spent Rs.60.00 to VENDEKIN TECHNOLOGIES via UPI. Ref: 1251316. Kotak Bank"
 ];
 
 const SAMPLE_SMS = [
@@ -25,7 +26,8 @@ const SAMPLE_SMS = [
   "Union Bank SMS: Rs. 140.00 debited from A/c XX9021. Ref: UPI/6102983746/Zomato. Charges nil.",
   "SBI SMS: Your A/c XX3829 debited by Rs. 2,500.00. UPI Ref 6102837465 paid to MakeMyTrip.",
   "ICICI Bank: Alert! Rs. 120.00 spent on A/c XX902. Ref: UPI/6109283/Chaayos. Avl Bal: Rs. 24,150.00.",
-  "Axis Bank: Rs. 500.00 debited from A/c XX482. Info: UPI/61028374/Amazon India. 28-05-26 14:15."
+  "Axis Bank: Rs. 500.00 debited from A/c XX482. Info: UPI/61028374/Amazon India. 28-05-26 14:15.",
+  "Sent Rs.60.00 From HDFC Bank A/C *5866 To VENDEKIN TECHNOLOGIES PRI on 22/06/26."
 ];
 
 type SyncedTx = {
@@ -122,10 +124,15 @@ export function PaymentSyncModal({ onClose }: Props) {
       // Step 2: Get current user and ingest
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        const isBudgetSet = !!localStorage.getItem("finora_budgets");
         const ingestRes = await fetch("/api/sync/ingest", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.id, transaction }),
+          body: JSON.stringify({
+            userId: user.id,
+            transaction,
+            isBudgetSet
+          }),
         });
         if (!ingestRes.ok) {
           const errData = await ingestRes.json().catch(() => ({}));
