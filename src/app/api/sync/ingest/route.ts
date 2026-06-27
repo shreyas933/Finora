@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing userId or transaction" }, { status: 400 });
     }
 
-    const { name, amount, category, type, availableBalance } = transaction;
-    if (!name || !amount || !category || !type) {
+    const { name, amount, category, type, availableBalance, needs_review, suggested_category } = transaction;
+    if (!name || !amount || !type) {
       return NextResponse.json({ error: "Incomplete transaction fields" }, { status: 400 });
     }
 
@@ -56,18 +56,15 @@ export async function POST(req: NextRequest) {
       finalName = `${name} (${cardSuffix})`;
     }
 
-    if (isBudgetSet === false) {
-      finalCategory = "Uncategorized";
-      finalName = `${finalName} || ${category}`;
-    }
-
     const { error: insertError } = await supabase.from("transactions").insert({
       user_id: userId,
       name: finalName,
       amount: Number(amount),
-      category: finalCategory,
+      category: finalCategory || "Uncategorized",
       type,
       date: new Date().toISOString(),
+      needs_review: needs_review !== undefined ? needs_review : false,
+      suggested_category: suggested_category || null,
     });
 
     if (insertError) {

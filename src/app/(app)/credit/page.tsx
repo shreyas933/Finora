@@ -256,7 +256,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
     return (
       <div className="spend-optimizer-empty">
         <BarChart3 className="h-8 w-8 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">Add transaction data and wallet cards to generate your rewards optimizer report.</p>
+        <p className="text-base text-muted-foreground">Add transaction data and wallet cards to generate your rewards optimizer report.</p>
       </div>
     );
   }
@@ -277,11 +277,11 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-5 rounded-2xl bg-card border border-emerald-500/20 backdrop-blur-xl">
         <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Card Efficiency</span>
+          <span className="text-sm uppercase tracking-wider text-muted-foreground font-semibold">Card Efficiency</span>
           <span className="text-3xl font-extrabold text-white flex items-center gap-1.5">
-            {efficiencyScore}% <span className="text-xs font-semibold text-emerald-400">Optimal</span>
+            {efficiencyScore}% <span className="text-sm font-semibold text-emerald-400">Optimal</span>
           </span>
-          <p className="text-xs text-muted-foreground">Rating how well you route spends to maximize perks.</p>
+          <p className="text-sm text-muted-foreground">Rating how well you route spends to maximize perks.</p>
         </div>
         
         <div className="flex justify-center items-center py-2">
@@ -296,9 +296,9 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
         </div>
 
         <div className="text-center md:text-right">
-          <span className="text-xs text-muted-foreground block font-medium">Estimated Monthly Spends</span>
+          <span className="text-sm text-muted-foreground block font-medium">Estimated Monthly Spends</span>
           <span className="text-2xl font-bold text-emerald-400">{formatCurrency(totalSpend)}</span>
-          <span className="text-[10px] text-muted-foreground block">Mapped across {topCategories.length} main categories</span>
+          <span className="text-sm text-muted-foreground block">Mapped across {topCategories.length} main categories</span>
         </div>
       </div>
 
@@ -351,7 +351,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
                 <div className="spend-opt-right">
                   <span className="spend-opt-amount">{formatCurrency(amount)}</span>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-xs px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/90 flex items-center gap-1">
+                    <span className="text-sm px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/90 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full" style={{ background: CARD_COLORS[bestItem.color].bg }} />
                       {bestItem.name}
                     </span>
@@ -360,12 +360,12 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
                     <span className="points-multiplier" style={{ color: tip.color }}>{tip.pointsMultiplier}</span>
                     <span className="points-label">≈ {estimatedPoints.toLocaleString("en-IN")} pts</span>
                   </div>
-                  <span className="spend-opt-perk font-medium text-[10px]" style={{ color: tip.color }}>
+                  <span className="spend-opt-perk font-medium text-sm" style={{ color: tip.color }}>
                     {hasIdealPerk ? `Unlocks: ${tip.perk}` : "Unlocks standard rewards"}
                   </span>
                 </div>
               ) : (
-                <div className="spend-opt-right text-muted-foreground/60 text-xs py-2">
+                <div className="spend-opt-right text-muted-foreground/60 text-sm py-2">
                   No cards matched.
                 </div>
               )}
@@ -376,7 +376,7 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
 
       <div className="spend-opt-footer bg-card/40 border border-slate-800">
         <TrendingUp className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-normal">
+        <p className="text-sm text-muted-foreground leading-normal">
           <strong>Maximize Rewards Tip:</strong> Routing these top spending categories correctly can earn you up to <strong>{Math.round(totalSpend * 3).toLocaleString("en-IN")}</strong> extra reward points every billing cycle. Keep utilization low by clearing the credit outstanding immediately using bank balances!
         </p>
       </div>
@@ -409,17 +409,10 @@ function WalletItemVisual({ item, selected, onClick, onDelete }: WalletItemVisua
           ) : (
             <div className="cc-chip" />
           )}
-          <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">
+          <span className="text-sm font-bold tracking-widest text-white/70 uppercase">
             {item.type}
           </span>
         </div>
-        <button
-          onClick={(e) => onDelete(item.id, e)}
-          className="p-1 rounded bg-black/20 hover:bg-red-500/20 hover:text-red-400 text-white/50 transition cursor-pointer"
-          title={`Delete ${item.name}`}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
       </div>
 
       <div className="cc-network">
@@ -517,7 +510,7 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
                   onClick={() => handle("type", "credit")}
                 >
                   <CreditCard className="h-8 w-8" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Credit Card</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Credit Card</span>
                 </button>
 
                 <button
@@ -527,12 +520,12 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
                   onClick={() => handle("type", "debit")}
                 >
                   <Landmark className="h-8 w-8" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Debit Card</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Debit Card</span>
                 </button>
               </div>
 
               <div className="pt-3">
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Integrating your credit and debit cards allows Finora's **Rewards Optimizer** to automatically recommend the absolute best card to swipe at various stores.
                 </p>
               </div>
@@ -717,13 +710,13 @@ function PaymentCalendarSection({
                       : "border-white/5 bg-card/40"
                   )}
                 >
-                  <span className="text-xs font-bold text-slate-400 self-start">{day}</span>
+                  <span className="text-sm font-bold text-slate-400 self-start">{day}</span>
                   
                   <div className="w-full space-y-1 mt-1">
                     {statementCards.map(c => (
                       <div 
                         key={c.id} 
-                        className="text-[9px] px-1.5 py-0.5 rounded text-white font-bold truncate text-center"
+                        className="text-xs px-1.5 py-0.5 rounded text-white font-bold truncate text-center"
                         style={{ background: CARD_COLORS[c.color].bg }}
                         title={`${c.name} Statement Date`}
                       >
@@ -736,7 +729,7 @@ function PaymentCalendarSection({
                         <div 
                           key={c.id} 
                           className={cn(
-                            "text-[9px] px-1.5 py-0.5 rounded font-bold truncate text-center border",
+                            "text-xs px-1.5 py-0.5 rounded font-bold truncate text-center border",
                             isPaid 
                               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
                               : "bg-red-500/10 border-red-500/30 text-red-400 animate-pulse"
@@ -754,7 +747,7 @@ function PaymentCalendarSection({
           </div>
           </div>
 
-          <div className="flex gap-4 text-xs font-semibold text-slate-400 justify-center flex-wrap pt-2">
+          <div className="flex gap-4 text-sm font-semibold text-slate-400 justify-center flex-wrap pt-2">
             <div className="flex items-center gap-1.5">
               <span className="w-3.5 h-3.5 rounded bg-amber-500" />
               <span>S = Statement Generation Date</span>
@@ -776,7 +769,7 @@ function PaymentCalendarSection({
           </CardHeader>
           <CardContent className="space-y-4">
             {creditCards.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-4 text-center">No credit cards added to calculate schedules.</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">No credit cards added to calculate schedules.</p>
             ) : (
               <div className="space-y-3">
                 {creditCards.map(card => {
@@ -792,12 +785,12 @@ function PaymentCalendarSection({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TAG_COLORS[card.color] || "var(--primary)" }} />
-                          <h4 className="text-xs font-bold text-white truncate">{card.name}</h4>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
+                          <h4 className="text-sm font-bold text-white truncate">{card.name}</h4>
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
                             •••• {card.number}
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                        <p className="text-sm text-slate-400 mt-1 leading-normal">
                           Statement: <strong className="text-white">{bDay}th</strong> • Due Date: <strong className="text-white">{dDay}th</strong>
                         </p>
                       </div>
@@ -805,12 +798,12 @@ function PaymentCalendarSection({
                       <div className="flex items-center gap-3">
                         {isPaid ? (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                            <span className="text-sm text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
                               <CheckCircle2 className="h-3.5 w-3.5" /> Paid
                             </span>
                             <button 
                               onClick={() => togglePayment(card.id)} 
-                              className="text-[10px] text-slate-500 hover:text-slate-300 underline font-semibold ml-1.5 cursor-pointer"
+                              className="text-sm text-slate-500 hover:text-slate-300 underline font-semibold ml-1.5 cursor-pointer"
                             >
                               Undo
                             </button>
@@ -818,7 +811,7 @@ function PaymentCalendarSection({
                         ) : (
                           <Button 
                             size="sm" 
-                            className="bg-primary hover:bg-primary text-white font-bold text-xs py-1 px-3 h-8 rounded-lg cursor-pointer"
+                            className="bg-primary hover:bg-primary text-white font-bold text-sm py-1 px-3 h-8 rounded-lg cursor-pointer"
                             onClick={() => togglePayment(card.id)}
                           >
                             Mark Paid
@@ -842,9 +835,9 @@ function PaymentCalendarSection({
           <CardContent className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-6 p-4 rounded-xl bg-card border border-white/5">
               <div className="flex flex-col items-center sm:items-start gap-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Limit</span>
+                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Total Limit</span>
                 <span className="text-xl font-bold text-white font-mono">{formatCurrency(totalLimit)}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Current Utilization</span>
+                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2">Current Utilization</span>
                 <span className="text-xl font-bold text-emerald-400 font-mono">
                   {formatCurrency(monthlyExpenses)} ({computedUtil}%)
                 </span>
@@ -864,7 +857,7 @@ function PaymentCalendarSection({
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span className="text-xl font-black text-white font-mono">{computedUtil}%</span>
-                  <span className={cn("text-[8px] font-black tracking-wider uppercase", computedUtil > 50 ? "text-primary" : computedUtil > 30 ? "text-amber-500" : "text-emerald-400")}>
+                  <span className={cn("text-[10px] font-black tracking-wider uppercase", computedUtil > 50 ? "text-primary" : computedUtil > 30 ? "text-amber-500" : "text-emerald-400")}>
                     {computedUtil > 50 ? "High Risk" : computedUtil > 30 ? "Moderate" : "Healthy"}
                   </span>
                 </div>
@@ -872,7 +865,7 @@ function PaymentCalendarSection({
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs font-semibold">
+              <div className="flex items-center justify-between text-sm font-semibold">
                 <span className="text-slate-400">Bureau Target Ratio</span>
                 <span className="text-emerald-400">&lt; 30%</span>
               </div>
@@ -882,7 +875,7 @@ function PaymentCalendarSection({
                   style={{ width: `${computedUtil}%` }}
                 />
               </div>
-              <p className="text-[10px] text-slate-400 leading-normal">
+              <p className="text-sm text-slate-400 leading-normal">
                 Keeping your revolving utilization below 30% acts as a critical signal to credit reporting bureaus, proving perfect repayment safety and boosting scores.
               </p>
             </div>
@@ -983,7 +976,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
         <div className="flex justify-between items-center mb-5">
           <div>
             <h3 className="text-base font-bold text-white">Add Card to Wallet</h3>
-            <p className="text-[11px] text-slate-400">Step {step} of 2 — {step === 1 ? "Select Card Type" : "Card Details"}</p>
+            <p className="text-sm text-slate-400">Step {step} of 2 — {step === 1 ? "Select Card Type" : "Card Details"}</p>
           </div>
           <button className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -997,7 +990,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
         <AnimatePresence mode="wait">
           {step === 1 ? (
             <motion.div key="mstep1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <label className="text-xs font-semibold text-white/70 block">What card type would you like to add?</label>
+              <label className="text-sm font-semibold text-white/70 block">What card type would you like to add?</label>
               
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -1007,7 +1000,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                   onClick={() => handle("type", "credit")}
                 >
                   <CreditCard className="h-6 w-6" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Credit Card</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Credit Card</span>
                 </button>
 
                 <button
@@ -1017,12 +1010,12 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                   onClick={() => handle("type", "debit")}
                 >
                   <Landmark className="h-6 w-6" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Debit Card</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Debit Card</span>
                 </button>
               </div>
 
               <div className="pt-2">
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-sm text-slate-400 leading-relaxed">
                   Integrating your credit and debit cards allows Finora's **Rewards Optimizer** to automatically recommend the absolute best card to swipe at various stores.
                 </p>
               </div>
@@ -1034,30 +1027,30 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
           ) : (
             <motion.div key="mstep2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3.5">
               <div className="form-group">
-                <label className="form-label text-[11px]">Card Name *</label>
-                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
+                <label className="form-label text-sm">Card Name *</label>
+                <Input placeholder="e.g. HDFC Regalia, SBI Platinum" value={form.name} onChange={e => handle("name", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
               </div>
 
               <div className="form-group">
-                <label className="form-label text-[11px]">Bank / Issuer *</label>
-                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
+                <label className="form-label text-sm">Bank / Issuer *</label>
+                <Input placeholder="e.g. HDFC, SBI" value={form.bank} onChange={e => handle("bank", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
               </div>
 
               <div className="form-group">
-                <label className="form-label text-[11px]">Last 4 Digits *</label>
+                <label className="form-label text-sm">Last 4 Digits *</label>
                 <Input 
                   placeholder="1234" 
                   maxLength={4} 
                   value={form.number} 
                   onChange={e => handle("number", e.target.value.replace(/\D/g, ""))} 
-                  className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500"
+                  className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500"
                 />
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label text-[11px]">Network</label>
-                  <select className="form-select bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 py-1.5 px-3 rounded-md" value={form.network} onChange={e => handle("network", e.target.value)}>
+                  <label className="form-label text-sm">Network</label>
+                  <select className="form-select bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 py-1.5 px-3 rounded-md" value={form.network} onChange={e => handle("network", e.target.value)}>
                     <option value="visa">Visa</option>
                     <option value="mastercard">Mastercard</option>
                     <option value="amex">Amex</option>
@@ -1066,7 +1059,7 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label text-[11px]">Card Color</label>
+                  <label className="form-label text-sm">Card Color</label>
                   <div className="color-picker">
                     {(Object.entries(CARD_COLORS) as [CardColor, { bg: string }][]).map(([c, t]) => (
                       <button
@@ -1085,25 +1078,25 @@ function MobileAddCardDrawer({ onClose, onAdd }: { onClose: () => void; onAdd: (
               {form.type === "credit" ? (
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label text-[11px]">Credit Limit (₹)</label>
-                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
+                    <label className="form-label text-sm">Credit Limit (₹)</label>
+                    <Input placeholder="500000" type="number" value={form.limit} onChange={e => handle("limit", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                   </div>
                   <div className="form-group">
-                    <label className="form-label text-[11px]">Billing Date (1–31)</label>
-                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
+                    <label className="form-label text-sm">Billing Date (1–31)</label>
+                    <Input placeholder="12" type="number" min={1} max={31} value={form.billingDate} onChange={e => handle("billingDate", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                   </div>
                 </div>
               ) : (
                 <div className="form-group">
-                  <label className="form-label text-[11px]">Linked Account Code / Name</label>
-                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
+                  <label className="form-label text-sm">Linked Account Code / Name</label>
+                  <Input placeholder="e.g. Savings Account xx89" value={form.linkedAccount} onChange={e => handle("linkedAccount", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
                 </div>
               )}
 
               <div className="form-group">
-                <label className="form-label text-[11px]">Card Perks / Benefits</label>
-                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-xs h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
-                <p className="form-hint text-[10px] text-slate-500">Comma-separated keywords.</p>
+                <label className="form-label text-sm">Card Perks / Benefits</label>
+                <Input placeholder="e.g. lounge, hotel, dining, fuel, shopping, travel, cashback" value={form.perks} onChange={e => handle("perks", e.target.value)} className="bg-slate-950/60 border-white/10 text-white text-sm h-9 focus:border-primary/50 focus:ring-0 placeholder:text-slate-500" />
+                <p className="form-hint text-sm text-slate-500">Comma-separated keywords.</p>
               </div>
 
               <div className="perk-chips">
@@ -1323,7 +1316,7 @@ function MobileCreditView({
           <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-1.5">
             <Wallet className="text-primary h-6 w-6" /> Digital Wallet
           </h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Track limits, credit score &amp; routing perks</p>
+          <p className="text-sm text-slate-400 mt-0.5">Track limits, credit score &amp; routing perks</p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
@@ -1338,7 +1331,7 @@ function MobileCreditView({
         <button
           onClick={() => setActiveSegment("wallet")}
           className={cn(
-            "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+            "flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
             activeSegment === "wallet"
               ? "bg-primary/20 text-red-400 border border-primary/30"
               : "text-slate-400 border border-transparent"
@@ -1350,7 +1343,7 @@ function MobileCreditView({
         <button
           onClick={() => setActiveSegment("score")}
           className={cn(
-            "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+            "flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
             activeSegment === "score"
               ? "bg-blue-600/20 text-blue-300 border border-blue-500/30"
               : "text-slate-400 border border-transparent"
@@ -1362,7 +1355,7 @@ function MobileCreditView({
         <button
           onClick={() => setActiveSegment("calendar")}
           className={cn(
-            "flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+            "flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
             activeSegment === "calendar"
               ? "bg-emerald-600/20 text-emerald-300 border border-emerald-500/30"
               : "text-slate-400 border border-transparent"
@@ -1407,11 +1400,11 @@ function MobileCreditView({
                 <nextBestSwipe.icon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Next Best Swipe</span>
-                <p className="text-[10px] text-white font-bold truncate mt-0.5">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Next Best Swipe</span>
+                <p className="text-sm text-white font-bold truncate mt-0.5">
                   Spend on <span className="text-primary">{nextBestSwipe.platform}</span> using <span style={{ color: TAG_COLORS[nextBestSwipe.color] || '#a78bfa' }}>{nextBestSwipe.cardName}</span>
                 </p>
-                <span className="text-[9px] text-emerald-400 font-semibold block mt-0.5">
+                <span className="text-xs text-emerald-400 font-semibold block mt-0.5">
                   ✓ Unlocks {nextBestSwipe.benefit}
                 </span>
               </div>
@@ -1427,14 +1420,18 @@ function MobileCreditView({
 
           {/* Header controls for Carousel */}
           <div className="flex justify-between items-center px-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Swipe Card Deck</span>
+            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Swipe Card Deck</span>
             
-            <div className="flex gap-1 p-0.5 bg-card border border-slate-800 rounded-lg">
+            <div className="flex gap-1 p-0.5 bg-card border border-slate-800 rounded-xl">
               {(["all", "credit", "debit"] as const).map(tab => (
                 <button
                   key={tab}
-                  onClick={() => setFilterTab(tab)}
-                  className={cn("px-2 py-0.5 text-[9px] font-bold rounded capitalize transition cursor-pointer",
+                  onClick={() => {
+                    setFilterTab(tab);
+                    const newFiltered = items.filter(i => tab === "all" || i.type === tab);
+                    setSelectedItem(newFiltered.length > 0 ? newFiltered[0] : null);
+                  }}
+                  className={cn("px-2 py-0.5 text-xs font-bold rounded-md capitalize transition cursor-pointer",
                     filterTab === tab ? "bg-primary text-white" : "text-slate-500"
                   )}
                 >
@@ -1449,9 +1446,9 @@ function MobileCreditView({
               <div className="empty-cards-icon h-12 w-12 rounded-xl">
                 <Wallet className="h-5 w-5 text-slate-400" />
               </div>
-              <p className="text-slate-300 font-semibold text-sm">Your card wallet is empty</p>
-              <p className="text-[10px] text-slate-400 max-w-[240px]">Add your cards to map points calculations and sync statement generating days.</p>
-              <Button variant="outline" size="sm" className="mt-2 text-xs gap-1.5 cursor-pointer">
+              <p className="text-slate-300 font-semibold text-base">Your card wallet is empty</p>
+              <p className="text-sm text-slate-400 max-w-[240px]">Add your cards to map points calculations and sync statement generating days.</p>
+              <Button variant="outline" size="sm" className="mt-2 text-sm gap-1.5 cursor-pointer">
                 <Plus className="h-3.5 w-3.5" /> Add Card
               </Button>
             </div>
@@ -1459,16 +1456,22 @@ function MobileCreditView({
             <>
               {/* Snap Horizontal Carousel */}
               <div className="mobile-snap-carousel no-scrollbar -mx-4">
-                {filteredItems.map(item => {
-                  const cardSelected = selectedItem?.id === item.id;
-                  const cardFlipped = cardSelected && isFlipped;
+                <AnimatePresence mode="popLayout">
+                  {filteredItems.map(item => {
+                    const cardSelected = selectedItem?.id === item.id;
+                    const cardFlipped = cardSelected && isFlipped;
 
-                  return (
-                    <div 
-                      key={item.id} 
-                      className={cn("mobile-card-wrapper", !cardSelected && "inactive")}
-                      style={{ perspective: 1000 }}
-                    >
+                    return (
+                      <motion.div 
+                        key={item.id} 
+                        layout
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8, width: 0, padding: 0, margin: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className={cn("mobile-card-wrapper", !cardSelected && "inactive")}
+                        style={{ perspective: 1000 }}
+                      >
                       <div 
                         className="relative w-full transition-transform duration-500"
                         style={{ 
@@ -1521,47 +1524,48 @@ function MobileCreditView({
                           
                           {/* Signature Area */}
                           <div className="flex justify-between items-center bg-muted/80 px-2 py-1.5 rounded-lg border border-white/5 mt-2">
-                            <span className="text-[7px] text-slate-400 font-mono tracking-widest uppercase">Authorized Signature</span>
-                            <span className="text-[9px] font-bold text-white font-mono bg-white/5 px-2 py-0.5 rounded">CVV: ***</span>
+                            <span className="text-[9px] text-slate-400 font-mono tracking-widest uppercase">Authorized Signature</span>
+                            <span className="text-xs font-bold text-white font-mono bg-white/5 px-2 py-0.5 rounded">CVV: ***</span>
                           </div>
 
                           <div className="flex-1 mt-3 space-y-1.5 text-left">
-                            <div className="flex justify-between items-center text-[9px] text-slate-300">
+                            <div className="flex justify-between items-center text-xs text-slate-300">
                               <span>Billing Cycle Closes:</span>
                               <span className="font-bold text-primary">{item.billingDate ? `${item.billingDate}th` : "N/A"}</span>
                             </div>
                             {item.type === "credit" ? (
-                              <div className="flex justify-between items-center text-[9px] text-slate-300">
+                              <div className="flex justify-between items-center text-xs text-slate-300">
                                 <span>Credit Limit:</span>
                                 <span className="font-bold text-emerald-400">{item.limit ? formatCurrency(Number(item.limit)) : "N/A"}</span>
                               </div>
                             ) : (
-                              <div className="flex justify-between items-center text-[9px] text-slate-300">
+                              <div className="flex justify-between items-center text-xs text-slate-300">
                                 <span>Linked Account:</span>
                                 <span className="font-bold text-emerald-400 truncate max-w-[100px]">{item.linkedAccount || "N/A"}</span>
                               </div>
                             )}
-                            <div className="flex justify-between items-center text-[9px] text-slate-300">
+                            <div className="flex justify-between items-center text-xs text-slate-300">
                               <span>Protocol:</span>
                               <span className="font-bold text-slate-400 uppercase">{item.network} Secure</span>
                             </div>
                           </div>
 
-                          <div className="text-[7px] text-slate-500 text-center font-mono mt-1 leading-none">
+                          <div className="text-[9px] text-slate-500 text-center font-mono mt-1 leading-none">
                             TAP CARD TO RETURN
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
+              </AnimatePresence>
                 
                 <div 
                   onClick={() => setShowModal(true)} 
                   className="mobile-add-card-slot"
                 >
                   <Plus className="h-5 w-5 text-slate-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Add Card</span>
+                  <span className="text-sm text-slate-400 uppercase tracking-wider font-extrabold">Add Card</span>
                 </div>
               </div>
 
@@ -1570,10 +1574,10 @@ function MobileCreditView({
                 <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-white/5">
                     <div>
-                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">{selectedItem.name} Perks</h4>
-                      <p className="text-[9px] text-slate-400 mt-0.5">{selectedItem.bank}</p>
+                      <h4 className="text-sm font-bold text-white uppercase tracking-wider">{selectedItem.name} Perks</h4>
+                      <p className="text-xs text-slate-400 mt-0.5">{selectedItem.bank}</p>
                     </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
                       •••• {selectedItem.number}
                     </span>
                   </div>
@@ -1586,13 +1590,13 @@ function MobileCreditView({
                         boxShadow: `0 4px 20px ${GLOW_COLORS[selectedItem.color] || 'rgba(0,0,0,0)'}`
                       }}
                     >
-                      <div className="flex justify-between items-center text-[10px]">
+                      <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-400 font-medium">Outstanding Balance</span>
                         <span className="text-white font-extrabold">{formatCurrency(cardOutstanding)}</span>
                       </div>
-                      <div className="flex justify-between items-center text-[10px]">
+                      <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-400 font-medium">Available Limit</span>
-                        <span className="text-emerald-400 font-bold">{formatCurrency(remainingLimit)} <span className="text-[9px] text-slate-500 font-normal">/ {formatCurrency(cardLimitNum)}</span></span>
+                        <span className="text-emerald-400 font-bold">{formatCurrency(remainingLimit)} <span className="text-xs text-slate-500 font-normal">/ {formatCurrency(cardLimitNum)}</span></span>
                       </div>
 
                       <div className="space-y-1">
@@ -1605,7 +1609,7 @@ function MobileCreditView({
                             style={{ width: `${cardUtilPercent}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-[8px] font-bold text-slate-500">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-500">
                           <span>{cardUtilPercent}% Utilized</span>
                           <span className={cn(cardUtilPercent > 50 ? "text-red-400" : cardUtilPercent > 30 ? "text-amber-400" : "text-emerald-400")}>
                             {cardUtilPercent > 50 ? "High Utilization Warning" : cardUtilPercent > 30 ? "Approaching Limit" : "Healthy Range"}
@@ -1617,9 +1621,9 @@ function MobileCreditView({
 
                   {selectedItem.type === "credit" && (
                     <div className="space-y-2">
-                      <h5 className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Recent Swipe Activity</h5>
+                      <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Swipe Activity</h5>
                       {cardTransactions.length === 0 ? (
-                        <p className="text-[9px] text-slate-500 italic py-3 text-center bg-slate-950/30 rounded-xl border border-white/5">
+                        <p className="text-xs text-slate-500 italic py-3 text-center bg-slate-950/30 rounded-xl border border-white/5">
                           No recent swipes logged. Trigger a swipe simulation to check real-time tracking!
                         </p>
                       ) : (
@@ -1627,14 +1631,14 @@ function MobileCreditView({
                           {cardTransactions.slice(0, 4).map((tx) => (
                             <div key={tx.id} className="flex justify-between items-center p-2 rounded-xl bg-slate-950/40 border border-white/5 hover:border-white/10 transition">
                               <div className="min-w-0">
-                                <span className="text-[10px] font-bold text-white block truncate">
+                                <span className="text-sm font-bold text-white block truncate">
                                   {tx.name.replace(/\s*\([^)]+\)$/, "")}
                                 </span>
-                                <span className="text-[8px] text-slate-500 block">
+                                <span className="text-[10px] text-slate-500 block">
                                   {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               </div>
-                              <span className="text-[10px] font-extrabold text-red-400 shrink-0 ml-2">
+                              <span className="text-sm font-extrabold text-red-400 shrink-0 ml-2">
                                 -{formatCurrency(tx.amount)}
                               </span>
                             </div>
@@ -1655,13 +1659,13 @@ function MobileCreditView({
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center">
-                              <h5 className="text-[11px] font-bold text-white">{b.category}</h5>
-                              <span className="text-[8px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wider" style={{ background: `${color}15`, color }}>
+                              <h5 className="text-sm font-bold text-white">{b.category}</h5>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wider" style={{ background: `${color}15`, color }}>
                                 {b.tag}
                               </span>
                             </div>
-                            <p className="text-[9px] text-slate-400 mt-0.5">{b.description}</p>
-                            <div className="flex items-center gap-1 mt-1 text-[9px] font-bold" style={{ color }}>
+                            <p className="text-xs text-slate-400 mt-0.5">{b.description}</p>
+                            <div className="flex items-center gap-1 mt-1 text-xs font-bold" style={{ color }}>
                               <ChevronRight className="h-3 w-3 shrink-0" />
                               <span>{b.benefit}</span>
                             </div>
@@ -1674,7 +1678,7 @@ function MobileCreditView({
                   {selectedItem.type === "credit" && selectedItem.billingDate && (
                     <div className="p-3 rounded-xl border border-blue-500/10 bg-blue-500/5 flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
-                      <p className="text-[10px] text-slate-400 leading-normal">
+                      <p className="text-sm text-slate-400 leading-normal">
                         Billing generated on the <strong>{selectedItem.billingDate}th</strong>. Clear outstanding dues 3 days before this date to lower dynamic reported utilization.
                       </p>
                     </div>
@@ -1683,7 +1687,7 @@ function MobileCreditView({
                   {selectedItem.type === "debit" && selectedItem.linkedAccount && (
                     <div className="p-3 rounded-xl border border-teal-500/10 bg-teal-500/5 flex items-start gap-2.5">
                       <CheckCircle2 className="h-4 w-4 text-teal-400 shrink-0 mt-0.5" />
-                      <p className="text-[10px] text-slate-400 leading-normal">
+                      <p className="text-sm text-slate-400 leading-normal">
                         Linked to <strong>{selectedItem.linkedAccount}</strong> account. Directly drafts from balances, ensuring zero interest charges.
                       </p>
                     </div>
@@ -1696,9 +1700,9 @@ function MobileCreditView({
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1.5">
                     <BarChart3 className="h-4 w-4 text-emerald-400" />
-                    <span className="text-xs font-bold text-white">Spend Routing Optimizer</span>
+                    <span className="text-sm font-bold text-white">Spend Routing Optimizer</span>
                   </div>
-                  <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-lg">{efficiencyScore}% Optimal</span>
+                  <span className="text-sm font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-lg">{efficiencyScore}% Optimal</span>
                 </div>
 
                 <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden border border-white/5">
@@ -1708,7 +1712,7 @@ function MobileCreditView({
                 {topCategories.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-6 text-center gap-2 border border-dashed border-white/10 rounded-xl bg-slate-950/20">
                     <BarChart3 className="h-6 w-6 text-slate-500 opacity-60" />
-                    <p className="text-[10px] text-slate-400 max-w-[200px] leading-normal">Add transaction expenses in the Dashboard or Transactions section to unlock smart routing tips.</p>
+                    <p className="text-sm text-slate-400 max-w-[200px] leading-normal">Add transaction expenses in the Dashboard or Transactions section to unlock smart routing tips.</p>
                   </div>
                 ) : (
                   <div className="space-y-3 pt-1">
@@ -1730,10 +1734,10 @@ function MobileCreditView({
                                 <Icon className="h-3.5 w-3.5" />
                               </div>
                               <div className="min-w-0">
-                                <span className="text-[11px] font-bold text-white block truncate">{tip.label}</span>
+                                <span className="text-sm font-bold text-white block truncate">{tip.label}</span>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                   {tip.platforms.slice(0, 2).map(p => (
-                                    <span key={p} className="text-[8px] bg-white/5 text-slate-400 px-1 py-0.2 rounded border border-white/5">{p}</span>
+                                    <span key={p} className="text-[10px] bg-white/5 text-slate-400 px-1 py-0.2 rounded border border-white/5">{p}</span>
                                   ))}
                                 </div>
                               </div>
@@ -1741,8 +1745,8 @@ function MobileCreditView({
 
                             {/* Right Side: Spend Amount */}
                             <div className="text-right shrink-0">
-                              <span className="text-[11px] font-extrabold text-white block">{formatCurrency(amount)}</span>
-                              <span className="text-[8px] text-slate-500 block">Monthly Spend</span>
+                              <span className="text-sm font-extrabold text-white block">{formatCurrency(amount)}</span>
+                              <span className="text-[10px] text-slate-500 block">Monthly Spend</span>
                             </div>
                           </div>
 
@@ -1751,20 +1755,20 @@ function MobileCreditView({
                             {bestItem ? (
                               <>
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Best Card:</span>
-                                  <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white font-bold inline-flex items-center gap-1 truncate max-w-[140px]">
+                                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Best Card:</span>
+                                  <span className="text-xs px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white font-bold inline-flex items-center gap-1 truncate max-w-[140px]">
                                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: CARD_COLORS[bestItem.color].bg }} />
                                     <span className="truncate">{bestItem.name}</span>
                                   </span>
                                 </div>
                                 <div className="text-right shrink-0">
-                                  <span className="text-[9px] font-black flex items-center gap-0.5 justify-end" style={{ color: tip.color }}>
+                                  <span className="text-xs font-black flex items-center gap-0.5 justify-end" style={{ color: tip.color }}>
                                     {tip.pointsMultiplier} multiplier
                                   </span>
                                 </div>
                               </>
                             ) : (
-                              <span className="text-[9px] text-slate-500">No cards matched</span>
+                              <span className="text-xs text-slate-500">No cards matched</span>
                             )}
                           </div>
                         </div>
@@ -1783,7 +1787,7 @@ function MobileCreditView({
         <div className="space-y-6 animate-fadeIn">
           {/* Radial score card */}
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Bureau Rating</span>
+            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Active Bureau Rating</span>
             
             <div className="score-circle-container py-4 flex flex-col items-center justify-center relative h-36 w-36">
               <svg width="140" height="140" viewBox="0 0 160 160" className="h-32 w-32 transform -rotate-90 overflow-visible">
@@ -1800,17 +1804,17 @@ function MobileCreditView({
               </svg>
               <div className="absolute flex flex-col items-center justify-center">
                 <span className="text-3xl font-extrabold text-white tracking-tight">{scoreNum}</span>
-                <span className={cn("text-[9px] font-bold mt-0.5 uppercase tracking-wider", scoreColor)}>{scoreCategory}</span>
+                <span className={cn("text-xs font-bold mt-0.5 uppercase tracking-wider", scoreColor)}>{scoreCategory}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 w-full mt-2 border-t border-white/5 pt-4">
               <div className="text-center">
-                <span className="text-[9px] text-slate-400 block uppercase tracking-wider font-semibold">Bureau Target</span>
+                <span className="text-xs text-slate-400 block uppercase tracking-wider font-semibold">Bureau Target</span>
                 <span className="text-base font-bold text-emerald-400">&lt; 30%</span>
               </div>
               <div className="text-center border-l border-white/5">
-                <span className="text-[9px] text-slate-400 block uppercase tracking-wider font-semibold">Utilization</span>
+                <span className="text-xs text-slate-400 block uppercase tracking-wider font-semibold">Utilization</span>
                 <span className="text-base font-bold text-white">{computedUtil}%</span>
               </div>
             </div>
@@ -1819,13 +1823,13 @@ function MobileCreditView({
           {/* Profile Configuration Card */}
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-white/5">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Configure Credit Profile</h4>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Configure Credit Profile</h4>
               <Smartphone className="h-3.5 w-3.5 text-primary" />
             </div>
 
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Enter Current Credit Score (300–850)</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Enter Current Credit Score (300–850)</label>
                 <Input 
                   type="number" 
                   placeholder="720" 
@@ -1836,13 +1840,13 @@ function MobileCreditView({
                   }}
                   min={300} 
                   max={850}
-                  className="bg-card border-white/10 text-white text-xs h-9 focus:border-primary/50"
+                  className="bg-card border-white/10 text-white text-sm h-9 focus:border-primary/50"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">
-                  Revolving Utilization (%) {isDynamicUtil && <span className="text-[9px] text-emerald-400 font-bold">(Auto-Calculated)</span>}
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                  Revolving Utilization (%) {isDynamicUtil && <span className="text-xs text-emerald-400 font-bold">(Auto-Calculated)</span>}
                 </label>
                 <Input 
                   type="number" 
@@ -1854,12 +1858,12 @@ function MobileCreditView({
                   }}
                   disabled={isDynamicUtil}
                   className={cn(
-                    "text-xs h-9 bg-card border-white/10 text-white focus:border-primary/50",
+                    "text-sm h-9 bg-card border-white/10 text-white focus:border-primary/50",
                     isDynamicUtil && "border-emerald-500/20 text-emerald-400 font-bold opacity-80 cursor-not-allowed bg-slate-950/40"
                   )}
                 />
                 {isDynamicUtil && (
-                  <span className="text-[8px] text-slate-500 block leading-normal mt-1">
+                  <span className="text-[10px] text-slate-500 block leading-normal mt-1">
                     Auto-calculated from total cards limit (₹{totalLimit.toLocaleString("en-IN")}) and active outstanding swipes (₹{creditCardOutstanding.toLocaleString("en-IN")}).
                   </span>
                 )}
@@ -1870,16 +1874,16 @@ function MobileCreditView({
           {/* Simulator block */}
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Score Simulator</h4>
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/15 text-red-400 font-extrabold uppercase border border-primary/25">Simulate</span>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Score Simulator</h4>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-red-400 font-extrabold uppercase border border-primary/25">Simulate</span>
             </div>
             
-            <p className="text-[10px] text-slate-400 leading-normal">
+            <p className="text-sm text-slate-400 leading-normal">
               Revolving utilization ratio signals reliability. Lowering this below 30% acts as a major catalyst for credit growth.
             </p>
 
             <div className="space-y-2 pt-1">
-              <div className="flex justify-between text-[10px] font-bold">
+              <div className="flex justify-between text-sm font-bold">
                 <span className="text-slate-400">Target Ratio</span>
                 <span className="text-primary">{simulationActive ? "10%" : `${computedUtil}%`}</span>
               </div>
@@ -1904,17 +1908,17 @@ function MobileCreditView({
               <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 space-y-3 animate-in fade-in zoom-in duration-200">
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-[9px] text-slate-400 block uppercase font-semibold">Projected Boost</span>
+                    <span className="text-xs text-slate-400 block uppercase font-semibold">Projected Boost</span>
                     <span className="text-lg font-bold text-emerald-400">+{estimatedImprovement} Points</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[9px] text-slate-400 block uppercase font-semibold">New Estimated Score</span>
+                    <span className="text-xs text-slate-400 block uppercase font-semibold">New Estimated Score</span>
                     <span className="text-lg font-bold text-white">{newEstimatedScore}</span>
                   </div>
                 </div>
                 <div className="pt-2.5 border-t border-white/5">
-                  <span className="text-[9px] font-bold text-white uppercase block">Action Plan:</span>
-                  <p className="text-[10px] text-slate-400 leading-relaxed mt-0.5">
+                  <span className="text-xs font-bold text-white uppercase block">Action Plan:</span>
+                  <p className="text-sm text-slate-400 leading-relaxed mt-0.5">
                     Clear card outstanding balances 3 days before statements generate to report minimal balance usage to bureaus.
                   </p>
                 </div>
@@ -1923,7 +1927,7 @@ function MobileCreditView({
               <Button 
                 onClick={() => setSimulationActive(true)}
                 variant="outline" 
-                className="w-full text-xs h-9 font-bold hover:bg-muted transition cursor-pointer"
+                className="w-full text-sm h-9 font-bold hover:bg-muted transition cursor-pointer"
               >
                 Simulate 10% Utilization
               </Button>
@@ -1934,12 +1938,12 @@ function MobileCreditView({
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4 animate-fadeIn">
             <div className="flex items-center gap-2 pb-2 border-b border-white/5">
               <Sparkles className="h-4 w-4 text-primary shrink-0" />
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Actionable Credit Insights</h4>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">Actionable Credit Insights</h4>
             </div>
 
             <ul className="space-y-3.5">
               {generatedInsights.map((insight, idx) => (
-                <li key={idx} className="text-[10px] text-slate-400 flex items-start gap-2.5 leading-normal">
+                <li key={idx} className="text-sm text-slate-400 flex items-start gap-2.5 leading-normal">
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
                   <span>{insight}</span>
                 </li>
@@ -1955,9 +1959,9 @@ function MobileCreditView({
           {/* Credit Utilization card */}
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 flex justify-between items-center gap-4">
             <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Total Cards Limit</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Total Cards Limit</span>
               <span className="text-lg font-bold text-white block mt-0.5">{formatCurrency(totalLimit)}</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mt-2">Dynamic Utilization</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mt-2">Dynamic Utilization</span>
               <span className="text-lg font-bold text-emerald-400 block mt-0.5">{formatCurrency(creditCardOutstanding)} ({computedUtil}%)</span>
             </div>
 
@@ -1974,8 +1978,8 @@ function MobileCreditView({
                 />
               </svg>
               <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-sm font-black text-white">{computedUtil}%</span>
-                <span className={cn("text-[7px] font-bold uppercase tracking-wider", computedUtil > 30 ? "text-red-400" : "text-emerald-400")}>
+                <span className="text-base font-black text-white">{computedUtil}%</span>
+                <span className={cn("text-[9px] font-bold uppercase tracking-wider", computedUtil > 30 ? "text-red-400" : "text-emerald-400")}>
                   {computedUtil > 30 ? "High Risk" : "Healthy"}
                 </span>
               </div>
@@ -1984,12 +1988,12 @@ function MobileCreditView({
 
           {/* Interactive timeline instead of wide calendar grid */}
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
-            <h3 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
               <Coins className="h-4 w-4 text-emerald-400" /> Upcoming Card Schedules
             </h3>
 
             {daysWithEvents.length === 0 ? (
-              <p className="text-[10px] text-slate-400 text-center py-4">No credit cards added to track statements.</p>
+              <p className="text-sm text-slate-400 text-center py-4">No credit cards added to track statements.</p>
             ) : (
               <div className="space-y-1">
                 {daysWithEvents.map((evt: any, idx: number) => {
@@ -2008,8 +2012,8 @@ function MobileCreditView({
                       
                       <div className="mobile-timeline-content">
                         <div>
-                          <h4 className="text-[11px] font-bold text-white leading-tight">{evt.card.name}</h4>
-                          <p className="text-[9px] text-slate-400 mt-0.5">
+                          <h4 className="text-sm font-bold text-white leading-tight">{evt.card.name}</h4>
+                          <p className="text-xs text-slate-400 mt-0.5">
                             {isStatement ? "Statement generation date" : "Payment due date"} on the <strong className="text-white">{evt.day}th</strong>
                           </p>
                         </div>
@@ -2017,14 +2021,14 @@ function MobileCreditView({
                         {!isStatement && (
                           <div className="flex items-center">
                             {loggedPayments[evt.card.id] ? (
-                              <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg font-bold flex items-center gap-0.5">
+                              <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg font-bold flex items-center gap-0.5">
                                 <CheckCircle2 className="h-3 w-3" /> Paid
                               </span>
                             ) : (
                               <Button 
                                 size="sm" 
                                 onClick={() => togglePayment(evt.card.id)}
-                                className="bg-primary hover:bg-primary text-[9px] px-2 py-0.5 h-6 rounded-lg text-white font-extrabold cursor-pointer"
+                                className="bg-primary hover:bg-primary text-xs px-2 py-0.5 h-6 rounded-lg text-white font-extrabold cursor-pointer"
                               >
                                 Mark Paid
                               </Button>
@@ -2113,7 +2117,7 @@ function DesktopCreditView({
         <button
           onClick={() => setActiveSegment("wallet")}
           className={cn(
-            "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
+            "flex-1 sm:flex-initial px-5 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
             activeSegment === "wallet"
               ? "bg-primary/20 border border-primary/30 text-red-400 font-semibold shadow-md"
               : "text-slate-400 hover:text-slate-200 border border-transparent"
@@ -2125,7 +2129,7 @@ function DesktopCreditView({
         <button
           onClick={() => setActiveSegment("score")}
           className={cn(
-            "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
+            "flex-1 sm:flex-initial px-5 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
             activeSegment === "score"
               ? "bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold shadow-md"
               : "text-slate-400 hover:text-slate-200 border border-transparent"
@@ -2137,7 +2141,7 @@ function DesktopCreditView({
         <button
           onClick={() => setActiveSegment("calendar")}
           className={cn(
-            "flex-1 sm:flex-initial px-5 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
+            "flex-1 sm:flex-initial px-5 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 relative cursor-pointer",
             activeSegment === "calendar"
               ? "bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-semibold shadow-md"
               : "text-slate-400 hover:text-slate-200 border border-transparent"
@@ -2158,14 +2162,18 @@ function DesktopCreditView({
                 <Wallet className="h-5 w-5 text-primary" /> Wallet Cards
               </h3>
               
-              <div className="flex p-1 bg-card border border-slate-800 rounded-lg">
+              <div className="flex p-1 bg-card border border-slate-800 rounded-xl">
                 {(["all", "credit", "debit"] as const).map(tab => (
                   <button
                     key={tab}
-                    className={cn("px-3 py-1 text-xs font-semibold rounded-md capitalize transition cursor-pointer",
+                    className={cn("px-3 py-1 text-sm font-semibold rounded-md capitalize transition cursor-pointer",
                       filterTab === tab ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
                     )}
-                    onClick={() => setFilterTab(tab)}
+                    onClick={() => {
+                      setFilterTab(tab);
+                      const newFiltered = items.filter(i => tab === "all" || i.type === tab);
+                      setSelectedItem(newFiltered.length > 0 ? newFiltered[0] : null);
+                    }}
                   >
                     {tab === "all" ? "All Cards" : `${tab} Cards`}
                   </button>
@@ -2179,22 +2187,32 @@ function DesktopCreditView({
                   <Wallet className="h-8 w-8 text-muted-foreground/50" />
                 </div>
                 <p className="text-muted-foreground font-medium">Your card wallet is empty</p>
-                <p className="text-xs text-muted-foreground/70">Add your Credit Cards and Debit Cards to start optimizing transaction rewards.</p>
+                <p className="text-sm text-muted-foreground/70">Add your Credit Cards and Debit Cards to start optimizing transaction rewards.</p>
                 <Button variant="outline" size="sm" className="mt-3 gap-1.5 cursor-pointer">
                   <Plus className="h-3.5 w-3.5" /> Set Up Wallet
                 </Button>
               </div>
             ) : (
               <div className="cards-grid">
-                {filteredItems.map(item => (
-                  <WalletItemVisual 
-                    key={item.id} 
-                    item={item} 
-                    selected={selectedItem?.id === item.id} 
-                    onClick={() => setSelectedItem(item)}
-                    onDelete={deleteWalletItem}
-                  />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {filteredItems.map(item => (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                    >
+                      <WalletItemVisual 
+                        item={item} 
+                        selected={selectedItem?.id === item.id} 
+                        onClick={() => setSelectedItem(item)}
+                        onDelete={deleteWalletItem}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
                 
                 <motion.div 
                   whileHover={{ scale: 1.02 }} 
@@ -2203,7 +2221,7 @@ function DesktopCreditView({
                   className="add-card-slot cursor-pointer"
                 >
                   <Plus className="h-6 w-6 text-muted-foreground/50" />
-                  <span className="text-xs text-muted-foreground/60 mt-1 font-semibold">Add Card</span>
+                  <span className="text-sm text-muted-foreground/60 mt-1 font-semibold">Add Card</span>
                 </motion.div>
               </div>
             )}
@@ -2276,8 +2294,8 @@ function DesktopCreditView({
                           <div className="mt-4 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3">
                             <AlertCircle className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
                             <div>
-                              <h5 className="text-xs font-bold text-white uppercase tracking-wider">Statement Schedule</h5>
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <h5 className="text-sm font-bold text-white uppercase tracking-wider">Statement Schedule</h5>
+                              <p className="text-sm text-muted-foreground mt-1">
                                 This card's billing cycle closes on the <strong>{selectedItem.billingDate}th</strong> of the month. Clearing outstanding balances 3 days before safeguards utilization records sent to bureaus.
                               </p>
                             </div>
@@ -2288,8 +2306,8 @@ function DesktopCreditView({
                           <div className="mt-4 p-4 rounded-xl border border-teal-500/20 bg-teal-500/5 flex items-start gap-3">
                             <CheckCircle2 className="h-5 w-5 text-teal-400 shrink-0 mt-0.5" />
                             <div>
-                              <h5 className="text-xs font-bold text-white uppercase tracking-wider">Debit Source Status</h5>
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <h5 className="text-sm font-bold text-white uppercase tracking-wider">Debit Source Status</h5>
+                              <p className="text-sm text-muted-foreground mt-1">
                                 Linked to account <strong>{selectedItem.linkedAccount}</strong>. Transactions using this card will draw directly from liquid capital, ensuring zero interest charges and keeping utilization ratios clean.
                               </p>
                             </div>
@@ -2312,7 +2330,7 @@ function DesktopCreditView({
                     <BarChart3 className="h-5 w-5 text-emerald-400" />
                     <CardTitle>Card Efficiency &amp; Max Rewards Analyzer</CardTitle>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold uppercase tracking-wider">
+                  <span className="text-sm px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold uppercase tracking-wider">
                     Dynamic Transaction Audit
                   </span>
                 </div>
@@ -2329,7 +2347,7 @@ function DesktopCreditView({
           {items.length > 0 && !selectedItem && (
             <div className="select-card-prompt text-muted-foreground">
               <Wallet className="h-5 w-5 opacity-40" />
-              <p className="text-sm font-medium">Select a card above to view detailed perks, statement dates, and linked accounts.</p>
+              <p className="text-base font-medium">Select a card above to view detailed perks, statement dates, and linked accounts.</p>
             </div>
           )}
         </div>
@@ -2346,7 +2364,7 @@ function DesktopCreditView({
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Credit Score (300–850)</label>
+                <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Credit Score (300–850)</label>
                 <Input type="number" placeholder="720" value={currentScore}
                   onChange={e => { setCurrentScore(e.target.value); setSimulationActive(false); }}
                   min={300} max={850}
@@ -2354,8 +2372,8 @@ function DesktopCreditView({
               </div>
               
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Credit Utilization (%) {isDynamicUtil && <span className="text-[10px] text-emerald-400 font-semibold">(Calculated)</span>}
+                <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Credit Utilization (%) {isDynamicUtil && <span className="text-sm text-emerald-400 font-semibold">(Calculated)</span>}
                 </label>
                 <Input type="number" placeholder="30" value={computedUtil.toString()}
                   onChange={e => { setUtilization(e.target.value); setSimulationActive(false); }}
@@ -2363,7 +2381,7 @@ function DesktopCreditView({
                   className={cn(isDynamicUtil && "bg-card border-emerald-500/30 text-emerald-400 font-bold opacity-90 cursor-not-allowed")}
                 />
                 {isDynamicUtil && (
-                  <span className="text-[10px] text-muted-foreground block leading-tight">
+                  <span className="text-sm text-muted-foreground block leading-tight">
                     Auto-calculated from total cards limit (₹{totalLimit.toLocaleString("en-IN")}) and monthly expenses (₹{monthlyExpenses.toLocaleString("en-IN")}).
                   </span>
                 )}
@@ -2384,7 +2402,7 @@ function DesktopCreditView({
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span className="text-4xl font-extrabold text-white tracking-tight">{scoreNum}</span>
-                  <span className={cn("text-[10px] font-bold mt-1 uppercase tracking-widest", scoreColor)}>{scoreCategory}</span>
+                  <span className={cn("text-sm font-bold mt-1 uppercase tracking-widest", scoreColor)}>{scoreCategory}</span>
                 </div>
               </div>
             </CardContent>
@@ -2403,16 +2421,16 @@ function DesktopCreditView({
                 <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive flex gap-3">
                   <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="text-sm font-bold">High Card Utilization Detected</h4>
-                    <p className="text-xs mt-1">Your utilization of {computedUtil}% is above the recommended 30%. This flags credit bureaus of potential cash flow constraints and lowers your score.</p>
+                    <h4 className="text-base font-bold">High Card Utilization Detected</h4>
+                    <p className="text-sm mt-1">Your utilization of {computedUtil}% is above the recommended 30%. This flags credit bureaus of potential cash flow constraints and lowers your score.</p>
                   </div>
                 </div>
               ) : (
                 <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 flex gap-3">
                   <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="text-sm font-bold">Healthy Card Utilization</h4>
-                    <p className="text-xs mt-1">Your card utilization is at {computedUtil}%. This pristine tier signals perfect cash flow stability to bureaus.</p>
+                    <h4 className="text-base font-bold">Healthy Card Utilization</h4>
+                    <p className="text-sm mt-1">Your card utilization is at {computedUtil}%. This pristine tier signals perfect cash flow stability to bureaus.</p>
                   </div>
                 </div>
               )}
@@ -2426,7 +2444,7 @@ function DesktopCreditView({
                   <h4 className="font-semibold text-lg text-primary text-center">Simulated Impact Summary</h4>
                   <div className="grid grid-cols-3 gap-4 text-center items-center">
                     <div>
-                      <span className="text-xs text-muted-foreground block">Current Score</span>
+                      <span className="text-sm text-muted-foreground block">Current Score</span>
                       <span className="text-2xl font-bold">{scoreNum}</span>
                     </div>
                     <div>
@@ -2434,19 +2452,19 @@ function DesktopCreditView({
                       <hr className="border-t-2 border-primary/50 my-1 mx-4" />
                     </div>
                     <div>
-                      <span className="text-xs text-muted-foreground block">Simulated Score</span>
+                      <span className="text-sm text-muted-foreground block">Simulated Score</span>
                       <span className="text-3xl font-extrabold text-emerald-500">{newEstimatedScore}</span>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t border-border space-y-3">
-                    <h5 className="text-sm font-semibold flex items-center gap-2 text-white">
+                    <h5 className="text-base font-semibold flex items-center gap-2 text-white">
                       <Sparkles className="h-4 w-4 text-primary" /> 
                       Actionable Improvement Plan (Based on your financial data):
                     </h5>
                     <ul className="space-y-2.5">
                       {generatedInsights.map((insight, idx) => (
-                        <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2.5">
+                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2.5">
                           <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
                           <span>{insight}</span>
                         </li>
@@ -2454,7 +2472,7 @@ function DesktopCreditView({
                     </ul>
                   </div>
 
-                  <p className="text-[10px] text-center text-muted-foreground/60 pt-2 pb-1 italic">
+                  <p className="text-sm text-center text-muted-foreground/60 pt-2 pb-1 italic">
                     *This simulator uses standard models. Actual score outputs are determined by credit bureaus based on consolidated files.
                   </p>
                 </div>

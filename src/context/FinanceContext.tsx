@@ -1,7 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
+import {
+  categorizeTransaction,
+  applyCategorizationResult,
+  normalizeMerchant,
+  extractUserCategories,
+  type MerchantMapping,
+  type CategorizeResult,
+} from "@/lib/categorizationEngine";
 
 export type Transaction = {
   id: string;
@@ -10,6 +18,8 @@ export type Transaction = {
   category: string;
   type: "income" | "expense";
   name: string;
+  needs_review?: boolean;
+  suggested_category?: string | null;
 };
 
 export type Goal = {
@@ -55,6 +65,13 @@ type FinanceContextType = {
   monthlyExpenses: number;
   savingsRate: number;
   healthScore: number;
+
+  // ── Categorization Engine ──
+  merchantMappings: MerchantMapping[];
+  needsReviewCount: number;
+  needsReviewTransactions: Transaction[];
+  assignCategory: (txId: string, category: string, merchantName: string) => Promise<void>;
+  reprocessUncategorized: () => Promise<void>;
 };
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -68,7 +85,44 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [merchantMappings, setMerchantMappings] = useState<MerchantMapping[]>([]);
   const supabase = stableSupabase;
+
+  // ── Helper: Run categorization engine on a single transaction ──
+  const categorizeSingle = useCallback((
+    tx: Omit<Transaction, "id">,
+    mappings: MerchantMapping[],
+  ): Omit<Transaction, "id"> => {
+    // If the transaction already has a meaningful category, respect it
+    if (tx.category && tx.category !== "Uncategorized" && tx.category !== "Other") {
+      return { ...tx, needs_review: false, suggested_category: null };
+    }
+
+    const userCategories = extractUserCategories();
+    const result = categorizeTransaction(tx.name, tx.type, mappings, userCategories);
+    const applied = applyCategorizationResult(result, tx.category);
+
+    return {
+      ...tx,
+      category: applied.category,
+      needs_review: applied.needs_review,
+      suggested_category: applied.suggested_category,
+    };
+  }, []);
+
+  // ── Migrate legacy "name || category" format ──
+  const migrateLegacyTransaction = useCallback((tx: any): any => {
+    if (tx.name && tx.name.includes(" || ")) {
+      const parts = tx.name.split(" || ");
+      return {
+        ...tx,
+        name: parts[0].trim(),
+        // Keep category as-is if it's already been assigned; otherwise use the encoded one
+        category: tx.category === "Uncategorized" ? parts[1]?.trim() || tx.category : tx.category,
+      };
+    }
+    return tx;
+  }, []);
 
   // Load User Authentication & Initial Data
   useEffect(() => {
@@ -81,33 +135,84 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         }
         setUserId(user.id);
 
-        // Fetch all user active data in parallel
-        const [txRes, goalsRes, invRes] = await Promise.all([
+        // Fetch all user data in parallel (including merchant mappings)
+        const [txRes, goalsRes, invRes, mappingsRes] = await Promise.all([
           supabase.from("transactions").select("*").order("date", { ascending: false }),
           supabase.from("goals").select("*").order("created_at", { ascending: false }),
           supabase.from("investments").select("*").order("created_at", { ascending: false }),
+          supabase.from("merchant_mappings").select("*").order("updated_at", { ascending: false }),
         ]);
 
-        let loadedTxs = txRes.data || [];
-        const savedBudgets = localStorage.getItem("finora_budgets");
-        if (savedBudgets && loadedTxs.length > 0) {
-          const txsToAssign = loadedTxs.filter((t: any) => t.category === "Uncategorized" && t.name.includes(" || "));
-          if (txsToAssign.length > 0) {
-            console.log(`[FINORA] Auto-assigning ${txsToAssign.length} pending transactions on initial load.`);
+        let loadedMappings: MerchantMapping[] = mappingsRes.data || [];
+        setMerchantMappings(loadedMappings);
+
+        let loadedTxs: Transaction[] = (txRes.data || []).map(migrateLegacyTransaction);
+
+        // Auto-migrate any legacy "name || category" transactions in the database
+        const legacyTxs = (txRes.data || []).filter((t: any) => t.name?.includes(" || "));
+        if (legacyTxs.length > 0) {
+          console.log(`[FINORA] Migrating ${legacyTxs.length} legacy "||" transactions.`);
+          await Promise.all(
+            legacyTxs.map(async (t: any) => {
+              const parts = t.name.split(" || ");
+              const cleanName = parts[0].trim();
+              const designatedCategory = parts[1]?.trim() || t.category;
+              await supabase
+                .from("transactions")
+                .update({ name: cleanName, category: designatedCategory })
+                .eq("id", t.id);
+            })
+          );
+        }
+
+        // Run categorization engine on uncategorized transactions
+        const userCategories = extractUserCategories();
+        const uncategorized = loadedTxs.filter(
+          t => t.category === "Uncategorized" || t.category === "Other"
+        );
+
+        if (uncategorized.length > 0 && (loadedMappings.length > 0 || userCategories.length > 0)) {
+          console.log(`[FINORA] Auto-categorizing ${uncategorized.length} uncategorized transactions on load.`);
+          const updates: { id: string; category: string; needs_review: boolean; suggested_category: string | null }[] = [];
+
+          for (const tx of uncategorized) {
+            const result = categorizeTransaction(tx.name, tx.type, loadedMappings, userCategories);
+            const applied = applyCategorizationResult(result);
+
+            if (applied.category !== "Uncategorized") {
+              updates.push({
+                id: tx.id,
+                category: applied.category,
+                needs_review: applied.needs_review,
+                suggested_category: applied.suggested_category,
+              });
+            } else if (applied.needs_review && !tx.needs_review) {
+              updates.push({
+                id: tx.id,
+                category: tx.category,
+                needs_review: true,
+                suggested_category: applied.suggested_category,
+              });
+            }
+          }
+
+          // Batch update in DB
+          if (updates.length > 0) {
             await Promise.all(
-              txsToAssign.map(async (t: any) => {
-                const parts = t.name.split(" || ");
-                const cleanName = parts[0];
-                const designatedCategory = parts[1];
-                await supabase
-                  .from("transactions")
-                  .update({ name: cleanName, category: designatedCategory })
-                  .eq("id", t.id);
-              })
+              updates.map(u =>
+                supabase.from("transactions").update({
+                  category: u.category,
+                  needs_review: u.needs_review,
+                  suggested_category: u.suggested_category,
+                }).eq("id", u.id)
+              )
             );
-            // Re-fetch transactions
-            const freshTxs = await supabase.from("transactions").select("*").order("date", { ascending: false });
-            if (freshTxs.data) loadedTxs = freshTxs.data;
+
+            // Apply updates to local state
+            loadedTxs = loadedTxs.map(tx => {
+              const update = updates.find(u => u.id === tx.id);
+              return update ? { ...tx, ...update } : tx;
+            });
           }
         }
 
@@ -130,6 +235,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         setTransactions([]);
         setGoals([]);
         setInvestments([]);
+        setMerchantMappings([]);
       } else if (event === "SIGNED_IN") {
         loadData();
       }
@@ -139,57 +245,179 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Listen for budget updates to run auto-assignment of pending transactions
+  // Listen for category/budget changes to reprocess uncategorized transactions
   useEffect(() => {
-    const handleBudgetUpdate = async () => {
-      const savedBudgets = localStorage.getItem("finora_budgets");
-      if (!savedBudgets || transactions.length === 0) return;
-
-      const txsToAssign = transactions.filter((t) => t.category === "Uncategorized" && t.name.includes(" || "));
-      if (txsToAssign.length > 0) {
-        console.log(`[FINORA] Budget update event triggered. Auto-assigning ${txsToAssign.length} pending transactions.`);
-        await Promise.all(
-          txsToAssign.map(async (t) => {
-            const parts = t.name.split(" || ");
-            const cleanName = parts[0];
-            const designatedCategory = parts[1];
-            await supabase
-              .from("transactions")
-              .update({ name: cleanName, category: designatedCategory })
-              .eq("id", t.id);
-          })
-        );
-        // Re-fetch transactions
-        const freshTxs = await supabase.from("transactions").select("*").order("date", { ascending: false });
-        if (freshTxs.data) setTransactions(freshTxs.data);
-      }
+    const handleCategoriesChanged = () => {
+      reprocessUncategorized();
     };
 
-    window.addEventListener("finora_budget_update", handleBudgetUpdate);
-    return () => window.removeEventListener("finora_budget_update", handleBudgetUpdate);
-  }, [transactions, supabase]);
+    window.addEventListener("finora_categories_changed", handleCategoriesChanged);
+    window.addEventListener("finora_budget_update", handleCategoriesChanged);
+    return () => {
+      window.removeEventListener("finora_categories_changed", handleCategoriesChanged);
+      window.removeEventListener("finora_budget_update", handleCategoriesChanged);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactions, merchantMappings]);
 
   // ── TRANSACTIONS ──
   const addTransaction = async (t: Omit<Transaction, "id">) => {
     if (!userId) return;
-    const { data, error } = await supabase.from("transactions").insert([{ ...t, user_id: userId }]).select().single();
+
+    // Run categorization engine
+    const categorized = categorizeSingle(t, merchantMappings);
+
+    const { data, error } = await supabase.from("transactions").insert([{
+      ...categorized,
+      user_id: userId,
+    }]).select().single();
+
     if (data && !error) setTransactions((prev) => [data, ...prev]);
   };
+
   const bulkAddTransactions = async (txs: Omit<Transaction, "id">[]) => {
     if (!userId || txs.length === 0) return;
-    const payload = txs.map(t => ({ ...t, user_id: userId }));
+
+    // Run categorization engine on each transaction
+    const categorized = txs.map(tx => categorizeSingle(tx, merchantMappings));
+
+    const payload = categorized.map(t => ({ ...t, user_id: userId }));
     const { data, error } = await supabase.from("transactions").insert(payload).select();
     if (data && !error) {
       setTransactions(prev => [...data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   };
+
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
     const { data, error } = await supabase.from("transactions").update(updates).eq("id", id).select().single();
     if (data && !error) setTransactions(prev => prev.map(t => t.id === id ? data : t));
   };
+
   const deleteTransaction = async (id: string) => {
     const { error } = await supabase.from("transactions").delete().eq("id", id);
     if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  // ── CATEGORIZATION ENGINE METHODS ──
+
+  /**
+   * Assign a category to a transaction and save the merchant→category mapping
+   * for future auto-categorization (the learning system).
+   */
+  const assignCategory = async (txId: string, category: string, merchantName: string) => {
+    if (!userId) return;
+
+    // 1. Update the transaction
+    const { data, error } = await supabase.from("transactions").update({
+      category,
+      needs_review: false,
+      suggested_category: null,
+    }).eq("id", txId).select().single();
+
+    if (data && !error) {
+      setTransactions(prev => prev.map(t => t.id === txId ? data : t));
+    }
+
+    // 2. Upsert the merchant mapping for learning
+    const merchantKey = normalizeMerchant(merchantName);
+    if (merchantKey) {
+      const { data: mappingData, error: mappingError } = await supabase
+        .from("merchant_mappings")
+        .upsert({
+          user_id: userId,
+          merchant_key: merchantKey,
+          category,
+          confidence: 1.0,
+          source: "user",
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id,merchant_key" })
+        .select()
+        .single();
+
+      if (mappingData && !mappingError) {
+        setMerchantMappings(prev => {
+          const filtered = prev.filter(m => m.merchant_key !== merchantKey);
+          return [mappingData, ...filtered];
+        });
+      }
+    }
+
+    // 3. Auto-categorize other uncategorized transactions from the same merchant
+    const uncategorizedSameMerchant = transactions.filter(
+      t => t.id !== txId &&
+        (t.category === "Uncategorized" || t.needs_review) &&
+        normalizeMerchant(t.name) === merchantKey
+    );
+
+    if (uncategorizedSameMerchant.length > 0) {
+      console.log(`[FINORA] Auto-assigning ${uncategorizedSameMerchant.length} more transactions from "${merchantKey}" → ${category}`);
+      await Promise.all(
+        uncategorizedSameMerchant.map(t =>
+          supabase.from("transactions").update({
+            category,
+            needs_review: false,
+            suggested_category: null,
+          }).eq("id", t.id)
+        )
+      );
+
+      setTransactions(prev => prev.map(t => {
+        if (uncategorizedSameMerchant.some(u => u.id === t.id)) {
+          return { ...t, category, needs_review: false, suggested_category: null };
+        }
+        return t;
+      }));
+    }
+  };
+
+  /**
+   * Reprocess all uncategorized and needs_review transactions through the engine.
+   * Called when categories are created/edited/deleted.
+   */
+  const reprocessUncategorized = async () => {
+    if (!userId || transactions.length === 0) return;
+
+    const userCategories = extractUserCategories();
+    const toReprocess = transactions.filter(
+      t => t.category === "Uncategorized" || t.category === "Other" || t.needs_review
+    );
+
+    if (toReprocess.length === 0) return;
+
+    console.log(`[FINORA] Reprocessing ${toReprocess.length} uncategorized transactions.`);
+    const updates: { id: string; category: string; needs_review: boolean; suggested_category: string | null }[] = [];
+
+    for (const tx of toReprocess) {
+      const result = categorizeTransaction(tx.name, tx.type, merchantMappings, userCategories);
+      const applied = applyCategorizationResult(result);
+
+      if (applied.category !== tx.category || applied.needs_review !== tx.needs_review) {
+        updates.push({
+          id: tx.id,
+          category: applied.category,
+          needs_review: applied.needs_review,
+          suggested_category: applied.suggested_category,
+        });
+      }
+    }
+
+    if (updates.length > 0) {
+      console.log(`[FINORA] Updating ${updates.length} transactions after reprocessing.`);
+      await Promise.all(
+        updates.map(u =>
+          supabase.from("transactions").update({
+            category: u.category,
+            needs_review: u.needs_review,
+            suggested_category: u.suggested_category,
+          }).eq("id", u.id)
+        )
+      );
+
+      setTransactions(prev => prev.map(tx => {
+        const update = updates.find(u => u.id === tx.id);
+        return update ? { ...tx, ...update } : tx;
+      }));
+    }
   };
 
   // ── GOALS ──
@@ -227,7 +455,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     await Promise.all([
       supabase.from("transactions").delete().eq("user_id", userId),
       supabase.from("goals").delete().eq("user_id", userId),
-      supabase.from("investments").delete().eq("user_id", userId)
+      supabase.from("investments").delete().eq("user_id", userId),
+      supabase.from("merchant_mappings").delete().eq("user_id", userId),
     ]);
     localStorage.removeItem("finora_credit_cards");
     localStorage.removeItem("finora_wallet_items");
@@ -237,6 +466,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setTransactions([]);
     setGoals([]);
     setInvestments([]);
+    setMerchantMappings([]);
   };
 
   const seedInvestorDemo = async (data: any) => {
@@ -307,15 +537,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     ? 100
     : Math.min(100, Math.max(0, 50 + (savingsRate * 0.5) + (balance > 100000 ? 10 : 0)));
 
+  // ── Needs Review Computations ──
+  const needsReviewTransactions = useMemo(() =>
+    transactions.filter(t => t.needs_review === true),
+    [transactions]
+  );
+  const needsReviewCount = needsReviewTransactions.length;
+
   const contextValue = useMemo(() => ({
     isLoaded, userId,
     transactions, addTransaction, bulkAddTransactions, updateTransaction, deleteTransaction,
     goals, addGoal, updateGoal, deleteGoal,
     investments, addInvestment, updateInvestment, deleteInvestment,
     clearAllData, seedInvestorDemo,
-    balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore
+    balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore,
+    merchantMappings, needsReviewCount, needsReviewTransactions,
+    assignCategory, reprocessUncategorized,
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [isLoaded, userId, transactions, goals, investments, balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore]);
+  }), [isLoaded, userId, transactions, goals, investments, balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore, merchantMappings, needsReviewCount, needsReviewTransactions]);
 
   return (
     <FinanceContext.Provider value={contextValue}>

@@ -14,38 +14,11 @@ interface ParsedRow {
   amount: number;
   type: "income" | "expense";
   category: string;
+  confidence: number;
 }
 
-const CATEGORY_RULES = [
-  // UAE / Middle East brands
-  { keywords: ["lulu", "hypermarket", "carrefour", "geant", "spinneys", "waitrose", "union coop"], category: "Groceries", type: "expense" },
-  { keywords: ["swiggy", "zomato", "mcdonald", "cafe", "starbucks", "bakery", "kfc", "pizza", "restaurant", "talabat"], category: "Food", type: "expense" },
-  { keywords: ["uber", "ola", "irctc", "metro", "fuel", "petrol", "makemytrip", "etihad", "emirates", "flydubai", "air india", "indigo"], category: "Transport", type: "expense" },
-  { keywords: ["amazon", "flipkart", "noon", "namshi", "myntra", "netflix", "pvr", "bookmyshow", "apple.com", "apple store", "itunes", "spotify", "disney"], category: "Lifestyle", type: "expense" },
-  { keywords: ["dewa", "addc", "bescom", "electricity", "jio", "airtel", "du telecom", "etisalat", "rent", "water", "salik"], category: "Housing", type: "expense" },
-  { keywords: ["apollo", "pharmacy", "clinic", "hospital", "1mg", "aster", "mediclinic", "doh", "health"], category: "Healthcare", type: "expense" },
-  { keywords: ["salary", "payroll", "neft-in", "credit interest", "card payment", "payment received"], category: "Income", type: "income" },
-  { keywords: ["adcb bank", "adcb fee", "bank charge", "service charge", "annual fee"], category: "Banking Fees", type: "expense" },
-];
-
-function autoCategorize(description: string, txType: "income" | "expense"): { category: string; type: "income" | "expense" } {
-  const desc = description.toLowerCase();
-
-  // If the CSV explicitly says Credit (income) and it matches a payment, treat as income
-  if (txType === "income") {
-    const incomeRule = CATEGORY_RULES.find(r => r.type === "income" && r.keywords.some(kw => desc.includes(kw)));
-    if (incomeRule) return { category: incomeRule.category, type: "income" };
-    return { category: "Income", type: "income" };
-  }
-
-  for (const rule of CATEGORY_RULES) {
-    if (rule.type === "expense" && rule.keywords.some(kw => desc.includes(kw))) {
-      return { category: rule.category, type: "expense" };
-    }
-  }
-
-  return { category: "Other", type: "expense" };
-}
+import { categorizeTransaction, extractUserCategories } from "@/lib/categorizationEngine";
+import { useFinance } from "@/context/FinanceContext";
 
 // Tries to detect the currency from a CSV row
 function detectCurrencyFromRow(row: Record<string, string>): string | null {
@@ -70,6 +43,9 @@ export function CsvImportModal({
   const [detectedCurrency, setDetectedCurrency] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currency, setCurrency } = useCurrency();
+  const { merchantMappings } = useFinance();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const userCategories = extractUserCategories();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -160,8 +136,11 @@ export function CsvImportModal({
             else if (c.includes("Health")) finalCategory = "Healthcare";
             else if (c.includes("Invest")) finalCategory = "Savings";
             else finalCategory = c;
+            finalConfidence = 1.0;
           } else {
-            finalCategory = autoCategorize(desc, txType).category;
+            const result = categorizeTransaction(desc, txType, merchantMappings, userCategories);
+            finalCategory = result.category;
+            finalConfidence = result.confidence;
           }
 
           rows.push({
@@ -170,6 +149,7 @@ export function CsvImportModal({
             amount,
             type: txType,
             category: finalCategory,
+            confidence: finalConfidence || 0,
           });
         });
 
@@ -285,9 +265,18 @@ export function CsvImportModal({
                             {row.name}
                           </td>
                           <td className="px-4 py-2.5">
-                            <span className="bg-primary/10 text-red-400 px-2 py-0.5 rounded text-xs border border-primary/20">
-                              {row.category}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="bg-primary/10 text-red-400 px-2 py-0.5 rounded text-xs border border-primary/20">
+                                {row.category}
+                              </span>
+                              {row.confidence >= 0.8 ? (
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="High confidence auto-match" />
+                              ) : row.confidence >= 0.5 ? (
+                                <div className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Suggested match" />
+                              ) : (
+                                <div className="h-1.5 w-1.5 rounded-full bg-red-500" title="Needs review" />
+                              )}
+                            </div>
                           </td>
                           <td className={`px-4 py-2.5 text-right font-mono font-medium ${row.type === "income" ? "text-emerald-500" : "text-foreground"}`}>
                             {row.type === "income" ? "+" : "-"}{formatCurrency(row.amount, detectedCurrency || currency)}

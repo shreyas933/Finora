@@ -236,7 +236,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      <div className="w-full pt-4 pb-2 bg-background z-10 shrink-0">
+      <div className="w-full pt-4 pb-[23px] bg-background z-10 shrink-0">
         <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-muted rounded-full p-2 pl-6 shadow-[0_8px_30px_rgb(0,0,0,0.5)] border border-border">
           <input
             value={input}

@@ -5,13 +5,14 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { useFinance } from "@/context/FinanceContext";
 import { CURRENCIES } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { Settings as SettingsIcon, Globe, User, Bell, Shield, Database, Trash2, Download, Check, Save } from "lucide-react";
+import { Settings as SettingsIcon, CreditCard, Globe, User, Bell, Shield, Database, Trash2, Download, Check, Save } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function SettingsPage() {
   const { currency, setCurrency } = useCurrency();
   const { clearAllData } = useFinance();
   const [activeTab, setActiveTab] = useState("profile");
+  const [walletCards, setWalletCards] = useState<any[]>([]);
   const [isClearing, setIsClearing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -29,7 +30,22 @@ export default function SettingsPage() {
         setLastName(user.user_metadata?.last_name || "");
       }
     });
+
+    const savedCards = localStorage.getItem("finora_wallet_items");
+    if (savedCards) {
+      try {
+        setWalletCards(JSON.parse(savedCards));
+      } catch (e) {}
+    }
   }, []);
+
+  const deleteCard = (id: string) => {
+    if (confirm("Are you sure you want to delete this card?")) {
+      const updated = walletCards.filter(c => c.id !== id);
+      setWalletCards(updated);
+      localStorage.setItem("finora_wallet_items", JSON.stringify(updated));
+    }
+  };
 
   const handleClearData = async () => {
     if (confirm("Are you SURE you want to permanently delete all your transactions, goals, credit cards, and investments? This cannot be undone.")) {
@@ -305,6 +321,39 @@ export default function SettingsPage() {
                     <Download className="h-4 w-4" />
                     Export as CSV
                   </button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    Manage Wallet Cards
+                  </CardTitle>
+                  <CardDescription>Delete credit or debit cards from your digital wallet.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {walletCards.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No cards found in your wallet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {walletCards.map(card => (
+                        <div key={card.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{card.name}</p>
+                            <p className="text-xs text-muted-foreground">{card.bank} •••• {card.number}</p>
+                          </div>
+                          <button
+                            onClick={() => deleteCard(card.id)}
+                            className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-md transition cursor-pointer"
+                            title="Delete Card"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

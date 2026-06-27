@@ -16,6 +16,7 @@ import {
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
 import { AIInsights } from "@/components/dashboard/AIInsights";
+import { NeedsReviewBanner } from "@/components/dashboard/NeedsReviewBanner";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
 type BudgetCategory = {
@@ -224,7 +225,7 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function TransactionsPage() {
-  const { transactions, addTransaction, bulkAddTransactions, deleteTransaction, monthlyIncome, monthlyExpenses, balance } = useFinance();
+  const { transactions, addTransaction, bulkAddTransactions, deleteTransaction, monthlyIncome, monthlyExpenses, balance, needsReviewCount } = useFinance();
   const { currency } = useCurrency();
 
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
@@ -817,6 +818,9 @@ export default function TransactionsPage() {
 
       {/* ── AI Insights ── */}
       <AIInsights collapsible defaultCollapsed={false} mode="budget" />
+
+      {/* ── Needs Review Banner ── */}
+      <NeedsReviewBanner />
 
       {/* ── All Transactions ── */}
       <div>

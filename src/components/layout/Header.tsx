@@ -11,7 +11,7 @@ export function Header() {
   const [displayName, setDisplayName] = useState<string | null>("Loading...");
   const supabase = createClient();
   const router = useRouter();
-  const { transactions, balance, goals } = useFinance();
+  const { transactions, balance, goals, needsReviewCount } = useFinance();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -174,6 +174,17 @@ export function Header() {
         <h1 className="md:hidden text-xl font-bold tracking-tight text-primary">FINORA</h1>
       </div>
       <div className="flex items-center gap-4">
+
+        {/* Needs Review Badge */}
+        {needsReviewCount > 0 && (
+          <Link href="/transactions" className="relative p-2 text-amber-500 hover:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-all hidden sm:flex items-center gap-2 border border-amber-500/20">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-xs font-bold hidden md:inline-block">Review</span>
+            <span className="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black border-2 border-card">
+              {needsReviewCount}
+            </span>
+          </Link>
+        )}
 
         {/* Notifications Dropdown */}
         <div className="relative py-2" ref={notificationsRef}>

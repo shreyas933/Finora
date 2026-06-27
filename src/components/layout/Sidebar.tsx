@@ -20,6 +20,7 @@ import {
   Goal
 } from "lucide-react";
 import { useState } from "react";
+import LumaBar from "@/components/ui/futuristic-nav";
 
 const routes = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -34,7 +35,7 @@ const routes = [
 // Bottom nav shows a subset of routes (max 6 for mobile)
 const mobileRoutes = [
   { label: "Home", icon: Home, href: "/dashboard" },
-  { label: "Wallet", icon: Wallet, href: "/transactions" },
+  { label: "Transactions", icon: Wallet, href: "/transactions" },
   { label: "AI", icon: Sparkles, href: "/chat" },
   { label: "Goals", icon: Goal, href: "/goals" },
   { label: "Cards", icon: CreditCard, href: "/credit" },
@@ -70,28 +71,7 @@ export function Sidebar() {
       </div>
 
       {/* ─── Mobile Bottom Navigation Bar (visible only on mobile) ─── */}
-      <div className="md:hidden fixed bottom-3 left-4 right-4 z-50 bg-background/20 backdrop-blur-2xl border border-border/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-foreground">
-        <nav className="flex justify-around items-center h-16 px-4">
-          {mobileRoutes.map((route) => {
-            const isActive = pathname === route.href;
-            return (
-              <Link
-                key={route.href}
-                href={route.href}
-                className={cn(
-                  "relative flex items-center justify-center p-2 rounded-xl transition-all",
-                  isActive ? "text-primary" : "text-muted-foreground active:text-primary"
-                )}
-              >
-                <route.icon className="h-6 w-6 stroke-[1.5]" />
-                {isActive && (
-                  <div className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+      <LumaBar />
     </>
   );
 }
