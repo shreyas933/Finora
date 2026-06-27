@@ -63,8 +63,6 @@ export async function POST(req: NextRequest) {
       category: finalCategory || "Uncategorized",
       type,
       date: new Date().toISOString(),
-      needs_review: needs_review !== undefined ? needs_review : false,
-      suggested_category: suggested_category || null,
     });
 
     if (insertError) {
