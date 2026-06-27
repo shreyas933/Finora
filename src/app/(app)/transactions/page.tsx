@@ -891,7 +891,7 @@ export default function TransactionsPage() {
             <div className="divide-y divide-white/5">
               {filteredWithBalance.map((tx) => {
                 const Icon = () => CATEGORY_ICONS[tx.category] ?? <Wallet className="h-4 w-4" />;
-                const isUncategorized = tx.category === "Uncategorized" || tx.category === "Other";
+                const isUncategorized = false;
                 const tagClass = isUncategorized
                   ? "bg-amber-500/15 text-amber-400 border border-amber-500/30 cursor-pointer hover:bg-amber-500/25 transition-colors"
                   : (CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400");
