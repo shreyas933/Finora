@@ -39,7 +39,7 @@ export function CapacitorUserBridge() {
         if (UserIdBridge) {
           const origin = typeof window !== "undefined" ? window.location.origin : "";
           const apiBase = (origin.includes("localhost") || origin.includes("capacitor://"))
-            ? "https://finora-wine.vercel.app"
+            ? "https://finora-fawn.vercel.app"
             : origin;
           const isBudgetSet = !!localStorage.getItem("finora_budgets");
           await UserIdBridge.setUserId({

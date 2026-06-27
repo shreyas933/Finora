@@ -32,7 +32,7 @@ class FinoraNotificationListener : NotificationListenerService() {
         // ─── Server URL ───────────────────────────────────────────────────────
         // Dev:  your PC's LAN IP while running `npm run dev`
         // Prod: your deployed Vercel/Railway URL
-        private const val API_BASE = "https://finora-wine.vercel.app"
+        private const val API_BASE = "https://finora-fawn.vercel.app"
 
         // ─── Supabase (for auth token so ingest can identify the user) ────────
         // These are read-only anon keys — safe to embed in the APK
