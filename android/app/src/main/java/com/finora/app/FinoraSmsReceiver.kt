@@ -22,7 +22,7 @@ class FinoraSmsReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "FinoraSmsReceiver"
-        private const val API_BASE = "https://finora-fawn.vercel.app"
+        private const val API_BASE = "https://finora-wine.vercel.app"
     }
 
     private val httpClient = OkHttpClient()
