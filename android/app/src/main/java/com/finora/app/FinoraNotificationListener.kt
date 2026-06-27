@@ -64,7 +64,7 @@ class FinoraNotificationListener : NotificationListenerService() {
     private fun getApiBase(): String {
         val prefs = getSharedPreferences("finora_prefs", MODE_PRIVATE)
         val storedBase = prefs.getString("api_base", null)
-        if (!storedBase.isNullOrBlank()) {
+        if (!storedBase.isNullOrBlank() && !storedBase.contains("finora-wine.vercel.app")) {
             // Strip trailing slash if present to avoid double-slashes
             return if (storedBase.endsWith("/")) storedBase.substring(0, storedBase.length - 1) else storedBase
         }

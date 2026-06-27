@@ -30,7 +30,7 @@ class FinoraSmsReceiver : BroadcastReceiver() {
     private fun getApiBase(context: Context): String {
         val prefs = context.getSharedPreferences("finora_prefs", Context.MODE_PRIVATE)
         val storedBase = prefs.getString("api_base", null)
-        if (!storedBase.isNullOrBlank()) {
+        if (!storedBase.isNullOrBlank() && !storedBase.contains("finora-wine.vercel.app")) {
             return if (storedBase.endsWith("/")) storedBase.substring(0, storedBase.length - 1) else storedBase
         }
         return API_BASE
