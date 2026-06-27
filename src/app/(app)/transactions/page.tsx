@@ -16,7 +16,6 @@ import {
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
 import { AIInsights } from "@/components/dashboard/AIInsights";
-import { NeedsReviewBanner } from "@/components/dashboard/NeedsReviewBanner";
 import { PaymentSyncModal } from "@/components/dashboard/PaymentSyncModal";
 
 // ── Budget definitions ────────────────────────────────────────────────────────
@@ -876,9 +875,6 @@ export default function TransactionsPage() {
 
       {/* ── AI Insights ── */}
       <AIInsights collapsible defaultCollapsed={false} mode="budget" />
-
-      {/* ── Needs Review Banner ── */}
-      <NeedsReviewBanner />
 
       {/* ── All Transactions ── */}
       <div>
