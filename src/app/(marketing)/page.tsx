@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
+import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, Wallet, PieChart, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -12,11 +13,20 @@ export default function LandingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to login if running natively via Capacitor OR on a mobile device
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (Capacitor.isNativePlatform() || isMobile) {
-      router.replace("/login");
-    }
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        router.replace("/dashboard");
+      } else {
+        // Redirect to login if running natively via Capacitor OR on a mobile device
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (Capacitor.isNativePlatform() || isMobile) {
+          router.replace("/login");
+        }
+      }
+    };
+    checkAuth();
   }, [router]);
 
   return (

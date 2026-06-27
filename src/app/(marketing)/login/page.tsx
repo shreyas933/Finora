@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useCallback } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Wallet, LogIn, Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -16,6 +16,27 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const authError = searchParams?.get("error");
+
+  useEffect(() => {
+    const supabase = createClient();
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        router.replace("/dashboard");
+      }
+    };
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        router.replace("/dashboard");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const handleLogin = useCallback(async () => {
     console.log("[FINORA] Login button clicked");
