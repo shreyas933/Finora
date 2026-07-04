@@ -4,12 +4,13 @@ import { useFinance } from "@/context/FinanceContext";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, Download, CreditCard, ChevronRight, Pencil } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, CreditCard, ChevronRight, Pencil } from "lucide-react";
 import Link from "next/link";
-import { format, subDays, getDaysInMonth } from "date-fns";
+import { getDaysInMonth } from "date-fns";
 import { motion } from "framer-motion";
 import { AIInsights } from "@/components/dashboard/AIInsights";
+import { DailyBriefing } from "@/components/dashboard/DailyBriefing";
+import { FinancialWins } from "@/components/dashboard/FinancialWins";
 import { StartingBalanceModal } from "@/components/dashboard/StartingBalanceModal";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useEffect, useState, useMemo } from "react";
@@ -102,25 +103,6 @@ export default function DashboardPage() {
     setSafeToSpend(Math.round(remaining / daysLeft));
   }, [transactions, monthlyIncome]);
 
-  const chartData = useMemo(() => {
-    const dates = Array.from({ length: 7 }).map((_, i) => subDays(new Date(), 6 - i));
-
-    return dates.map(date => {
-      const boundaryTime = new Date(date);
-      boundaryTime.setHours(23, 59, 59, 999);
-
-      const dayBalance = transactions
-        .filter(t => new Date(t.date).getTime() <= boundaryTime.getTime())
-        .reduce((acc, t) => {
-          return t.type === "income" ? acc + t.amount : acc - t.amount;
-        }, 0);
-
-      return {
-        date: format(date, "MMM dd"),
-        balance: Math.round(dayBalance * 100) / 100,
-      };
-    });
-  }, [transactions]);
 
 
   const totalOverspent = useMemo(() => {
@@ -298,50 +280,18 @@ export default function DashboardPage() {
       {/* ── AI Insights ── */}
       <AIInsights />
 
-      <div className="w-full">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Balance Trend</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="opacity-10" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="currentColor"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    className="opacity-50"
-                  />
-                  <YAxis
-                    stroke="currentColor"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `₹${value / 1000}k`}
-                    className="opacity-50"
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
-                    itemStyle={{ color: 'var(--color-foreground)' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="balance"
-                    stroke="var(--color-primary)"
-                    strokeWidth={3}
-                    dot={false}
-                    activeDot={{ r: 6, fill: "var(--color-primary)" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+      {/* ── Daily Briefing + Financial Wins ── */}
+      <div className="grid gap-4 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
+          <CardContent className="pt-5 pb-5">
+            <DailyBriefing />
           </CardContent>
         </Card>
-
+        <Card className="lg:col-span-2">
+          <CardContent className="pt-5 pb-5">
+            <FinancialWins />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
