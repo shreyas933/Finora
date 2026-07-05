@@ -1798,15 +1798,34 @@ function MobileCreditView({
                       Spend ₹4,000 on dining using HDFC Regalia card.
                     </p>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center text-xs font-semibold">
                       <span className="text-slate-400 uppercase tracking-wider text-[9px] font-bold">Progress</span>
                       <span className="text-emerald-400 font-mono font-bold">67%</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-slate-950/80 rounded-lg p-1.5 font-mono text-[10px] tracking-widest text-emerald-400 border border-white/5 select-none text-center">
-                        ██████░░░░
-                      </div>
+                    <div className="flex items-center gap-1.5 bg-slate-950/80 p-2 rounded-xl border border-white/5 w-full">
+                      {Array.from({ length: 10 }).map((_, idx) => {
+                        const isFilled = idx < 7;
+                        return (
+                          <div
+                            key={idx}
+                            className={cn(
+                              "h-6 flex-1 rounded-[2px] transition-all duration-500",
+                              isFilled 
+                                ? "bg-emerald-400 shadow-[0_0_8px_#10b981]" 
+                                : "border border-emerald-500/20 bg-emerald-500/5"
+                            )}
+                            style={
+                              !isFilled 
+                                ? {
+                                    backgroundImage: "radial-gradient(rgba(16,185,129,0.4) 1px, transparent 0)",
+                                    backgroundSize: "3px 3px",
+                                  }
+                                : undefined
+                            }
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                   <div className="flex items-center justify-between border-t border-white/5 pt-3.5 mt-2">
@@ -2479,15 +2498,34 @@ function DesktopCreditView({
                   Spend ₹4,000 on dining using HDFC Regalia card.
                 </p>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-semibold">
                   <span className="text-slate-400 uppercase tracking-wider text-[9px] font-bold">Progress</span>
                   <span className="text-emerald-400 font-mono font-bold">67%</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-slate-950/85 rounded-lg p-1.5 font-mono text-[10px] tracking-widest text-emerald-400 border border-white/5 select-none text-center">
-                    ██████░░░░
-                  </div>
+                <div className="flex items-center gap-1.5 bg-slate-950/80 p-2 rounded-xl border border-white/5 w-full">
+                  {Array.from({ length: 10 }).map((_, idx) => {
+                    const isFilled = idx < 7;
+                    return (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "h-6 flex-1 rounded-[2px] transition-all duration-500",
+                          isFilled 
+                            ? "bg-emerald-400 shadow-[0_0_8px_#10b981]" 
+                            : "border border-emerald-500/20 bg-emerald-500/5"
+                        )}
+                        style={
+                          !isFilled 
+                            ? {
+                                backgroundImage: "radial-gradient(rgba(16,185,129,0.4) 1px, transparent 0)",
+                                backgroundSize: "3px 3px",
+                              }
+                            : undefined
+                        }
+                      />
+                    );
+                  })}
                 </div>
               </div>
               <div className="flex items-center justify-between border-t border-white/5 pt-3.5 mt-2">
