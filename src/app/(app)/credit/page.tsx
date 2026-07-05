@@ -12,7 +12,7 @@ import {
   Plane, Hotel, ShoppingBag, Utensils, Fuel, Wifi, Gift, Star,
   ChevronRight, ChevronDown, Sparkles, Zap, TrendingDown, Home, Car, Dumbbell,
   Tv, Stethoscope, GraduationCap, BarChart3, Wallet,
-  Landmark, Coins, Trash2, CheckCircle2, Smartphone
+  Landmark, Coins, Trash2, CheckCircle2, Smartphone, Trophy
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1775,8 +1775,45 @@ function MobileCreditView({
                         </div>
                       );
                     })}
+              </div>
+
+              {/* Monthly Challenge Card */}
+              <div className="bg-card/50 border border-primary/20 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden mt-4">
+                <div className="absolute -right-16 -top-16 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-amber-400 animate-pulse" />
+                    <span className="text-sm font-bold text-white tracking-wide">Monthly Challenge</span>
                   </div>
-                )}
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                    Active
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="text-base font-extrabold text-white">Earn 2,000 Reward Points</h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Spend ₹4,000 on dining using HDFC Regalia card.
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs font-semibold">
+                      <span className="text-slate-400 uppercase tracking-wider text-[9px] font-bold">Progress</span>
+                      <span className="text-emerald-400 font-mono font-bold">67%</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-slate-950/80 rounded-lg p-1.5 font-mono text-[10px] tracking-widest text-emerald-400 border border-white/5 select-none text-center">
+                        ██████░░░░
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-white/5 pt-3.5 mt-2">
+                    <span className="text-xs text-slate-400 font-medium">Estimated Reward:</span>
+                    <span className="text-xs font-black text-amber-400 uppercase tracking-wider bg-amber-400/10 border border-amber-400/25 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                      🎁 500 Bonus Points
+                    </span>
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -2418,8 +2455,46 @@ function DesktopCreditView({
               <CardContent>
                 <WalletEfficiencyAnalyzer items={items} />
               </CardContent>
-            </Card>
           </motion.div>
+
+          {/* Monthly Challenge Card */}
+          <div className="bg-card/60 backdrop-blur-xl border border-primary/20 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden">
+            <div className="absolute -right-16 -top-16 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-amber-400 animate-pulse" />
+                <span className="text-sm font-bold text-white tracking-wide">Monthly Challenge</span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                Active
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-base font-extrabold text-white">Earn 2,000 Reward Points</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Spend ₹4,000 on dining using HDFC Regalia card.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-slate-400 uppercase tracking-wider text-[9px] font-bold">Progress</span>
+                  <span className="text-emerald-400 font-mono font-bold">67%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-slate-950/85 rounded-lg p-1.5 font-mono text-[10px] tracking-widest text-emerald-400 border border-white/5 select-none text-center">
+                    ██████░░░░
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between border-t border-white/5 pt-3.5 mt-2">
+                <span className="text-xs text-slate-400 font-medium">Estimated Reward:</span>
+                <span className="text-xs font-black text-amber-400 uppercase tracking-wider bg-amber-400/10 border border-amber-400/25 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                  🎁 500 Bonus Points
+                </span>
+              </div>
+            </div>
+          </div>
 
           {items.length > 0 && !selectedItem && (
             <div className="select-card-prompt text-muted-foreground">
