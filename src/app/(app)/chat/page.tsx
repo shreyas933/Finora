@@ -115,6 +115,19 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    if (!financialContext) return;
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    if (query) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      const timer = setTimeout(() => {
+        handleQuickButtonClick(query);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [financialContext]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();

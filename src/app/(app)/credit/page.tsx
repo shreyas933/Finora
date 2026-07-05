@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
+import Link from "next/link";
 import { useFinance } from "@/context/FinanceContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -1820,6 +1821,82 @@ function MobileCreditView({
             </div>
           </div>
 
+          {/* Wallet Health Ring */}
+          <div className="bg-card/50 border border-white/5 rounded-2xl p-5 flex flex-col items-center gap-4 text-center">
+            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Wallet Health</span>
+            
+            {/* Apple-style circular ring */}
+            <div className="relative flex items-center justify-center h-28 w-28 shrink-0">
+              <svg width="112" height="112" viewBox="0 0 120 120" className="transform -rotate-90">
+                {/* Background Track */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  stroke="rgba(255,255,255,0.03)"
+                  strokeWidth="10"
+                  fill="transparent"
+                />
+                {/* Glowing dynamic ring */}
+                <motion.circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  stroke="url(#wallet-health-grad-mobile)"
+                  strokeWidth="10"
+                  fill="transparent"
+                  strokeDasharray="314"
+                  initial={{ strokeDashoffset: 314 }}
+                  animate={{ strokeDashoffset: 314 - (314 * 88) / 100 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  strokeLinecap="round"
+                  className="drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                />
+                <defs>
+                  <linearGradient id="wallet-health-grad-mobile" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="50%" stopColor="#059669" />
+                    <stop offset="100%" stopColor="#34d399" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-2xl font-black text-white leading-none">88%</span>
+                <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400 mt-1">Health</span>
+              </div>
+            </div>
+
+            {/* Health parameters indicators grid */}
+            <div className="grid grid-cols-2 gap-3 w-full border-t border-white/5 pt-4">
+              <div className="flex items-center gap-2 justify-center">
+                <span className={cn(
+                  "w-2 h-2 rounded-full",
+                  computedUtil <= 30 ? "bg-emerald-500 animate-pulse" : computedUtil <= 50 ? "bg-amber-400" : "bg-red-500"
+                )} />
+                <span className="text-xs font-semibold text-slate-300">Utilization</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-semibold text-slate-300">Bill Payments</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="text-xs font-semibold text-slate-300">Reward Usage</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-semibold text-slate-300">Credit Mix</span>
+              </div>
+            </div>
+
+            {/* Optimise your score button */}
+            <Link href={`/chat?q=How+can+I+reduce+my+credit+card+utilization%3F+My+current+utilization+is+${computedUtil}%25.`} className="block w-full pt-2">
+              <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-95 text-white py-3.5 h-12 rounded-xl text-sm font-bold tracking-wide active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer border-none">
+                <Sparkles className="h-4 w-4" /> Optimise your score
+              </Button>
+            </Link>
+          </div>
+
           {/* Profile Configuration Card */}
           <div className="bg-card/50 border border-white/5 rounded-2xl p-4 space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-white/5">
@@ -2404,6 +2481,90 @@ function DesktopCreditView({
                   <span className="text-4xl font-extrabold text-white tracking-tight">{scoreNum}</span>
                   <span className={cn("text-sm font-bold mt-1 uppercase tracking-widest", scoreColor)}>{scoreCategory}</span>
                 </div>
+              </div>
+
+              {/* Wallet Health Ring Section */}
+              <div className="border-t border-border/40 pt-5 mt-5 space-y-4">
+                <div className="flex items-center gap-4">
+                  {/* Apple-style circular ring */}
+                  <div className="relative flex items-center justify-center h-24 w-24 shrink-0">
+                    <svg width="96" height="96" viewBox="0 0 120 120" className="transform -rotate-90">
+                      {/* Background Track */}
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r="50"
+                        stroke="rgba(255,255,255,0.03)"
+                        strokeWidth="12"
+                        fill="transparent"
+                      />
+                      {/* Glowing dynamic ring */}
+                      <motion.circle
+                        cx="60"
+                        cy="60"
+                        r="50"
+                        stroke="url(#wallet-health-grad-desktop)"
+                        strokeWidth="12"
+                        fill="transparent"
+                        strokeDasharray="314"
+                        initial={{ strokeDashoffset: 314 }}
+                        animate={{ strokeDashoffset: 314 - (314 * 88) / 100 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        strokeLinecap="round"
+                        className="drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                      />
+                      <defs>
+                        <linearGradient id="wallet-health-grad-desktop" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="50%" stopColor="#059669" />
+                          <stop offset="100%" stopColor="#34d399" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center">
+                      <span className="text-xl font-black text-white leading-none">88%</span>
+                      <span className="text-[8px] uppercase font-bold tracking-widest text-slate-400 mt-1">Health</span>
+                    </div>
+                  </div>
+
+                  {/* Title & Info */}
+                  <div>
+                    <h4 className="text-sm font-extrabold text-white">Wallet Health</h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                      Repayment behaviors and card mix are rated <span className="text-emerald-400 font-bold">Excellent</span>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Health parameters indicators grid */}
+                <div className="grid grid-cols-2 gap-2 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "w-1.5 h-1.5 rounded-full",
+                      computedUtil <= 30 ? "bg-emerald-500 animate-pulse" : computedUtil <= 50 ? "bg-amber-400" : "bg-red-500"
+                    )} />
+                    <span className="text-[11px] font-semibold text-slate-300">Utilization</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[11px] font-semibold text-slate-300">Bill Payments</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="text-[11px] font-semibold text-slate-300">Reward Usage</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[11px] font-semibold text-slate-300">Credit Mix</span>
+                  </div>
+                </div>
+
+                {/* Optimise your score button */}
+                <Link href={`/chat?q=How+can+I+reduce+my+credit+card+utilization%3F+My+current+utilization+is+${computedUtil}%25.`} className="block w-full">
+                  <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-95 text-white py-3 h-11 rounded-xl text-xs font-bold tracking-wider active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer border-none">
+                    <Sparkles className="h-3.5 w-3.5" /> Optimise your score
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
