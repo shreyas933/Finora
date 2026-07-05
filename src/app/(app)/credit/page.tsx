@@ -2457,6 +2457,7 @@ function DesktopCreditView({
               <CardContent>
                 <WalletEfficiencyAnalyzer items={items} />
               </CardContent>
+            </Card>
           </motion.div>
 
           {/* Monthly Challenge Card */}
