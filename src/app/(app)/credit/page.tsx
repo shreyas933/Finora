@@ -1877,7 +1877,6 @@ function MobileCreditView({
                 <span className="text-base font-bold text-white">{computedUtil}%</span>
               </div>
             </div>
-          </div>
 
             {/* Optimise your score button positioned directly below the rating details inside the card */}
             <Link href={`/chat?q=How+can+I+reduce+my+credit+card+utilization%3F+My+current+utilization+is+${computedUtil}%25.`} className="block w-full pt-4 mt-2 border-t border-white/5">
