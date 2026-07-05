@@ -1775,6 +1775,8 @@ function MobileCreditView({
                         </div>
                       );
                     })}
+                  </div>
+                )}
               </div>
 
               {/* Monthly Challenge Card */}
