@@ -14,6 +14,15 @@ type Message = {
   content: string;
 };
 
+const quickButtons = [
+  { emoji: "🛒", text: "New Phone", query: "Can I afford a new phone?" },
+  { emoji: "✈", text: "Goa Trip", query: "Can I afford a Goa trip?" },
+  { emoji: "🚗", text: "Buy a Bike", query: "Can I afford to buy a bike?" },
+  { emoji: "📈", text: "Invest ₹10,000", query: "Can I afford to invest ₹10,000?" },
+  { emoji: "🏠", text: "Increase Rent", query: "Can I afford to increase rent?" },
+  { emoji: "💳", text: "Which card?", query: "Which credit card should I use?" },
+];
+
 export default function ChatPage() {
   const { balance, monthlyIncome, monthlyExpenses, savingsRate, investments, goals, transactions } = useFinance();
   const [financialContext, setFinancialContext] = useState("");
@@ -166,6 +175,61 @@ export default function ChatPage() {
             : m
         )
       );
+  };
+
+  const handleQuickButtonClick = async (query: string) => {
+    if (isLoading) return;
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: query,
+    };
+
+    const assistantId = (Date.now() + 1).toString();
+    const assistantMsg: Message = { id: assistantId, role: "assistant", content: "" };
+
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setIsLoading(true);
+
+    try {
+      const historyForApi = [...messages, userMsg];
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: historyForApi.map((m) => ({ role: m.role, content: m.content })),
+          financialContext,
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        const errText = await response.text();
+        throw new Error(errText || "API error");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId ? { ...m, content: m.content + chunk } : m
+          )
+        );
+      }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? { ...m, content: `⚠️ Error: ${errMsg}. Please try again.` }
+            : m
+        )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -207,6 +271,22 @@ export default function ChatPage() {
                 </div>
               )}
             </div>
+
+            {message.id === "welcome" && messages.length === 1 && (
+              <div className="mt-4 flex flex-wrap gap-2.5 max-w-2xl">
+                {quickButtons.map((btn) => (
+                  <button
+                    key={btn.text}
+                    type="button"
+                    onClick={() => handleQuickButtonClick(btn.query)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-accent text-card-foreground text-sm font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
+                  >
+                    <span>{btn.emoji}</span>
+                    <span>{btn.text}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Example custom interactive cards for assistant (mocked if content includes certain keywords for demo) */}
             {message.role === "assistant" && message.content.includes("approach this:") && (

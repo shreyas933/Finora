@@ -26,7 +26,7 @@ const routes = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Transactions", icon: Receipt, href: "/transactions" },
   { label: "Goals", icon: Target, href: "/goals" },
-  { label: "Investments", icon: LineChart, href: "/investments" },
+  // { label: "Investments", icon: LineChart, href: "/investments" },
   { label: "Credit Cards", icon: CreditCard, href: "/credit" },
   // { label: "Tax AI", icon: Calculator, href: "/tax" }, /* Kept in memory: uncomment to restore exactly as before */
   { label: "AI CFO Chat", icon: MessageSquare, href: "/chat" },
