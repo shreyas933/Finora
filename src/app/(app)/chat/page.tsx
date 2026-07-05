@@ -175,6 +175,9 @@ export default function ChatPage() {
             : m
         )
       );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickButtonClick = async (query: string) => {
