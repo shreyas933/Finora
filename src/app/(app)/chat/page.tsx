@@ -30,10 +30,11 @@ export default function ChatPage() {
   useEffect(() => {
     // Safely load local storage data
     const budgetsRaw = localStorage.getItem("finora_budgets");
-    const cardsRaw = localStorage.getItem("finora_credit_cards");
+    const walletRaw = localStorage.getItem("finora_wallet_items");
 
     const budgets = budgetsRaw ? JSON.parse(budgetsRaw) : [];
-    const cards = cardsRaw ? JSON.parse(cardsRaw) : [];
+    const walletItems = walletRaw ? JSON.parse(walletRaw) : [];
+    const creditCards = walletItems.filter((i: any) => i.type === "credit");
 
     // Tally current month discretionary safe to spend spendings
     let safeToSpendVal = 0;
@@ -66,10 +67,32 @@ export default function ChatPage() {
       safeToSpendVal = Math.round(remaining / daysLeft);
     }
 
-    // Format top 5 recent transactions
-    const recentTx = transactions.slice(0, 5).map(t => {
+    // Tally income sources
+    const incomeTx = transactions.filter(t => t.type === "income");
+    const incomeSources: Record<string, number> = {};
+    incomeTx.forEach(t => {
       const cleanName = t.name.includes(" || ") ? t.name.split(" || ")[0] : t.name;
-      return `${t.date}: ${cleanName} - ${formatCurrency(t.amount)} (${t.category})`;
+      const key = cleanName || t.category;
+      incomeSources[key] = (incomeSources[key] ?? 0) + t.amount;
+    });
+    const incomeBreakdownStr = Object.entries(incomeSources)
+      .map(([source, amt]) => `- ${source}: ${formatCurrency(amt)}`)
+      .join("\n    ") || "No transaction-based income sources recorded.";
+
+    // Tally expense categories
+    const expenseTx = transactions.filter(t => t.type === "expense");
+    const categorySpent: Record<string, number> = {};
+    expenseTx.forEach(t => {
+      categorySpent[t.category] = (categorySpent[t.category] ?? 0) + t.amount;
+    });
+    const categorySummaryStr = Object.entries(categorySpent)
+      .map(([cat, amt]) => `- ${cat}: ${formatCurrency(amt)}`)
+      .join("\n    ") || "No expense transactions recorded.";
+
+    // Format top 10 recent transactions for better context depth
+    const recentTx = transactions.slice(0, 10).map(t => {
+      const cleanName = t.name.includes(" || ") ? t.name.split(" || ")[0] : t.name;
+      return `${t.date}: ${cleanName} - ${formatCurrency(t.amount)} (${t.category}) [${t.type}]`;
     }).join("\n      ");
 
     const contextStr = `
@@ -80,17 +103,37 @@ export default function ChatPage() {
     - Savings Rate: ${savingsRate.toFixed(2)}%
     - Today's Safe-To-Spend Limit: ${formatCurrency(safeToSpendVal)}
 
+    Income Sources Breakdown:
+    ${incomeBreakdownStr}
+
+    Category Spending Summary:
+    ${categorySummaryStr}
+
     Budgets:
     ${budgets.map((b: any) => `- ${b.category || b.name}: Spent ${formatCurrency(b.spent || 0)} / Limit ${formatCurrency(b.limit || b.budget || 0)}`).join("\n    ") || "None set"}
 
     Credit Cards:
-    ${cards.map((c: any) => `- ${c.name} (${c.network}, ${c.color}): Limit ${formatCurrency(parseInt(c.limit?.replace(/,/g, '') || '0') || 0)}, Perks: ${c.perks.join(", ")}`).join("\n    ") || "None added"}
+    ${creditCards.map((card: any) => {
+      const cardLimitNum = card.limit ? Number(card.limit.replace(/,/g, '')) : 0;
+      const cardTx = transactions.filter(tx => {
+        if (tx.type !== "expense") return false;
+        const match = tx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
+        return match ? match[1] === card.number : false;
+      });
+      const outstanding = cardTx.reduce((sum, tx) => sum + tx.amount, 0);
+      const util = cardLimitNum > 0 ? Math.min(100, Math.round((outstanding / cardLimitNum) * 100)) : 0;
+      return `- ${card.name} (${card.network}): Outstanding ${formatCurrency(outstanding)} / Limit ${formatCurrency(cardLimitNum)} (Utilization: ${util}%, Billing Date: ${card.billingDate || "N/A"}th of the month, Perks: ${card.perks?.join(", ") || "None"})`;
+    }).join("\n    ") || "None added"}
 
     Investments:
-    ${investments.map(i => `- ${i.name} (${i.type}): Value ${formatCurrency(i.current_value)}`).join("\n    ") || "None"}
+    ${investments.map(i => {
+      const netGain = i.current_value - i.invested;
+      const gainPercent = i.invested > 0 ? ((netGain / i.invested) * 100).toFixed(1) : "0.0";
+      return `- ${i.name} (${i.type}): Value ${formatCurrency(i.current_value)} (Original Invested: ${formatCurrency(i.invested)}, Gain/Loss: ${netGain >= 0 ? "+" : ""}${formatCurrency(netGain)} [${gainPercent}%])`;
+    }).join("\n    ") || "None"}
 
     Goals:
-    ${goals.map(g => `- ${g.name}: ${formatCurrency(g.current_amount)} / ${formatCurrency(g.target_amount)}`).join("\n    ") || "None"}
+    ${goals.map(g => `- ${g.name}: Saved ${formatCurrency(g.current_amount)} of ${formatCurrency(g.target_amount)} (Target Date: ${g.target_date || "Not set"})`).join("\n    ") || "None"}
 
     Recent Transactions:
     ${recentTx || "None"}
