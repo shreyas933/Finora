@@ -295,7 +295,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto bg-background text-foreground font-sans -m-4 md:-m-8 p-4">
+    <div className="flex flex-col h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto text-foreground font-sans -m-4 md:-m-8 p-4" style={{background: '#06090f'}}>
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto space-y-6 pb-4 scrollbar-hide">
         {messages.map((message) => (

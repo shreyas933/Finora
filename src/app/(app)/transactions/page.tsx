@@ -617,12 +617,12 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-5 pb-10">
       {/* ── Header ── */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-white/5 pb-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#EDEBDE]">Transactions</h2>
-          <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{letterSpacing: '-0.02em', color: '#f0f4ff'}}>Transactions</h2>
+          <p className="text-muted-foreground text-sm mt-0.5">Track all your income and expenses</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -630,16 +630,18 @@ export default function TransactionsPage() {
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
             <button
               onClick={() => setShowImportModal(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl font-medium cursor-pointer transition-all active:scale-95"
+              style={{border: '1px solid rgba(30,42,58,0.8)', background: 'rgba(28,35,51,0.6)', color: '#8b9ab0'}}
             >
-              <Upload className="h-4 w-4 text-slate-400" /> Import CSV
+              <Upload className="h-4 w-4" /> Import CSV
             </button>
 
             <button
               onClick={() => typeof window !== "undefined" && window.print()}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl font-medium cursor-pointer transition-all active:scale-95"
+              style={{border: '1px solid rgba(30,42,58,0.8)', background: 'rgba(28,35,51,0.6)', color: '#8b9ab0'}}
             >
-              <Download className="h-4 w-4 text-slate-400" /> Export PDF
+              <Download className="h-4 w-4" /> Export PDF
             </button>
           </div>
 
