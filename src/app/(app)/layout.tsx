@@ -14,9 +14,14 @@ export default function AppLayout({
       <NavigationProvider>
         <GlobalPermissionHandler />
         <div className="flex h-screen overflow-hidden bg-background text-foreground relative">
-          {/* Global Ethereal Glass Background Orbs */}
-          <div className="absolute top-0 left-1/4 w-[50vw] h-[50vw] bg-primary/5 rounded-full blur-[120px] pointer-events-none opacity-60"></div>
-          <div className="absolute bottom-0 right-1/4 w-[40vw] h-[40vw] bg-teal-500/5 rounded-full blur-[150px] pointer-events-none opacity-50"></div>
+          {/* === Ambient Background Layers === */}
+          {/* Blue radial glow — top left */}
+          <div className="absolute top-0 left-0 w-[60vw] h-[60vh] pointer-events-none" style={{background: 'radial-gradient(ellipse at top left, rgba(59,130,246,0.07) 0%, transparent 65%)'}} />
+          {/* Maroon brand glow — bottom right */}
+          <div className="absolute bottom-0 right-0 w-[50vw] h-[50vh] pointer-events-none" style={{background: 'radial-gradient(ellipse at bottom right, rgba(129,1,0,0.06) 0%, transparent 65%)'}} />
+          {/* Teal accent — mid right */}
+          <div className="absolute top-1/3 right-0 w-[30vw] h-[40vh] pointer-events-none" style={{background: 'radial-gradient(ellipse at right, rgba(20,184,166,0.04) 0%, transparent 65%)'}} />
+
 
           <Sidebar />
           <div className="flex flex-col flex-1 overflow-hidden z-10">

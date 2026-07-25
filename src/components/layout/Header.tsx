@@ -223,12 +223,22 @@ export function Header() {
 
 
   return (
-    <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-card/85 px-4 md:px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
-      <div className="flex items-center">
+    <header className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6 backdrop-blur-xl z-20 sticky top-0" style={{background: 'rgba(10,15,26,0.85)', borderBottom: '1px solid rgba(30,42,58,0.7)'}}>
+      <div className="flex items-center gap-3">
         {/* Show FINORA branding on mobile (sidebar is hidden) */}
-        <h1 className="md:hidden text-xl font-bold tracking-tight text-primary">FINORA</h1>
+        <div className="md:hidden flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{background: 'linear-gradient(135deg, #810100, #b01010)'}}>✳</div>
+          <h1 className="text-lg font-bold tracking-tight" style={{color: '#f0f4ff'}}>FINORA</h1>
+        </div>
+
+        {/* Desktop: Pill search bar */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border text-sm text-muted-foreground" style={{background: 'rgba(28,35,51,0.6)', borderColor: 'rgba(30,42,58,0.8)', minWidth: '200px'}}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span className="text-xs">Search transactions...</span>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+
 
         {/* Needs Review Badge */}
         {needsReviewCount > 0 && (
