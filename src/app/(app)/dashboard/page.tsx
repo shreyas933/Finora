@@ -2,9 +2,7 @@
 
 import { useFinance } from "@/context/FinanceContext";
 import { formatCurrency, cn } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { ArrowDownRight, ArrowUpRight, Wallet, Activity, AlertCircle, Plus, CreditCard, ChevronRight, Pencil } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Wallet, Activity, Plus, CreditCard, ChevronRight, Pencil } from "lucide-react";
 import Link from "next/link";
 import { getDaysInMonth } from "date-fns";
 import { motion } from "framer-motion";
@@ -133,7 +131,7 @@ export default function DashboardPage() {
   }, [totalOverspent, currency]);
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-8">
+    <div className="space-y-5 pb-8">
       {showNameModal && (
         <NameSetupModal
           onComplete={(firstName) => {
@@ -143,172 +141,202 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            {greetingText}{profileName ? `, ${profileName}` : ""} 👋
-          </h2>
-          <p className="text-muted-foreground text-sm md:text-base mt-1">Here&apos;s a summary of your financial health.</p>
-        </div>
-
-      </div>
-
       {showBalanceModal && <StartingBalanceModal onClose={() => setShowBalanceModal(false)} />}
 
-      {healthScore < 70 && transactions.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl border border-red-500/15 bg-red-50 text-red-600 flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-          <p className="text-sm font-medium">{alertMessage}</p>
-        </motion.div>
-      )}
-
-      {/* Feature 1: Safe-To-Spend Pacer */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full relative overflow-hidden bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#1a2744] rounded-2xl p-6 md:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between"
-      >
-        {/* Decorative elements */}
-        <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary/20 blur-[80px] rounded-full"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 blur-[60px] rounded-full"></div>
-
-        <div className="relative z-10 max-w-xl">
-          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-primary/20 text-primary-foreground rounded-full border border-primary/30 block w-max mb-3 mt-2 md:mt-0">
-            Daily CFO Pacer
-          </span>
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Safe-To-Spend Today</h3>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Based on your rigid math boundaries and days left in the month, if you spend exactly this much today, you will flawlessly land on your budget goals. Zero guesswork.
-          </p>
+      {/* === Greeting === */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{letterSpacing: '-0.02em'}}>
+            {greetingText}{profileName ? `, ${profileName}` : ""} 👋
+          </h2>
+          <p className="text-muted-foreground text-sm mt-0.5">Here&apos;s your financial snapshot.</p>
         </div>
-        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-white/[0.06] pt-4 md:pt-0">
-          <div className="text-5xl md:text-6xl font-mono font-bold text-gradient-lime tracking-tighter drop-shadow-sm break-all">
-            {formatCurrency(safeToSpend, currency)}
+      </div>
+
+      {/* === Hero Balance Card === */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="hero-card p-6 md:p-8"
+      >
+        {/* Top row */}
+        <div className="relative z-10 flex items-start justify-between mb-6">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{color: 'rgba(176, 196, 222, 0.6)'}}>Total Balance</span>
+            <div className="text-4xl md:text-5xl font-bold mt-2 tracking-tight" style={{color: '#f0f4ff', letterSpacing: '-0.03em'}}>
+              {formatCurrency(balance, currency)}
+            </div>
           </div>
-          <p className="text-xs font-semibold text-slate-400 mt-2 uppercase tracking-widest">Resets at midnight</p>
+          <button
+            onClick={() => setShowBalanceModal(true)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 hover:opacity-80"
+            style={{background: 'rgba(255,255,255,0.08)', color: 'rgba(176,196,222,0.8)', border: '1px solid rgba(255,255,255,0.1)'}}
+          >
+            <Pencil className="h-3 w-3" /> Set
+          </button>
+        </div>
+
+        {/* Income / Expense pills */}
+        <div className="relative z-10 flex gap-3 flex-wrap">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)'}}>
+            <ArrowUpRight className="h-4 w-4 text-emerald-400" />
+            <div>
+              <p className="text-[10px] text-emerald-400/70 uppercase tracking-wider font-semibold">Income</p>
+              <p className="text-sm font-bold text-emerald-400">{formatCurrency(monthlyIncome, currency)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)'}}>
+            <ArrowDownRight className="h-4 w-4 text-red-400" />
+            <div>
+              <p className="text-[10px] text-red-400/70 uppercase tracking-wider font-semibold">Expenses</p>
+              <p className="text-sm font-bold text-red-400">{formatCurrency(monthlyExpenses, currency)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{background: 'rgba(129,1,0,0.12)', border: '1px solid rgba(129,1,0,0.25)'}}>
+            <Wallet className="h-4 w-4 text-red-300" />
+            <div>
+              <p className="text-[10px] text-red-300/70 uppercase tracking-wider font-semibold">Safe to spend</p>
+              <p className="text-sm font-bold text-red-300">{formatCurrency(safeToSpend, currency)}/day</p>
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 blur-[40px] rounded-full"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <div className="flex items-center gap-1.5">
-              <CardTitle className="text-sm font-medium text-slate-400">Total Balance</CardTitle>
-              <button
-                onClick={() => setShowBalanceModal(true)}
-                className="text-slate-500 hover:text-primary p-0.5 rounded transition-colors"
-                title="Adjust balance"
-              >
-                <Pencil className="h-3 w-3" />
-              </button>
+      {/* === Quick Action Tiles === */}
+      <div className="flex gap-3 overflow-x-auto no-scrollbar">
+        {[
+          { icon: <Plus className="h-5 w-5" />, label: 'Add Tx', href: '/transactions', color: '#22c55e' },
+          { icon: <Activity className="h-5 w-5" />, label: 'CFO Chat', href: '/chat', color: '#810100' },
+          { icon: <CreditCard className="h-5 w-5" />, label: 'Cards', href: '/credit', color: '#3b82f6' },
+          { icon: <ChevronRight className="h-5 w-5" />, label: 'Goals', href: '/goals', color: '#a855f7' },
+        ].map((item) => (
+          <Link key={item.label} href={item.href} className="quick-pill flex-shrink-0">
+            <div className="quick-pill-icon" style={{borderColor: `${item.color}30`, background: `${item.color}12`}}>
+              <span style={{color: item.color}}>{item.icon}</span>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <Wallet className="h-4 w-4 text-emerald-400" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="text-2xl font-bold text-emerald-400">{formatCurrency(balance, currency)}</div>
-              <button
-                onClick={() => setShowBalanceModal(true)}
-                className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="h-3 w-3" /> Set Balance
-              </button>
-            </div>
-            <p className="text-xs text-slate-500 mt-1.5">
-              +2.5% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
-          <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-emerald-500/10 blur-[30px] rounded-full"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-slate-400">Monthly Income</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <ArrowUpRight className="h-4 w-4 text-emerald-400" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-2xl font-bold text-emerald-400">{formatCurrency(monthlyIncome, currency)}</div>
-            <p className="text-xs text-emerald-400/80 mt-1.5">
-              On track
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
-          <div className="absolute -top-8 -left-8 w-24 h-24 bg-red-500/10 blur-[30px] rounded-full"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-slate-400">Monthly Expenses</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-              <ArrowDownRight className="h-4 w-4 text-red-400" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-2xl font-bold text-red-400">{formatCurrency(monthlyExpenses, currency)}</div>
-            <p className="text-xs text-red-400/80 mt-1.5">
-              +12% higher than usual
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Activity className="w-24 h-24 text-primary" />
-          </div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-slate-400">Health Score</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Activity className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-2xl font-bold text-white">{healthScore.toFixed(0)} / 100</div>
-            <div className="mt-2.5 h-1.5 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
-              <div
-                className={cn("h-full transition-all rounded-full", healthScore > 70 ? "bg-emerald-500" : healthScore > 40 ? "bg-amber-400" : "bg-red-500")}
-                style={{ width: `${healthScore}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-primary/50 transition-all group">
-          <Link href="/credit" className="block h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-slate-400">Credit Wallet</CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <CreditCard className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold font-mono text-white">
-                {walletCardsCount.credit} Credit / {walletCardsCount.debit} Debit
-              </div>
-              <p className="text-xs text-slate-500 mt-1.5 flex items-center justify-between">
-                <span className="text-primary font-semibold group-hover:underline">View Perks & Score</span>
-                <ChevronRight className="h-3.5 w-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
-              </p>
-            </CardContent>
+            <span className="text-[11px] font-semibold text-muted-foreground">{item.label}</span>
           </Link>
-        </Card>
+        ))}
       </div>
 
-      {/* ── AI Insights ── */}
+      {/* === Stat Cards Row === */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Health Score */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="navy-card p-4"
+        >
+          <p className="text-xs text-muted-foreground font-medium mb-1">Health Score</p>
+          <div className="text-2xl font-bold mb-2" style={{color: healthScore > 70 ? '#22c55e' : healthScore > 40 ? '#eab308' : '#ef4444'}}>
+            {healthScore.toFixed(0)}<span className="text-sm text-muted-foreground font-normal">/100</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{background: 'rgba(30,42,58,0.8)'}}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${healthScore}%`, background: healthScore > 70 ? '#22c55e' : healthScore > 40 ? '#eab308' : '#ef4444' }}
+            />
+          </div>
+        </motion.div>
+
+        {/* Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="navy-card p-4"
+        >
+          <Link href="/credit" className="block h-full">
+            <p className="text-xs text-muted-foreground font-medium mb-1">Credit Wallet</p>
+            <div className="text-2xl font-bold mb-1" style={{color: '#f0f4ff'}}>
+              {walletCardsCount.credit + walletCardsCount.debit}
+              <span className="text-sm text-muted-foreground font-normal"> cards</span>
+            </div>
+            <p className="text-xs text-primary font-semibold flex items-center gap-0.5">
+              View perks <ChevronRight className="h-3 w-3" />
+            </p>
+          </Link>
+        </motion.div>
+
+        {/* Monthly Income */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="navy-card p-4"
+        >
+          <p className="text-xs text-muted-foreground font-medium mb-1">Monthly Income</p>
+          <div className="text-2xl font-bold text-emerald-400">{formatCurrency(monthlyIncome, currency)}</div>
+          <p className="text-xs text-emerald-400/60 mt-1">On track</p>
+        </motion.div>
+
+        {/* Monthly Expenses */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="navy-card p-4"
+        >
+          <p className="text-xs text-muted-foreground font-medium mb-1">Monthly Spend</p>
+          <div className="text-2xl font-bold text-red-400">{formatCurrency(monthlyExpenses, currency)}</div>
+          <p className="text-xs text-muted-foreground mt-1">This month</p>
+        </motion.div>
+      </div>
+
+      {/* === AI Insights === */}
       <AIInsights />
 
-      {/* ── Daily Briefing + Financial Wins ── */}
+      {/* === Recent Transactions === */}
+      <div className="navy-card p-5">
+        <div className="section-header">
+          <p className="text-sm font-bold" style={{color: '#f0f4ff'}}>Recent Transactions</p>
+          <Link href="/transactions" className="text-xs text-primary font-semibold flex items-center gap-0.5 hover:underline">
+            View all <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div>
+          {transactions.slice(0, 7).map((tx) => {
+            const cleanName = tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name;
+            const emoji = tx.type === 'income' ? '💰' : 
+              tx.category?.toLowerCase().includes('food') ? '🍽️' :
+              tx.category?.toLowerCase().includes('shop') ? '🛍️' :
+              tx.category?.toLowerCase().includes('transport') ? '🚗' :
+              tx.category?.toLowerCase().includes('health') ? '💊' :
+              tx.category?.toLowerCase().includes('travel') ? '✈️' :
+              tx.category?.toLowerCase().includes('entertain') ? '🎬' : '💳';
+            return (
+              <div key={tx.id} className="tx-row">
+                <div className="tx-avatar" style={{background: tx.type === 'income' ? 'rgba(34,197,94,0.12)' : 'rgba(30,42,58,0.8)'}}>
+                  {emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{color: '#f0f4ff'}}>{cleanName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{tx.category} · {tx.date}</p>
+                </div>
+                <div className={cn("text-sm font-bold flex-shrink-0", tx.type === 'income' ? 'text-emerald-400' : 'text-red-400')}>
+                  {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount, currency)}
+                </div>
+              </div>
+            );
+          })}
+          {transactions.length === 0 && (
+            <div className="py-8 text-center text-muted-foreground text-sm">No transactions yet</div>
+          )}
+        </div>
+      </div>
+
+      {/* === Daily Briefing + Financial Wins === */}
       <div className="grid gap-4 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardContent className="pt-5 pb-5">
-            <DailyBriefing />
-          </CardContent>
-        </Card>
-        <Card className="lg:col-span-2">
-          <CardContent className="pt-5 pb-5">
-            <FinancialWins />
-          </CardContent>
-        </Card>
+        <div className="navy-card p-5 lg:col-span-3">
+          <DailyBriefing />
+        </div>
+        <div className="navy-card p-5 lg:col-span-2">
+          <FinancialWins />
+        </div>
       </div>
     </div>
   );
 }
+

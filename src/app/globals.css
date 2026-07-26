@@ -18,15 +18,17 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
   /* ── Finora Brand Palette ── */
-  --color-finora-dark: #0F172A;
-  --color-finora-card: #FFFFFF;
-  --color-finora-lime: #a3e635;
-  --color-finora-lime-dark: #84cc16;
-  --color-finora-navy: #0B1120;
-  --color-finora-slate: #1E293B;
-  --color-finora-chat-ai: #F8FAFC;
+  --color-finora-dark: #06090f;
+  --color-finora-card: #0d1117;
+  --color-finora-red: #810100;
+  --color-finora-red-dark: #660000;
+  --color-finora-peach: #ffb9ab;
+  --color-finora-gray: #1c2333;
+  --color-finora-chat-ai: #0f1823;
+  --color-finora-navy: #0d1117;
+  --color-finora-navy-light: #1c2333;
+  --color-finora-blue-accent: #3b82f6;
 
   /* ── Radius Tokens ── */
   --radius-lg: var(--radius);
@@ -42,39 +44,40 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 
-  /* ── Shadows (Softer, more professional) ── */
-  --shadow-level-1: 0px 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-level-2: 0px 4px 12px rgba(15, 23, 42, 0.03), 0px 2px 4px rgba(15, 23, 42, 0.02);
-  --shadow-float: 0px 12px 32px rgba(15, 23, 42, 0.04), 0px 4px 12px rgba(15, 23, 42, 0.02);
-  --shadow-glow-lime: 0 0 15px rgba(163, 230, 53, 0.2);
-  --shadow-card: 0px 2px 8px rgba(15, 23, 42, 0.02), 0px 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-level-1: 0px 4px 24px rgba(0, 10, 30, 0.4);
+  --shadow-level-2: 0px 8px 40px rgba(0, 10, 30, 0.6);
+  --shadow-card: 0px 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 :root {
-  /* ── Professional Fintech Light Theme ── */
-  --background: #F4F4F5; /* Very light cool gray */
-  --foreground: #09090B; /* Almost black for high readability */
-  --card: #FFFFFF;
-  --card-foreground: #09090B;
-  --primary: #a3e635; /* Signature lime green for primary CTA buttons */
-  --primary-foreground: #0A0F1A;
-  --secondary: #F4F4F5;
-  --secondary-foreground: #18181B;
-  --muted: #F4F4F5;
-  --muted-foreground: #71717A;
-  --accent: #a3e635; /* Lime green as an accent */
-  --accent-foreground: #09090B;
-  --destructive: #EF4444;
-  --destructive-foreground: #FAFAFA;
-  --border: #E4E4E7; /* Crisp, visible but subtle borders */
-  --input: #FFFFFF;
-  --ring: #09090B;
-  --chart-1: #09090B;
-  --chart-2: #a3e635;
+  /* === FINORA Deep Navy Dark Theme === */
+  --background: #06090f;
+  --foreground: #f0f4ff;
+  --card: #0d1117;
+  --card-foreground: #f0f4ff;
+  --primary: #810100;
+  --primary-foreground: #f0f4ff;
+  --secondary: #111827;
+  --secondary-foreground: #f0f4ff;
+  --muted: #1c2333;
+  --muted-foreground: #8b9ab0;
+  --accent: #1c2333;
+  --accent-foreground: #f0f4ff;
+  --destructive: #810100;
+  --destructive-foreground: #f0f4ff;
+  --border: #1e2a3a;
+  --input: #1c2333;
+  --ring: #810100;
+  --chart-1: #22c55e;
+  --chart-2: #810100;
   --chart-3: #3b82f6;
   --chart-4: #eab308;
-  --chart-5: #f97316;
-  --radius: 0.75rem;
+  --chart-5: #ff8c7a;
+  --radius: 0.875rem;
+  /* Ambient glows */
+  --glow-blue: rgba(59, 130, 246, 0.08);
+  --glow-primary: rgba(129, 1, 0, 0.06);
+  --glow-teal: rgba(20, 184, 166, 0.06);
 }
 
 body {
@@ -114,6 +117,183 @@ td,
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* === FINORA Navy Design System === */
+
+  /* Card surfaces — deep navy with subtle border */
+  .navy-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Hero balance card — dark gradient surface */
+  .hero-card {
+    background: linear-gradient(135deg, #0d1933 0%, #111827 60%, #0f1623 100%);
+    border: 1px solid rgba(59, 130, 246, 0.12);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 40px rgba(0, 10, 30, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-card::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(129, 1, 0, 0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Quick action pill buttons */
+  .quick-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 0.75rem;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-width: 72px;
+  }
+
+  .quick-pill:hover {
+    background: var(--accent);
+    border-color: rgba(129, 1, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 10, 30, 0.4);
+  }
+
+  .quick-pill-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Glass credit card */
+  .credit-card-glass {
+    background: linear-gradient(135deg, #1a3a5c 0%, #0d2040 40%, #050d1a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .credit-card-teal {
+    background: linear-gradient(135deg, #0d4a4a 0%, #0a3540 40%, #071c2a 100%);
+  }
+
+  .credit-card-purple {
+    background: linear-gradient(135deg, #2d1a4a 0%, #1a0d35 40%, #0d0620 100%);
+  }
+
+  .credit-card-gold {
+    background: linear-gradient(135deg, #3a2800 0%, #2a1c00 40%, #1a1000 100%);
+  }
+
+  /* Section dividers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Transaction row */
+  .tx-row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid rgba(30, 42, 58, 0.5);
+    transition: background 0.15s;
+  }
+
+  .tx-row:last-child {
+    border-bottom: none;
+  }
+
+  .tx-row:hover {
+    background: rgba(28, 35, 51, 0.4);
+    margin: 0 -0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-radius: 0.5rem;
+    border-bottom-color: transparent;
+  }
+
+  .tx-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .nav-item:hover {
+    background: rgba(28, 35, 51, 0.6);
+    color: var(--foreground);
+  }
+
+  .nav-item.active {
+    background: rgba(129, 1, 0, 0.12);
+    color: var(--foreground);
+    border: 1px solid rgba(129, 1, 0, 0.2);
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: var(--primary);
+    border-radius: 0 2px 2px 0;
   }
 }
 
