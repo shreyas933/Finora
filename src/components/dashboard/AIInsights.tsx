@@ -32,9 +32,9 @@ const insightMeta: Record<InsightType, { icon: React.ElementType; color: string;
   },
   alert: {
     icon: AlertTriangle,
-    color: "text-primary", // Cherry Red
-    bg: "rgba(129,1,0,0.08)",
-    border: "rgba(129,1,0,0.18)",
+    color: "text-red-600",
+    bg: "rgba(239,68,68,0.08)",
+    border: "rgba(239,68,68,0.18)",
   },
 };
 

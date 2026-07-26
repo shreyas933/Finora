@@ -223,19 +223,28 @@ export function Header() {
 
 
   return (
-    <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-card/85 px-4 md:px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
+    <header className="flex h-14 md:h-16 items-center justify-between border-b border-black/[0.06] bg-card/80 backdrop-blur-xl px-4 md:px-6 z-20 sticky top-0">
       <div className="flex items-center">
         {/* Show FINORA branding on mobile (sidebar is hidden) */}
-        <h1 className="md:hidden text-xl font-bold tracking-tight text-primary">FINORA</h1>
+        <div className="md:hidden flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#84cc16"/>
+              <path d="M2 17L12 22L22 17" stroke="#84cc16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#84cc16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h1 className="text-base font-bold tracking-widest text-foreground uppercase">FINORA</h1>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
 
         {/* Needs Review Badge */}
         {needsReviewCount > 0 && (
-          <Link href="/transactions" className="relative p-2 text-amber-500 hover:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-all hidden sm:flex items-center gap-2 border border-amber-500/20">
+          <Link href="/transactions" className="relative p-2 text-amber-600 hover:text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-xl transition-all hidden sm:flex items-center gap-2 border border-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <span className="text-xs font-bold hidden md:inline-block">Review</span>
-            <span className="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black border-2 border-card">
+            <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white shadow-sm">
               {needsReviewCount}
             </span>
           </Link>
@@ -244,20 +253,23 @@ export function Header() {
         {/* Notifications Dropdown */}
         <div className="relative py-2" ref={notificationsRef}>
           <button
-            className={`text-muted-foreground hover:text-foreground relative p-2 rounded-xl transition-all duration-200 ${showNotifications ? 'bg-secondary text-foreground' : 'hover:bg-secondary/60'}`}
+            className={cn(
+              "text-muted-foreground hover:text-foreground relative p-2 rounded-xl transition-all duration-200",
+              showNotifications ? 'bg-black/[0.04] text-foreground' : 'hover:bg-black/[0.03]'
+            )}
             onClick={() => setShowNotifications(!showNotifications)}
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white border-2 border-card ring-2 ring-primary/10">
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground shadow-sm">
                 {unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-[-48px] md:right-0 mt-3 w-80 md:w-96 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl z-50 overflow-hidden transition-all duration-200 scale-100 origin-top-right">
-              <div className="px-4 py-3.5 border-b border-zinc-800/60 flex items-center justify-between bg-zinc-900/30">
+            <div className="absolute right-[-48px] md:right-0 mt-3 w-80 md:w-96 bg-card/95 backdrop-blur-2xl border border-black/[0.08] rounded-2xl shadow-float z-50 overflow-hidden transition-all duration-200 scale-100 origin-top-right">
+              <div className="px-4 py-3.5 border-b border-black/[0.06] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BellRing className="h-4 w-4 text-primary animate-pulse" />
                   <h3 className="font-semibold text-sm text-foreground">Updates & Alerts</h3>
@@ -265,20 +277,20 @@ export function Header() {
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+                    className="text-xs text-primary hover:text-primary-foreground transition-colors font-medium"
                   >
                     Mark all read
                   </button>
                 )}
               </div>
 
-              <div className="max-h-[360px] overflow-y-auto divide-y divide-zinc-900">
+              <div className="max-h-[360px] overflow-y-auto divide-y divide-black/[0.04]">
                 {notifications.length > 0 ? (
                   notifications.map(notification => (
                     <div
                       key={notification.id}
                       onClick={() => markAsRead(notification.id)}
-                      className={`relative px-4 py-3.5 hover:bg-zinc-900/40 transition-all cursor-pointer flex gap-3 group/item ${!notification.read ? 'bg-primary/5' : ''}`}
+                      className={`relative px-4 py-3.5 hover:bg-black/[0.02] transition-all cursor-pointer flex gap-3 group/item ${!notification.read ? 'bg-primary/[0.05]' : ''}`}
                     >
                       {/* Unread Left Border Accent */}
                       {!notification.read && (
@@ -287,9 +299,9 @@ export function Header() {
 
                       {/* Icon container */}
                       <div className="flex-shrink-0">
-                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notification.type === 'alert' ? 'bg-red-500/10 text-red-400' :
-                            notification.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' :
-                              'bg-primary/10 text-primary-foreground'
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notification.type === 'alert' ? 'bg-red-100 text-red-600' :
+                            notification.type === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                              'bg-primary/20 text-primary-foreground'
                           }`}>
                           {notification.type === 'alert' && <AlertTriangle className="h-4 w-4" />}
                           {notification.type === 'success' && <CheckCircle className="h-4 w-4" />}
@@ -300,22 +312,22 @@ export function Header() {
                       {/* Text details */}
                       <div className="flex-grow min-w-0 pr-4">
                         <div className="flex items-baseline justify-between gap-2">
-                          <p className={`text-xs font-semibold truncate ${!notification.read ? 'text-foreground font-bold' : 'text-zinc-400'}`}>
+                          <p className={`text-xs font-semibold truncate ${!notification.read ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>
                             {notification.title}
                           </p>
-                          <span className="text-[10px] text-zinc-500 whitespace-nowrap flex-shrink-0">
+                          <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap flex-shrink-0">
                             {notification.time}
                           </span>
                         </div>
-                        <p className={cn("text-[11px] text-zinc-400 leading-normal mt-0.5 font-medium", !notification.isReview && "line-clamp-2")}>
+                        <p className={cn("text-[11px] text-muted-foreground leading-normal mt-0.5 font-medium", !notification.isReview && "line-clamp-2")}>
                           {notification.message}
                         </p>
 
                         {notification.isReview && (
-                          <div className="mt-2.5 space-y-2 border-t border-white/5 pt-2.5">
-                            <div className="flex justify-between items-center text-[10px] text-zinc-400 font-mono bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/5">
-                              <span className="truncate max-w-[140px] font-semibold text-zinc-200">{notification.merchant}</span>
-                              <span className={cn("font-bold", notification.txType === "income" ? "text-emerald-400" : "text-red-400")}>
+                          <div className="mt-2.5 space-y-2 border-t border-black/[0.04] pt-2.5">
+                            <div className="flex justify-between items-center text-[10px] text-muted-foreground font-mono bg-black/[0.02] px-2 py-1.5 rounded-lg border border-black/[0.04]">
+                              <span className="truncate max-w-[140px] font-semibold text-foreground">{notification.merchant}</span>
+                              <span className={cn("font-bold", notification.txType === "income" ? "text-emerald-600" : "text-red-600")}>
                                 {notification.txType === "income" ? "+" : "-"}{notification.amountStr}
                               </span>
                             </div>
@@ -329,7 +341,7 @@ export function Header() {
                                       handleReviewPick(notification.txId, cat.name, notification.merchant || "");
                                     }
                                   }}
-                                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all active:scale-95 cursor-pointer"
+                                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold bg-black/[0.03] border border-black/[0.06] text-muted-foreground hover:bg-black/[0.05] hover:border-black/[0.1] hover:text-foreground transition-all active:scale-95 cursor-pointer"
                                 >
                                   {cat.icon}
                                   <span>{cat.name}</span>
@@ -343,7 +355,7 @@ export function Header() {
                       {/* Dismiss button */}
                       <button
                         onClick={(e) => dismissNotification(notification.id, e)}
-                        className="absolute right-2 top-3.5 p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60 opacity-0 group-hover/item:opacity-100 transition-all"
+                        className="absolute right-2 top-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-black/[0.04] opacity-0 group-hover/item:opacity-100 transition-all"
                         title="Dismiss"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -352,11 +364,11 @@ export function Header() {
                   ))
                 ) : (
                   <div className="px-4 py-12 text-center flex flex-col items-center justify-center">
-                    <div className="h-10 w-10 rounded-full bg-zinc-900 flex items-center justify-center mb-3">
-                      <Bell className="h-5 w-5 text-zinc-600" />
+                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center mb-3">
+                      <Bell className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <p className="text-xs font-medium text-zinc-400">All caught up</p>
-                    <p className="text-[10px] text-zinc-500 mt-1 max-w-[200px]">No new alerts or system updates to review.</p>
+                    <p className="text-xs font-medium text-muted-foreground">All caught up</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-1 max-w-[200px]">No new alerts or system updates to review.</p>
                   </div>
                 )}
               </div>
@@ -365,28 +377,30 @@ export function Header() {
         </div>
         <div className="relative py-2" ref={profileRef}>
           <div
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer hover:bg-black/[0.03] rounded-xl px-2 py-1.5 transition-all"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <UserCircle className="h-8 w-8 text-primary" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-emerald-500/20 flex items-center justify-center border border-black/[0.06]">
+              <UserCircle className="h-5 w-5 text-primary-foreground" />
+            </div>
             <div className="hidden md:block">
-              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-sm font-medium text-foreground">{displayName}</p>
             </div>
           </div>
 
           {showProfileMenu && (
-            <div className="absolute top-full right-0 mt-1 w-52 bg-card border border-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute top-full right-0 mt-1 w-52 bg-card/95 backdrop-blur-2xl border border-black/[0.08] rounded-xl shadow-float py-2 z-50">
               <Link
                 href="/settings"
                 onClick={() => setShowProfileMenu(false)}
-                className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-secondary flex items-center gap-2.5 transition-colors font-medium"
+                className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.03] flex items-center gap-2.5 transition-colors font-medium"
               >
-                <Settings className="h-4 w-4" /> Settings
+                <Settings className="h-4 w-4 text-muted-foreground" /> Settings
               </Link>
-              <div className="h-px bg-border my-1" />
+              <div className="h-px bg-black/[0.06] my-1" />
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-secondary flex items-center gap-2.5 transition-colors"
+                className="w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:bg-black/[0.03] flex items-center gap-2.5 transition-colors"
               >
                 <LogOut className="h-4 w-4" /> Logout
               </button>

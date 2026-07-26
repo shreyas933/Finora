@@ -14,14 +14,14 @@ export function FloatingActionButton({ onClick, className }: FloatingActionButto
       onClick={onClick}
       className={cn(
         "fixed right-6 bottom-24 z-50 flex items-center justify-center",
-        "w-14 h-14 rounded-full bg-[#7a0808] text-[#f4efe6] shadow-lg",
-        "transition-transform active:scale-95 hover:scale-105",
-        "shadow-[#7a0808]/30 shadow-[0_8px_30px_rgb(122,8,8,0.3)]",
+        "w-14 h-14 rounded-full bg-primary text-primary-foreground",
+        "transition-all duration-200 active:scale-95 hover:scale-105",
+        "shadow-[0_8px_24px_rgba(163,230,53,0.4)] hover:shadow-[0_12px_32px_rgba(163,230,53,0.5)]",
         className
       )}
       aria-label="Add new"
     >
-      <Plus className="w-8 h-8 stroke-[2]" />
+      <Plus className="w-7 h-7 stroke-[2.5]" />
     </button>
   );
 }

@@ -135,18 +135,18 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 md:space-y-8 pb-8">
       {showNameModal && (
-        <NameSetupModal 
+        <NameSetupModal
           onComplete={(firstName) => {
             setProfileName(firstName);
             setShowNameModal(false);
-          }} 
+          }}
         />
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {greetingText}{profileName ? `, ${profileName}` : ""}
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            {greetingText}{profileName ? `, ${profileName}` : ""} 👋
           </h2>
           <p className="text-muted-foreground text-sm md:text-base mt-1">Here&apos;s a summary of your financial health.</p>
         </div>
@@ -156,8 +156,8 @@ export default function DashboardPage() {
       {showBalanceModal && <StartingBalanceModal onClose={() => setShowBalanceModal(false)} />}
 
       {healthScore < 70 && transactions.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 text-destructive" />
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl border border-red-500/15 bg-red-50 text-red-600 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
           <p className="text-sm font-medium">{alertMessage}</p>
         </motion.div>
       )}
@@ -166,111 +166,127 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full relative overflow-hidden bg-gradient-to-br from-primary to-secondary rounded-2xl p-6 md:p-8 shadow-level-1 flex flex-col md:flex-row items-start md:items-center justify-between"
+        className="w-full relative overflow-hidden bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#1a2744] rounded-2xl p-6 md:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between"
       >
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/5 blur-3xl rounded-full"></div>
+        {/* Decorative elements */}
+        <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary/20 blur-[80px] rounded-full"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 blur-[60px] rounded-full"></div>
+
         <div className="relative z-10 max-w-xl">
-          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-black/20 text-foreground rounded-full border border-white/10 block w-max mb-3 mt-2 md:mt-0">
+          <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-primary/20 text-primary-foreground rounded-full border border-primary/30 block w-max mb-3 mt-2 md:mt-0">
             Daily CFO Pacer
           </span>
-          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Safe-To-Spend Today</h3>
-          <p className="text-sm text-foreground/80 leading-relaxed">
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Safe-To-Spend Today</h3>
+          <p className="text-sm text-slate-300 leading-relaxed">
             Based on your rigid math boundaries and days left in the month, if you spend exactly this much today, you will flawlessly land on your budget goals. Zero guesswork.
           </p>
         </div>
-        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-white/10 pt-4 md:pt-0">
-          <div className="text-5xl md:text-6xl font-mono font-bold text-foreground tracking-tighter drop-shadow-sm break-all">
+        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-white/[0.06] pt-4 md:pt-0">
+          <div className="text-5xl md:text-6xl font-mono font-bold text-gradient-lime tracking-tighter drop-shadow-sm break-all">
             {formatCurrency(safeToSpend, currency)}
           </div>
-          <p className="text-xs font-semibold text-foreground/70 mt-2 uppercase tracking-widest">Resets at midnight</p>
+          <p className="text-xs font-semibold text-slate-400 mt-2 uppercase tracking-widest">Resets at midnight</p>
         </div>
       </motion.div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 blur-[40px] rounded-full"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
             <div className="flex items-center gap-1.5">
-              <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-400">Total Balance</CardTitle>
               <button
                 onClick={() => setShowBalanceModal(true)}
-                className="text-muted-foreground hover:text-primary p-0.5 rounded transition-colors"
+                className="text-slate-500 hover:text-primary p-0.5 rounded transition-colors"
                 title="Adjust balance"
               >
                 <Pencil className="h-3 w-3" />
               </button>
             </div>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+              <Wallet className="h-4 w-4 text-emerald-400" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="text-2xl font-bold text-emerald-500">{formatCurrency(balance, currency)}</div>
+              <div className="text-2xl font-bold text-emerald-400">{formatCurrency(balance, currency)}</div>
               <button
                 onClick={() => setShowBalanceModal(true)}
-                className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="h-3 w-3" /> Set Balance
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-500 mt-1.5">
               +2.5% from last month
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Income</CardTitle>
-            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
+          <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-emerald-500/10 blur-[30px] rounded-full"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-slate-400">Monthly Income</CardTitle>
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+              <ArrowUpRight className="h-4 w-4 text-emerald-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-500">{formatCurrency(monthlyIncome, currency)}</div>
-            <p className="text-xs text-emerald-500 mt-1">
+          <CardContent className="relative z-10">
+            <div className="text-2xl font-bold text-emerald-400">{formatCurrency(monthlyIncome, currency)}</div>
+            <p className="text-xs text-emerald-400/80 mt-1.5">
               On track
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Expenses</CardTitle>
-            <ArrowDownRight className="h-4 w-4 text-destructive" />
+        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
+          <div className="absolute -top-8 -left-8 w-24 h-24 bg-red-500/10 blur-[30px] rounded-full"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-slate-400">Monthly Expenses</CardTitle>
+            <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+              <ArrowDownRight className="h-4 w-4 text-red-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{formatCurrency(monthlyExpenses, currency)}</div>
-            <p className="text-xs text-destructive mt-1">
+          <CardContent className="relative z-10">
+            <div className="text-2xl font-bold text-red-400">{formatCurrency(monthlyExpenses, currency)}</div>
+            <p className="text-xs text-red-400/80 mt-1.5">
               +12% higher than usual
             </p>
           </CardContent>
         </Card>
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-white/20 transition-all">
           <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Activity className="w-24 h-24" />
+            <Activity className="w-24 h-24 text-primary" />
           </div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Health Score</CardTitle>
-            <Activity className="h-4 w-4 text-primary" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-slate-400">Health Score</CardTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Activity className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{healthScore.toFixed(0)} / 100</div>
-            <div className="mt-2 h-2 w-full bg-secondary rounded-full overflow-hidden">
+          <CardContent className="relative z-10">
+            <div className="text-2xl font-bold text-white">{healthScore.toFixed(0)} / 100</div>
+            <div className="mt-2.5 h-1.5 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
               <div
-                className={cn("h-full transition-all", healthScore > 70 ? "bg-emerald-500" : healthScore > 40 ? "bg-amber-500" : "bg-destructive")}
+                className={cn("h-full transition-all rounded-full", healthScore > 70 ? "bg-emerald-500" : healthScore > 40 ? "bg-amber-400" : "bg-red-500")}
                 style={{ width: `${healthScore}%` }}
               />
             </div>
           </CardContent>
         </Card>
-        <Card className="relative overflow-hidden hover:border-primary/30 transition-colors">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-[#1E293B]/90 via-[#0F172A]/90 to-[#1a2744]/90 backdrop-blur-xl border-white/10 text-white shadow-card hover:border-primary/50 transition-all group">
           <Link href="/credit" className="block h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Credit Wallet</CardTitle>
-              <CreditCard className="h-4 w-4 text-primary" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-medium text-slate-400">Credit Wallet</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <CreditCard className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-mono">
+            <CardContent className="relative z-10">
+              <div className="text-2xl font-bold font-mono text-white">
                 {walletCardsCount.credit} Credit / {walletCardsCount.debit} Debit
               </div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
-                <span className="text-primary font-semibold hover:underline">View Perks & Score</span>
-                <ChevronRight className="h-3.5 w-3.5 text-primary" />
+              <p className="text-xs text-slate-500 mt-1.5 flex items-center justify-between">
+                <span className="text-primary font-semibold group-hover:underline">View Perks & Score</span>
+                <ChevronRight className="h-3.5 w-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
               </p>
             </CardContent>
           </Link>

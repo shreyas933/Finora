@@ -138,16 +138,15 @@ function getSubscriptionVisuals(name: string) {
 }
 
 // ── Circular Progress Ring ────────────────────────────────────────────────────
-function CircleRing({ percent, color, overBudget }: { percent: number; color: string; overBudget: boolean }) {
-  const radius = 34;
+function CircleRing({ percent, color, overBudget }: { percent: number, color: string, overBudget: boolean }) {
+  const radius = 38;
   const circumference = 2 * Math.PI * radius;
-  const filled = Math.min(1, percent / 100);
-  const strokeDashoffset = circumference * (1 - filled);
-  const displayColor = overBudget ? "#fbbf24" : color;
+  const strokeDashoffset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const displayColor = overBudget ? "#F59E0B" : color;
 
   return (
-    <svg width="84" height="84" viewBox="0 0 84 84" className="rotate-[-90deg]">
-      <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
+    <svg className="w-[84px] h-[84px] transform -rotate-90">
+      <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
       <circle
         cx="42" cy="42" r={radius}
         fill="none"
@@ -177,46 +176,48 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
   };
 
   return (
-    <div className="flex items-center gap-4 bg-gradient-to-br from-primary to-secondary border border-transparent rounded-xl p-4 hover:brightness-105 transition-all text-white shadow-md">
-      <div className="relative flex-shrink-0">
+    <div className="flex items-center gap-4 relative overflow-hidden bg-gradient-to-br from-[#1E293B]/75 via-[#0F172A]/75 to-[#1a2744]/75 backdrop-blur-xl border border-white/10 text-white shadow-card hover:border-white/20 transition-all rounded-xl p-4 group">
+      <div className="absolute -top-12 -left-12 w-24 h-24 bg-white/5 blur-[30px] rounded-full pointer-events-none"></div>
+      
+      <div className="relative flex-shrink-0 z-10">
         <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
         <span
-          className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold", overBudget ? "text-yellow-300" : "text-white")}
+          className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold", overBudget ? "text-amber-400" : "text-white")}
           style={{ transform: "rotate(90deg)" }}
         >
           {percent}%
         </span>
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 z-10">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-            <span className="text-sm font-semibold text-white truncate">{cat.name}</span>
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+            <span className="text-sm font-bold text-white truncate">{cat.name}</span>
           </div>
           {editing ? (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 z-10 relative">
               <input
-                className="w-20 text-xs bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-white"
+                className="w-20 text-xs bg-black/40 border border-white/10 rounded px-2 py-1 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 autoFocus
                 onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setEditing(false); }}
               />
-              <button onClick={handleSave} className="text-emerald-300 hover:text-emerald-200"><Check className="h-3.5 w-3.5" /></button>
-              <button onClick={() => setEditing(false)} className="text-yellow-300 hover:text-yellow-200"><X className="h-3.5 w-3.5" /></button>
+              <button onClick={handleSave} className="text-emerald-400 hover:text-emerald-300 p-1"><Check className="h-3.5 w-3.5" /></button>
+              <button onClick={() => setEditing(false)} className="text-slate-400 hover:text-slate-200 p-1"><X className="h-3.5 w-3.5" /></button>
             </div>
           ) : (
-            <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-white/60 hover:text-white transition-colors">
+            <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-slate-400 hover:text-white transition-colors z-10 relative">
               <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
-        <p className="text-xs text-red-100">{formatCurrency(spent, currency)} / {formatCurrency(cat.budget, currency)}</p>
+        <p className="text-xs text-slate-400 font-medium">{formatCurrency(spent, currency)} <span className="text-slate-500">/</span> {formatCurrency(cat.budget, currency)}</p>
         {overBudget ? (
-          <p className="text-xs text-yellow-300 font-bold mt-0.5">Over by {formatCurrency(-remaining, currency)}</p>
+          <p className="text-xs text-amber-400 font-bold mt-0.5">Over by {formatCurrency(-remaining, currency)}</p>
         ) : (
-          <p className="text-xs text-red-200 mt-0.5">{formatCurrency(remaining, currency)} remaining</p>
+          <p className="text-xs text-emerald-400 font-medium mt-0.5">{formatCurrency(remaining, currency)} remaining</p>
         )}
       </div>
     </div>
@@ -619,10 +620,10 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-8 pb-10">
       {/* ── Header ── */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-white/5 pb-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-border pb-6">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#EDEBDE]">Transactions</h2>
-          <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Transactions</h2>
+          <p className="text-muted-foreground text-sm mt-1">Track all your income and expenses</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -630,14 +631,14 @@ export default function TransactionsPage() {
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
             <button
               onClick={() => setShowImportModal(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-border bg-card hover:bg-slate-50 text-foreground transition-all active:scale-95 font-medium cursor-pointer shadow-sm"
             >
               <Upload className="h-4 w-4 text-slate-400" /> Import CSV
             </button>
 
             <button
               onClick={() => typeof window !== "undefined" && window.print()}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-border bg-card hover:bg-slate-50 text-foreground transition-all active:scale-95 font-medium cursor-pointer shadow-sm"
             >
               <Download className="h-4 w-4 text-slate-400" /> Export PDF
             </button>
@@ -647,7 +648,7 @@ export default function TransactionsPage() {
           <div className="flex w-full sm:w-auto">
             <button
               onClick={() => setShowAddForm(v => !v)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl bg-primary text-white hover:bg-red-700 transition-all active:scale-95 font-bold shadow-lg shadow-primary/10 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-95 font-semibold shadow-md cursor-pointer"
             >
               <Plus className="h-4 w-4" /> Add Transaction
             </button>
@@ -708,7 +709,7 @@ export default function TransactionsPage() {
               <option value="expense">Expense</option>
               <option value="income">Income</option>
             </select>
-            <button onClick={handleAddTransaction} className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
+            <button onClick={handleAddTransaction} className="px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm">
               <Check className="h-4 w-4" />
             </button>
           </div>
@@ -719,19 +720,19 @@ export default function TransactionsPage() {
       {/* ── Budget Tracker ── */}
       <div className="space-y-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">Budget Tracker</h3>
+          <h3 className="text-xl font-bold text-foreground">Budget Tracker</h3>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAiModal(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors shadow-sm"
             >
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> AI Budget Profiler
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> AI Budget Profiler
             </button>
             <button
               onClick={() => setShowCustomBudgetModal(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-red-400 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-slate-50 text-foreground transition-colors shadow-sm"
             >
-              <Plus className="h-3.5 w-3.5 text-primary" /> Add Budget
+              <Plus className="h-3.5 w-3.5 text-slate-400" /> Add Budget
             </button>
             {hasCustomBudget && (
               <button
@@ -739,9 +740,9 @@ export default function TransactionsPage() {
                   localStorage.removeItem("finora_has_custom_budget");
                   setHasCustomBudget(false);
                 }}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors shadow-sm"
               >
-                <X className="h-3.5 w-3.5 text-red-400" /> Reset Custom
+                <X className="h-3.5 w-3.5 text-red-500" /> Reset Custom
               </button>
             )}
           </div>
@@ -851,11 +852,11 @@ export default function TransactionsPage() {
       {/* ── All Transactions ── */}
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <h3 className="text-xl font-bold">All Transactions</h3>
+          <h3 className="text-xl font-bold text-foreground">All Transactions</h3>
           <div className="flex flex-wrap items-center gap-2">
-            <Filter className="h-4 w-4 text-slate-500" />
+            <Filter className="h-4 w-4 text-slate-400" />
             <select
-              className="bg-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
+              className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
               value={filterType}
               onChange={e => setFilterType(e.target.value as "all" | "income" | "expense")}
             >
@@ -864,7 +865,7 @@ export default function TransactionsPage() {
               <option value="expense">Expense</option>
             </select>
             <select
-              className="bg-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-primary"
+              className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
             >
@@ -872,29 +873,29 @@ export default function TransactionsPage() {
                 <option key={c} value={c}>{c === "all" ? "All Categories" : c}</option>
               ))}
             </select>
-            <label className="flex items-center gap-2 text-xs md:text-sm text-slate-400 hover:text-slate-200 select-none cursor-pointer border border-white/10 rounded-lg px-3 py-1.5 bg-[#1B1716]/80 hover:bg-[#1B1716] transition-all">
+            <label className="flex items-center gap-2 text-xs md:text-sm text-slate-600 hover:text-foreground select-none cursor-pointer border border-border rounded-lg px-3 py-1.5 bg-card hover:bg-slate-50 transition-all shadow-sm">
               <input
                 type="checkbox"
                 checked={showRunningBalance}
                 onChange={(e) => setShowRunningBalance(e.target.checked)}
-                className="rounded border-white/20 bg-muted text-primary focus:ring-primary focus:ring-offset-0 h-4 w-4 accent-red-500 cursor-pointer"
+                className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
               />
               Show Running Balance
             </label>
           </div>
         </div>
 
-        <div className="bg-card border border-white/5 rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           {filteredWithBalance.length === 0 ? (
-            <div className="py-16 text-center text-slate-500">No transactions found.</div>
+            <div className="py-16 text-center text-muted-foreground">No transactions found.</div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-border">
               {filteredWithBalance.map((tx) => {
                 const Icon = () => CATEGORY_ICONS[tx.category] ?? <Wallet className="h-4 w-4" />;
                 const isUncategorized = false;
                 const tagClass = isUncategorized
-                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/30 cursor-pointer hover:bg-amber-500/25 transition-colors"
-                  : (CATEGORY_COLORS[tx.category] ?? "bg-slate-500/20 text-slate-400");
+                  ? "bg-amber-100 text-amber-700 border border-amber-200 cursor-pointer hover:bg-amber-200 transition-colors"
+                  : (CATEGORY_COLORS[tx.category] ?? "bg-slate-100 text-slate-600");
                 const balIsPositive = tx.runningBalance >= 0;
                 const isExpanded = inlineCategorizeId === tx.id;
                 const isSaving = inlineSavingId === tx.id;
@@ -927,18 +928,18 @@ export default function TransactionsPage() {
                 return (
                   <div key={tx.id} className="transition-colors">
                     {/* ── Main row ── */}
-                    <div className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-white/[0.02]">
-                      <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-muted text-slate-300">
+                    <div className="flex items-center gap-3 md:gap-4 px-4 md:px-5 py-4 hover:bg-slate-50 transition-colors">
+                      <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-slate-100 text-slate-500">
                         <Icon />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate pr-2">
+                        <p className="text-sm font-bold text-foreground truncate pr-2">
                           {tx.name.includes(" || ") ? tx.name.split(" || ")[0] : tx.name}
                         </p>
                         <div className="flex items-center gap-2 mt-1 overflow-hidden flex-wrap">
                           {/* Category badge — tappable when uncategorized */}
                           {isSaving ? (
-                            <span className="flex items-center gap-1 text-[10px] md:text-xs px-2 py-0.5 rounded font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                            <span className="flex items-center gap-1 text-[10px] md:text-xs px-2 py-0.5 rounded font-medium bg-amber-100 text-amber-700 border border-amber-200">
                               <Loader2 className="h-2.5 w-2.5 animate-spin" /> Saving…
                             </span>
                           ) : (
@@ -957,24 +958,24 @@ export default function TransactionsPage() {
                               {isExpanded ? "Choose category ▲" : tx.category}
                             </button>
                           )}
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-muted-foreground font-medium">
                             {format(new Date(tx.date), "MMM dd, yyyy")}
                           </span>
                         </div>
                       </div>
                       {/* Amount + Running Balance */}
                       <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                        <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-400" : "text-white")}>
+                        <div className={cn("text-sm md:text-base font-bold font-mono flex items-center gap-1", tx.type === "income" ? "text-emerald-600" : "text-foreground")}>
                           {tx.type === "income" ? (
-                            <><ArrowUpRight className="h-4 w-4 text-emerald-400" />+{formatCurrency(tx.amount, currency)}</>
+                            <><ArrowUpRight className="h-4 w-4 text-emerald-500" />+{formatCurrency(tx.amount, currency)}</>
                           ) : (
-                            <><ArrowDownRight className="h-4 w-4 text-red-400" />-{formatCurrency(tx.amount, currency)}</>
+                            <><ArrowDownRight className="h-4 w-4 text-slate-400" />-{formatCurrency(tx.amount, currency)}</>
                           )}
                         </div>
                         {showRunningBalance && (
                           <span className={cn(
                             "text-[10px] font-semibold font-mono tracking-tight",
-                            balIsPositive ? "text-slate-500" : "text-red-400"
+                            balIsPositive ? "text-slate-400" : "text-red-500"
                           )}>
                             Balance:&nbsp;{balIsPositive ? "" : "-"}{formatCurrency(Math.abs(tx.runningBalance), currency)}
                           </span>
@@ -1017,36 +1018,36 @@ export default function TransactionsPage() {
       </div>
 
       {/* Feature 2: Active Subscriptions Section */}
-      <div className="mt-12 bg-gradient-to-br from-primary to-secondary rounded-3xl p-6 md:p-8 relative overflow-hidden backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="mt-12 bg-card border border-border rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-white/5 pb-6">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-border pb-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="p-2 bg-black/20 border border-white/10 rounded-xl">
-                <RefreshCw className="h-5 w-5 text-red-400" />
+              <div className="p-2 bg-slate-100 border border-border rounded-xl">
+                <RefreshCw className="h-5 w-5 text-emerald-600" />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold text-[#EDEBDE] tracking-tight">Active Subscriptions</h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/20 text-[#EDEBDE] border border-white/10 tracking-wider uppercase">
+              <h3 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">Active Subscriptions</h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-border tracking-wider uppercase">
                 {upcomingBills.length} detected
               </span>
               <button
                 onClick={() => setShowAddSubModal(true)}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.8 rounded-xl border border-white/25 bg-white/10 hover:bg-white/20 text-[#EDEBDE] transition-all active:scale-95 cursor-pointer ml-auto sm:ml-2"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-xl border border-border bg-card hover:bg-slate-50 text-foreground transition-all active:scale-95 cursor-pointer ml-auto sm:ml-2 shadow-sm"
               >
-                <Plus className="h-3.5 w-3.5 text-white" /> Add Subscription
+                <Plus className="h-3.5 w-3.5 text-slate-400" /> Add Subscription
               </button>
             </div>
-            <p className="text-xs md:text-sm text-foreground/80 max-w-xl leading-relaxed">
+            <p className="text-xs md:text-sm text-muted-foreground max-w-xl leading-relaxed font-medium">
               Consolidated view of recurring commitments identified from bank ledgers and manual additions. Helps audit billing cycles and manage outlays.
             </p>
           </div>
 
-          <div className="bg-black/40 p-4 md:p-5 rounded-2xl border border-white/10 min-w-[220px] flex flex-col self-start lg:self-auto">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-              <AlertCircle className="h-3.5 w-3.5 text-red-400" /> Total Monthly Outflow
+          <div className="bg-slate-50 p-4 md:p-5 rounded-2xl border border-border min-w-[220px] flex flex-col self-start lg:self-auto shadow-sm">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500" /> Total Monthly Outflow
             </span>
-            <span className="text-2xl md:text-3xl font-bold font-mono text-[#EDEBDE] tracking-tight">
+            <span className="text-2xl md:text-3xl font-bold font-mono text-foreground tracking-tight">
               {formatCurrency(upcomingBills.reduce((acc, b) => acc + b.amount, 0), currency)}
             </span>
           </div>
@@ -1059,23 +1060,23 @@ export default function TransactionsPage() {
               return (
                 <div
                   key={idx}
-                  className="flex items-center justify-between gap-4 p-4 bg-[#1B1716]/40 hover:bg-[#1B1716]/80 border border-white/5 hover:border-white/10 rounded-2xl transition-all"
+                  className="flex items-center justify-between gap-4 p-4 bg-card hover:bg-slate-50 border border-border rounded-2xl transition-all shadow-sm hover:shadow-md"
                 >
                   <div className="flex items-center gap-3 md:gap-4 min-w-0">
                     <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border", visuals.bgColor, visuals.borderColor)}>
                       {visuals.icon}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm md:text-base font-semibold text-[#EDEBDE] truncate">
+                      <p className="text-sm md:text-base font-bold text-foreground truncate">
                         {bill.name}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         {bill.isCustom ? (
-                          <span className="text-[9px] font-bold text-red-400 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-wider">
+                          <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200 uppercase tracking-wider">
                             Custom
                           </span>
                         ) : (
-                          <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-wider">
+                          <span className="text-[9px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-border uppercase tracking-wider">
                             Auto-detected
                           </span>
                         )}
@@ -1085,16 +1086,16 @@ export default function TransactionsPage() {
 
                   <div className="flex items-center gap-3 md:gap-4 shrink-0">
                     <div className="text-right">
-                      <p className="text-sm md:text-base font-bold font-mono text-[#EDEBDE]">
+                      <p className="text-sm md:text-base font-bold font-mono text-foreground">
                         {formatCurrency(bill.amount, currency)}
                       </p>
-                      <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                      <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
                         Renews monthly
                       </p>
                     </div>
                     <button
                       onClick={() => handleDeleteSubscription(bill)}
-                      className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all border border-transparent hover:border-red-500/20 active:scale-95 cursor-pointer"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-200 active:scale-95 cursor-pointer"
                       title="Remove Subscription"
                     >
                       <Trash2 className="h-4.5 w-4.5" />
@@ -1105,9 +1106,9 @@ export default function TransactionsPage() {
             })}
           </div>
         ) : (
-          <div className="bg-[#1B1716]/40 border border-white/5 p-8 rounded-2xl text-center relative z-10">
-            <p className="text-base text-slate-300 font-medium">Zero recognized subscription drafts.</p>
-            <p className="text-sm text-slate-500 mt-2">Add custom subscriptions or sync account data to automatically list digital vendors.</p>
+          <div className="bg-slate-50 border border-border p-8 rounded-2xl text-center relative z-10 shadow-sm">
+            <p className="text-base text-foreground font-bold">Zero recognized subscription drafts.</p>
+            <p className="text-sm text-muted-foreground mt-2 font-medium">Add custom subscriptions or sync account data to automatically list digital vendors.</p>
           </div>
         )}
       </div>
@@ -1207,7 +1208,7 @@ export default function TransactionsPage() {
                   <span className="absolute left-4 top-3 text-slate-400 font-semibold text-base">₹</span>
                   <input
                     type="number"
-                    className="w-full bg-[#1B1716] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-[#EDEBDE] placeholder:text-slate-500 font-semibold focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition-all font-mono"
+                    className="w-full bg-[#1B1716] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-[#EDEBDE] placeholder:text-slate-500 font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono"
                     placeholder="e.g. 199"
                     value={subAmount}
                     onChange={e => setSubAmount(e.target.value)}
@@ -1364,7 +1365,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
 
               <button
                 onClick={() => setStep(2)}
-                className="w-full h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-all mt-4 shadow-lg shadow-primary/10"
+                className="w-full h-12 bg-primary hover:bg-primary text-primary-foreground rounded-xl font-bold transition-all mt-4 shadow-lg shadow-primary/10"
               >
                 Continue to Needs
               </button>
@@ -1445,7 +1446,7 @@ function CustomBudgetModal({ onClose, currentSalary, currentNeeds, currentWants,
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="flex-1 h-12 bg-primary hover:bg-primary text-white rounded-xl font-bold transition-colors shadow-lg shadow-primary/10"
+                  className="flex-1 h-12 bg-primary hover:bg-primary text-primary-foreground rounded-xl font-bold transition-colors shadow-lg shadow-primary/10"
                 >
                   Continue to Wants
                 </button>

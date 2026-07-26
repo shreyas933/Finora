@@ -7,38 +7,17 @@ import {
   LayoutDashboard,
   Receipt,
   Target,
-  LineChart,
   CreditCard,
-  Calculator,
   MessageSquare,
-  Landmark,
-  Menu,
-  X,
-  Home,
-  Wallet,
-  Sparkles,
-  Goal
 } from "lucide-react";
-import { useState } from "react";
 import LumaBar from "@/components/ui/futuristic-nav";
 
 const routes = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Transactions", icon: Receipt, href: "/transactions" },
   { label: "Goals", icon: Target, href: "/goals" },
-  // { label: "Investments", icon: LineChart, href: "/investments" },
   { label: "Credit Cards", icon: CreditCard, href: "/credit" },
-  // { label: "Tax AI", icon: Calculator, href: "/tax" }, /* Kept in memory: uncomment to restore exactly as before */
   { label: "AI CFO Chat", icon: MessageSquare, href: "/chat" },
-];
-
-// Bottom nav shows a subset of routes (max 6 for mobile)
-const mobileRoutes = [
-  { label: "Home", icon: Home, href: "/dashboard" },
-  { label: "Transactions", icon: Wallet, href: "/transactions" },
-  { label: "AI", icon: Sparkles, href: "/chat" },
-  { label: "Goals", icon: Goal, href: "/goals" },
-  { label: "Cards", icon: CreditCard, href: "/credit" },
 ];
 
 export function Sidebar() {
@@ -46,31 +25,60 @@ export function Sidebar() {
 
   return (
     <>
-      {/* ─── Desktop Sidebar (hidden on mobile) ─── */}
-      <div className="hidden md:flex h-full w-64 flex-col bg-card border-r border-border relative z-20 shadow-level-1">
-        <div className="flex h-16 items-center px-6">
-          <h1 className="text-2xl font-bold tracking-tight text-primary">FINORA</h1>
+      {/* ─── Desktop Sidebar ─── */}
+      <div className="hidden md:flex h-full w-64 flex-col bg-card border-r border-black/[0.06] relative z-20">
+        {/* Logo */}
+        <div className="flex h-16 items-center gap-2.5 px-6">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#84cc16"/>
+              <path d="M2 17L12 22L22 17" stroke="#84cc16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#84cc16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h1 className="text-lg font-bold tracking-widest text-foreground uppercase">FINORA</h1>
         </div>
+
+        {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
-          <nav className="grid gap-1 px-4">
-            {routes.map((route) => (
-              <Link
-                key={route.href}
-                href={route.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground",
-                  pathname === route.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                <route.icon className="h-4 w-4" />
-                {route.label}
-              </Link>
-            ))}
+          <nav className="flex flex-col gap-1 px-3">
+            {routes.map((route) => {
+              const isActive = pathname === route.href || pathname.startsWith(route.href + "/");
+              return (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 group relative",
+                    isActive
+                      ? "bg-slate-100 text-foreground font-semibold shadow-sm border border-slate-200/60"
+                      : "text-muted-foreground hover:bg-slate-50 hover:text-foreground"
+                  )}
+                >
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
+                  )}
+                  <route.icon className={cn("h-[18px] w-[18px]", isActive ? "text-primary" : "text-slate-400 group-hover:text-foreground")} />
+                  {route.label}
+                </Link>
+              );
+            })}
           </nav>
+        </div>
+
+        {/* Bottom section */}
+        <div className="p-4 border-t border-border">
+          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 shadow-sm">
+            <p className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              AI CFO Active
+            </p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">Your personal financial intelligence is monitoring your accounts.</p>
+          </div>
         </div>
       </div>
 
-      {/* ─── Mobile Bottom Navigation Bar (visible only on mobile) ─── */}
+      {/* ─── Mobile Bottom Navigation Bar ─── */}
       <LumaBar />
     </>
   );
