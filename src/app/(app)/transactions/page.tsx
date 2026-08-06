@@ -240,7 +240,6 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
       </div>
     </div>
   );
-  );
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
@@ -873,7 +872,6 @@ export default function TransactionsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h3 className="text-xl font-bold text-foreground">All Transactions</h3>
           <div className="flex flex-wrap items-center gap-2">
-<<<<<<< Updated upstream
             <Filter className="h-4 w-4 text-slate-400" />
             <select
               className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
@@ -884,33 +882,6 @@ export default function TransactionsPage() {
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-=======
-            <Filter className="h-4 w-4 text-slate-500" />
-            <div className="flex bg-card p-1 rounded-xl border border-white/10 gap-1">
-              {(["all", "income", "expense"] as const).map((type) => {
-                const isActive = filterType === type;
-                return (
-                  <button
-                    key={type}
-                    onClick={() => setFilterType(type)}
-                    className={cn(
-                      "px-3 py-1 text-xs font-bold rounded-lg capitalize transition-colors relative cursor-pointer",
-                      isActive ? "text-white" : "text-slate-400 hover:text-white"
-                    )}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="filterTypePill"
-                        className="absolute inset-0 bg-primary/25 border border-primary/40 rounded-lg shadow-sm"
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative z-10">{type}</span>
-                  </button>
-                );
-              })}
-            </div>
->>>>>>> Stashed changes
             <select
               className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
               value={filterCategory}
