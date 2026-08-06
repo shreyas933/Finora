@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { GlobalPermissionHandler } from "@/components/global/GlobalPermissionHandler";
 import { NavigationProvider } from "@/components/layout/NavigationProvider";
+import { FloatingCopilot } from "@/components/layout/FloatingCopilot";
 
 export default function AppLayout({
   children,
@@ -29,6 +30,9 @@ export default function AppLayout({
               {children}
             </main>
           </div>
+
+          {/* Global Omnipresent Financial Copilot */}
+          <FloatingCopilot />
         </div>
       </NavigationProvider>
     </CurrencyProvider>

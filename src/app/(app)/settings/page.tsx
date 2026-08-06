@@ -23,13 +23,14 @@ export default function SettingsPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then((res: any) => {
+      const user = res?.data?.user;
       if (user) {
         setEmail(user.email || "");
         setFirstName(user.user_metadata?.first_name || "");
         setLastName(user.user_metadata?.last_name || "");
       }
-    });
+    }).catch(() => {});
 
     const savedCards = localStorage.getItem("finora_wallet_items");
     if (savedCards) {

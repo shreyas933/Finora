@@ -385,55 +385,110 @@ function WalletEfficiencyAnalyzer({ items }: { items: WalletItem[] }) {
   );
 }
 
-// ─── Universal Card Visual Card ──────────────────────────────────────────────
+// ─── Universal Realistic Card Graphic Component ─────────────────────────────
 interface WalletItemVisualProps {
   item: WalletItem;
   selected: boolean;
   onClick: () => void;
   onDelete: (id: string, e: React.MouseEvent) => void;
+  index?: number;
 }
 
 function WalletItemVisual({ item, selected, onClick, onDelete }: WalletItemVisualProps) {
-  const theme = CARD_COLORS[item.color];
+  const theme = CARD_COLORS[item.color] || CARD_COLORS.purple;
+
+  // Network badge icons / text styling
+  const getNetworkBadge = (net: CardNetwork) => {
+    switch (net) {
+      case "visa":
+        return <span className="font-extrabold italic text-xl tracking-tighter text-white/90 drop-shadow">VISA</span>;
+      case "mastercard":
+        return (
+          <div className="flex items-center -space-x-2">
+            <div className="w-5 h-5 rounded-full bg-red-500/90 shadow-sm" />
+            <div className="w-5 h-5 rounded-full bg-amber-400/90 shadow-sm" />
+          </div>
+        );
+      case "amex":
+        return <span className="font-black text-xs uppercase tracking-widest bg-blue-500/30 border border-blue-400/40 px-1.5 py-0.5 rounded text-white">AMEX</span>;
+      case "rupay":
+        return <span className="font-black italic text-xs tracking-wider text-orange-400">RuPay</span>;
+      default:
+        return <span className="font-bold text-xs uppercase tracking-wider text-white/80">{net}</span>;
+    }
+  };
+
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.015 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={cn("credit-card-visual", item.type, selected && "selected")}
-      style={{ background: theme.bg, boxShadow: selected ? theme.shadow : "0 4px 16px rgba(0,0,0,0.3)" }}
+      className={cn(
+        "relative aspect-[1.58/1] w-full max-w-[360px] rounded-[22px] p-5 text-white transition-all duration-300 select-none overflow-hidden cursor-pointer border",
+        selected
+          ? "border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-2 ring-primary/50 -translate-y-3 z-30"
+          : "border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.35)] opacity-85 hover:opacity-100 z-10"
+      )}
+      style={{
+        background: theme.bg,
+        boxShadow: selected ? theme.shadow : "0 8px 24px rgba(0,0,0,0.4)"
+      }}
     >
-      <div className="flex justify-between items-center w-full">
-        <div className="flex items-center gap-1.5">
-          {item.type === "debit" ? (
-            <Landmark className="h-5 w-5 text-white/90" />
-          ) : (
-            <div className="cc-chip" />
-          )}
-          <span className="text-sm font-bold tracking-widest text-white/70 uppercase">
-            {item.type}
+      {/* Premium Sheen Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/12 to-white/0 pointer-events-none" />
+
+      {/* Card Header: Bank Name & Network */}
+      <div className="relative z-10 flex justify-between items-start">
+        <div>
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-white/60 block">
+            {item.type === "credit" ? "Credit Card" : "Debit Card"}
           </span>
+          <h4 className="text-base font-extrabold tracking-tight text-white drop-shadow-sm">{item.bank}</h4>
+        </div>
+        <div className="flex items-center gap-2">
+          {getNetworkBadge(item.network)}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(item.id, e);
+            }}
+            className="p-1 rounded-full bg-black/30 hover:bg-red-500/40 text-white/60 hover:text-red-200 transition-colors ml-1"
+            title="Remove card"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
-      <div className="cc-network">
-        {item.network.toUpperCase()}
+      {/* EMV Chip & Contactless Wave Graphic */}
+      <div className="relative z-10 flex items-center gap-3 my-4">
+        {/* EMV Gold Chip */}
+        <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border border-amber-300/40 shadow-inner flex flex-col justify-between p-1">
+          <div className="h-[1px] bg-black/30 w-full" />
+          <div className="h-[1px] bg-black/30 w-full" />
+        </div>
+        {/* Contactless Waves */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/60 rotate-90">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+          <path d="M8.5 16.1a6 6 0 0 1 7 0" />
+        </svg>
       </div>
 
-      <div className="cc-number">
-        •••• •••• •••• {item.number}
+      {/* Masked Card Number */}
+      <div className="relative z-10 font-mono text-lg font-bold tracking-[0.2em] text-white/95 drop-shadow-sm my-1">
+        •••• •••• •••• {item.number || "4821"}
       </div>
 
-      <div className="cc-bottom">
+      {/* Card Footer: Card Name & Expiry */}
+      <div className="relative z-10 flex justify-between items-end mt-3 text-xs">
         <div>
-          <div className="cc-label">
-            {item.type === "credit" ? "Issuer Bank" : "Debit Source"}
-          </div>
-          <div className="cc-value">{item.bank}</div>
+          <span className="text-[9px] uppercase tracking-wider text-white/50 block">CARDHOLDER / TITLE</span>
+          <span className="font-bold text-white tracking-wide truncate max-w-[180px] block">{item.name}</span>
         </div>
         <div className="text-right">
-          <div className="cc-label">Card Name</div>
-          <div className="cc-value">{item.name}</div>
+          <span className="text-[9px] uppercase tracking-wider text-white/50 block">EXPIRY</span>
+          <span className="font-mono font-bold text-white/90">08/29</span>
         </div>
       </div>
     </motion.div>
@@ -635,6 +690,106 @@ function AddWalletItemModal({ onClose, onAdd }: AddWalletItemModalProps) {
           )}
         </AnimatePresence>
       </motion.div>
+    </div>
+  );
+}
+
+
+// ─── Perks Accordion Dropdown (1st perk visible, rest inside dropdown) ───────
+function PerksDropdown({ benefits }: { benefits: BenefitScenario[] }) {
+  const [isDropdownExpanded, setIsDropdownExpanded] = useState(false);
+
+  if (!benefits || benefits.length === 0) return null;
+
+  const firstBenefit = benefits[0];
+  const remainingBenefits = benefits.slice(1);
+
+  return (
+    <div className="space-y-3">
+      {/* 1. Always display the FIRST perk card openly */}
+      {(() => {
+        const Icon = firstBenefit.icon;
+        const color = TAG_COLORS[firstBenefit.tagColor] ?? "#3b82f6";
+        return (
+          <div className="mobile-perk-row border" style={{ borderColor: `${color}30`, background: `${color}08` }}>
+            <div className="p-2 rounded-xl shrink-0" style={{ background: `${color}18`, color }}>
+              <Icon className="h-4 w-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-center">
+                <h5 className="text-sm font-bold text-white">{firstBenefit.category}</h5>
+                <span className="text-[10px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider" style={{ background: `${color}20`, color }}>
+                  {firstBenefit.tag}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">{firstBenefit.description}</p>
+              <div className="flex items-center gap-1 mt-1 text-xs font-bold" style={{ color }}>
+                <ChevronRight className="h-3 w-3 shrink-0" />
+                <span>{firstBenefit.benefit}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 2. Dropdown toggle button & expandable list for remaining perk cards */}
+      {remainingBenefits.length > 0 && (
+        <div className="space-y-3 pt-1">
+          <button
+            type="button"
+            onClick={() => setIsDropdownExpanded(!isDropdownExpanded)}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-900/90 border border-white/10 hover:border-primary/40 text-xs font-bold text-slate-300 hover:text-white transition-all cursor-pointer shadow-sm group"
+          >
+            <span className="flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span>{isDropdownExpanded ? "Hide Additional Perks" : `View ${remainingBenefits.length} More Card Perks`}</span>
+            </span>
+            <div className="flex items-center gap-1 text-slate-400 group-hover:text-white">
+              <span className="text-[11px] font-semibold text-slate-500">{isDropdownExpanded ? "Collapse" : "Expand"}</span>
+              <motion.div animate={{ rotate: isDropdownExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+            </div>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {isDropdownExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="overflow-hidden space-y-3"
+              >
+                {remainingBenefits.map((b, i) => {
+                  const Icon = b.icon;
+                  const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
+                  return (
+                    <div key={i} className="mobile-perk-row border" style={{ borderColor: `${color}20` }}>
+                      <div className="p-2 rounded-xl shrink-0" style={{ background: `${color}15`, color }}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center">
+                          <h5 className="text-sm font-bold text-white">{b.category}</h5>
+                          <span className="text-[10px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider" style={{ background: `${color}20`, color }}>
+                            {b.tag}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-0.5">{b.description}</p>
+                        <div className="flex items-center gap-1 mt-1 text-xs font-bold" style={{ color }}>
+                          <ChevronRight className="h-3 w-3 shrink-0" />
+                          <span>{b.benefit}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }
@@ -1174,6 +1329,20 @@ function MobileCreditView({
   deleteWalletItem,
   creditCardOutstanding,
 }: CreditViewProps) {
+  const cardUtilInfo = useMemo(() => {
+    return creditCards.map((card: WalletItem) => {
+      const limit = card.limit ? Number(card.limit.replace(/,/g, "")) : 0;
+      const cardTx = transactions.filter((tx: any) => {
+        if (tx.type !== "expense") return false;
+        const match = tx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
+        return match ? match[1] === card.number : false;
+      });
+      const outstanding = cardTx.reduce((sum: number, tx: any) => sum + tx.amount, 0);
+      const util = limit > 0 ? Math.min(100, Math.round((outstanding / limit) * 100)) : 0;
+      return { card, outstanding, limit, util };
+    });
+  }, [creditCards, transactions]);
+
   // Mobile timeline calculations
   const daysWithEvents = useMemo(() => {
     const events: { day: number; type: "statement" | "due"; card: WalletItem }[] = [];
@@ -1649,32 +1818,7 @@ function MobileCreditView({
                     </div>
                   )}
 
-                  <div className="mobile-perks-list">
-                    {benefits.map((b, i) => {
-                      const Icon = b.icon;
-                      const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
-                      return (
-                        <div key={i} className="mobile-perk-row" style={{ borderColor: `${color}15` }}>
-                          <div className="p-1.5 rounded-lg shrink-0" style={{ background: `${color}12`, color }}>
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <h5 className="text-sm font-bold text-white">{b.category}</h5>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wider" style={{ background: `${color}15`, color }}>
-                                {b.tag}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-400 mt-0.5">{b.description}</p>
-                            <div className="flex items-center gap-1 mt-1 text-xs font-bold" style={{ color }}>
-                              <ChevronRight className="h-3 w-3 shrink-0" />
-                              <span>{b.benefit}</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <PerksDropdown benefits={benefits} />
 
                   {selectedItem.type === "credit" && selectedItem.billingDate && (
                     <div className="p-3 rounded-xl border border-blue-500/10 bg-blue-500/5 flex items-start gap-2.5">
@@ -2109,6 +2253,20 @@ function DesktopCreditView({
   deleteWalletItem,
   creditCardOutstanding,
 }: CreditViewProps) {
+  const cardUtilInfo = useMemo(() => {
+    return creditCards.map((card: WalletItem) => {
+      const limit = card.limit ? Number(card.limit.replace(/,/g, "")) : 0;
+      const cardTx = transactions.filter((tx: any) => {
+        if (tx.type !== "expense") return false;
+        const match = tx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
+        return match ? match[1] === card.number : false;
+      });
+      const outstanding = cardTx.reduce((sum: number, tx: any) => sum + tx.amount, 0);
+      const util = limit > 0 ? Math.min(100, Math.round((outstanding / limit) * 100)) : 0;
+      return { card, outstanding, limit, util };
+    });
+  }, [creditCards, transactions]);
+
   const scoreNum = Number(currentScore);
   return (
     <div className="space-y-8 pb-8 relative">
@@ -2194,47 +2352,174 @@ function DesktopCreditView({
             </div>
 
             {items.length === 0 ? (
-              <div className="empty-cards-state" onClick={() => setShowModal(true)}>
-                <div className="empty-cards-icon">
-                  <Wallet className="h-8 w-8 text-muted-foreground/50" />
+              <div className="empty-cards-state p-10 text-center border border-white/10 rounded-3xl bg-card/40 backdrop-blur-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/40 transition-all group" onClick={() => setShowModal(true)}>
+                <div className="empty-cards-icon w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Wallet className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-muted-foreground font-medium">Your card wallet is empty</p>
-                <p className="text-sm text-muted-foreground/70">Add your Credit Cards and Debit Cards to start optimizing transaction rewards.</p>
-                <Button variant="outline" size="sm" className="mt-3 gap-1.5 cursor-pointer">
-                  <Plus className="h-3.5 w-3.5" /> Set Up Wallet
+                <h4 className="text-xl font-bold text-white mb-1">Add your first credit card</h4>
+                <p className="text-sm text-muted-foreground max-w-sm">Add your Credit &amp; Debit Cards to unlock automated reward optimization, statement tracking, and utilization health analysis.</p>
+                <Button className="mt-5 gap-2 cursor-pointer shadow-lg">
+                  <Plus className="h-4 w-4" /> Set Up Wallet
                 </Button>
               </div>
             ) : (
-              <div className="cards-grid">
-                <AnimatePresence mode="popLayout">
-                  {filteredItems.map(item => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
+              <div className="space-y-6">
+                {/* Horizontal Overlapping Wallet Slider Container */}
+                <div className="relative w-full overflow-hidden border border-white/10 bg-gradient-to-br from-black/80 via-card/60 to-black/90 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-2xl">
+                  {/* Outer subtle glow indicator */}
+                  <div className="absolute top-0 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-400" /> Overlapping 3D Wallet Deck ({filteredItems.length} Cards)
+                    </span>
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="text-xs font-bold text-primary hover:text-red-300 flex items-center gap-1 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full transition-all cursor-pointer"
                     >
-                      <WalletItemVisual 
-                        item={item} 
-                        selected={selectedItem?.id === item.id} 
-                        onClick={() => setSelectedItem(item)}
-                        onDelete={deleteWalletItem}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                
-                <motion.div 
-                  whileHover={{ scale: 1.02 }} 
-                  whileTap={{ scale: 0.97 }} 
-                  onClick={() => setShowModal(true)} 
-                  className="add-card-slot cursor-pointer"
-                >
-                  <Plus className="h-6 w-6 text-muted-foreground/50" />
-                  <span className="text-sm text-muted-foreground/60 mt-1 font-semibold">Add Card</span>
-                </motion.div>
+                      <Plus className="h-3.5 w-3.5" /> Add Card
+                    </button>
+                  </div>
+
+                  {/* Cards Deck Carousel */}
+                  <div className="flex items-center overflow-x-auto py-8 px-2 scrollbar-thin scrollbar-thumb-white/10 gap-3 sm:gap-0">
+                    <AnimatePresence mode="popLayout">
+                      {filteredItems.map((item, idx) => {
+                        const isSelected = selectedItem?.id === item.id;
+                        return (
+                          <motion.div
+                            key={item.id}
+                            layout
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.25, ease: "easeOut" }}
+                            className={cn(
+                              "flex-shrink-0 transition-all duration-300 sm:-ml-16 first:ml-0",
+                              isSelected ? "z-30" : "z-10 opacity-80 hover:opacity-100"
+                            )}
+                          >
+                            <WalletItemVisual 
+                              item={item} 
+                              selected={isSelected} 
+                              onClick={() => setSelectedItem(item)}
+                              onDelete={deleteWalletItem}
+                              index={idx}
+                            />
+                          </motion.div>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Active Card Summary Metrics Grid */}
+                {selectedItem && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                  >
+                    {/* Metric 1: Utilization */}
+                    <div className="bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        <span>Current Utilization</span>
+                        <span className={cn("px-2 py-0.5 rounded-full text-[10px]", selectedItem.type === "credit" ? "bg-amber-500/10 text-amber-300 border border-amber-500/20" : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20")}>
+                          {selectedItem.type === "credit" ? "Active Credit" : "Debit Source"}
+                        </span>
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-2xl font-mono font-extrabold text-white">
+                          {selectedItem.type === "credit" ? `${cardUtilInfo.find(c => c.card.id === selectedItem.id)?.util || 0}%` : "0% (Debit)"}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {selectedItem.type === "credit" ? "Optimal credit score ratio is under 30%" : "Draws directly from bank balance"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metric 2: Available Limit */}
+                    <div className="bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        <span>Available Limit</span>
+                        <Coins className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-2xl font-mono font-extrabold text-emerald-400">
+                          {selectedItem.limit ? formatCurrency(Number(selectedItem.limit.replace(/,/g, ""))) : "Unlimited"}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Issuer: <strong className="text-white">{selectedItem.bank}</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metric 3: Rewards & Perks */}
+                    <div className="bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        <span>Card Perks & Rewards</span>
+                        <Gift className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-sm font-bold text-white truncate">
+                          {selectedItem.perks.slice(0, 2).join(", ") || "Standard Rewards"}
+                        </div>
+                        <p className="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+                          <Sparkles className="h-3 w-3" /> {selectedItem.perks.length} active perks mapped
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metric 4: Due Date */}
+                    <div className="bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        <span>Statement Due Date</span>
+                        <Zap className="h-4 w-4 text-amber-400" />
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-2xl font-mono font-extrabold text-amber-300">
+                          {selectedItem.billingDate ? `${selectedItem.billingDate}th of month` : "N/A"}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Statement cycle closes monthly
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metric 5: Credit Score Impact */}
+                    <div className="bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        <span>Credit Score Impact</span>
+                        <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-sm font-extrabold text-emerald-400 uppercase tracking-wide">
+                          {selectedItem.type === "credit" ? "Positive Impact" : "Zero Debt Impact"}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          CIBIL health monitored in real-time
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metric 6: AI Card Recommendation */}
+                    <div className="bg-gradient-to-br from-primary/20 via-card to-card border border-primary/30 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/50 transition-colors shadow-lg">
+                      <div className="flex justify-between items-center text-xs font-bold text-red-300 uppercase tracking-wider">
+                        <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-amber-300" /> Today's Best Card</span>
+                        <span className="text-[9px] font-black bg-primary/30 px-2 py-0.5 rounded-full border border-primary/40">AI CFO</span>
+                      </div>
+                      <div className="mt-2">
+                        <div className="text-sm font-bold text-white">
+                          Use {selectedItem.name} for Dining &amp; Travel
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Yields up to <strong>5% cashback / 4x points</strong> on eligible merchants.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             )}
           </div>
@@ -2272,35 +2557,7 @@ function DesktopCreditView({
                       transition={{ duration: 0.2, ease: "easeInOut" }}
                     >
                       <CardContent className="border-t border-white/5 pt-6">
-                        <div className="benefits-grid">
-                          {benefits.map((b, i) => {
-                            const Icon = b.icon;
-                            const color = TAG_COLORS[b.tagColor] ?? "#3b82f6";
-                            return (
-                              <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.2, delay: i * 0.05 }}
-                                className="benefit-card"
-                                style={{ borderColor: `${color}22` }}
-                              >
-                                <div className="benefit-card-top">
-                                  <div className="benefit-icon-wrap" style={{ background: `${color}18`, color }}>
-                                    <Icon className="h-5 w-5" />
-                                  </div>
-                                  <span className="benefit-tag" style={{ background: `${color}20`, color }}>{b.tag}</span>
-                                </div>
-                                <h4 className="benefit-category">{b.category}</h4>
-                                <p className="benefit-desc">{b.description}</p>
-                                <div className="benefit-perk font-semibold">
-                                  <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color }} />
-                                  <span>{b.benefit}</span>
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
+                        <PerksDropdown benefits={benefits} />
 
                         {selectedItem.type === "credit" && selectedItem.billingDate && (
                           <div className="mt-4 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3">
@@ -2443,7 +2700,8 @@ function DesktopCreditView({
                     initial={{ strokeDashoffset: 440 }}
                     animate={{ strokeDashoffset: targetOffset }}
                     transition={{ duration: 1.2, ease: "easeOut" }}
-                    strokeLinecap="round" 
+                    strokeLinecap="round"
+                    style={{ filter: `drop-shadow(0 0 10px ${scoreColorHex})` }}
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">

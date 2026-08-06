@@ -198,10 +198,11 @@ export function AIInsights({ collapsible = false, defaultCollapsed = false, mode
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: 30, scale: 0.97 }}
                         transition={{ duration: 0.22, ease: "easeOut" }}
-                        className="ai-insight-card"
+                        className="ai-insight-card transition-all duration-300 hover:scale-[1.01]"
                         style={{
                           background: meta.bg,
                           borderColor: meta.border,
+                          boxShadow: "0 0 18px rgba(139, 92, 246, 0.14)"
                         }}
                       >
                         <div className="ai-insight-card-inner">

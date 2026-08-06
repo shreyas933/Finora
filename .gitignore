@@ -42,3 +42,9 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Standalone UI Redesign Concept
+finora-redesign-concept.html
+public/finora-redesign-concept.html
+scratch/
+scratch_*

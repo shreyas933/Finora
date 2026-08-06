@@ -13,16 +13,16 @@ import { useFinance } from "@/context/FinanceContext";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES_LIST = [
-  { name: "Food & Dining",  icon: <UtensilsCrossed className="h-3 w-3" /> },
-  { name: "Shopping",       icon: <ShoppingCart    className="h-3 w-3" /> },
-  { name: "Transportation", icon: <Car             className="h-3 w-3" /> },
-  { name: "Entertainment",  icon: <Tv              className="h-3 w-3" /> },
-  { name: "Health",         icon: <Heart           className="h-3 w-3" /> },
-  { name: "Travel",         icon: <Plane           className="h-3 w-3" /> },
-  { name: "Utilities",      icon: <Zap             className="h-3 w-3" /> },
-  { name: "Income",         icon: <Briefcase       className="h-3 w-3" /> },
-  { name: "Investment",     icon: <TrendingUp      className="h-3 w-3" /> },
-  { name: "Other",          icon: <Wallet          className="h-3 w-3" /> }
+  { name: "Food & Dining", icon: <UtensilsCrossed className="h-3 w-3" /> },
+  { name: "Shopping", icon: <ShoppingCart className="h-3 w-3" /> },
+  { name: "Transportation", icon: <Car className="h-3 w-3" /> },
+  { name: "Entertainment", icon: <Tv className="h-3 w-3" /> },
+  { name: "Health", icon: <Heart className="h-3 w-3" /> },
+  { name: "Travel", icon: <Plane className="h-3 w-3" /> },
+  { name: "Utilities", icon: <Zap className="h-3 w-3" /> },
+  { name: "Income", icon: <Briefcase className="h-3 w-3" /> },
+  { name: "Investment", icon: <TrendingUp className="h-3 w-3" /> },
+  { name: "Other", icon: <Wallet className="h-3 w-3" /> }
 ];
 
 export function Header() {
@@ -187,7 +187,8 @@ export function Header() {
 
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then((res: any) => {
+      const user = res?.data?.user;
       if (user) {
         const name = user.user_metadata?.first_name
           ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ""}`.trim()
@@ -196,9 +197,9 @@ export function Header() {
       } else {
         setDisplayName("Not logged in");
       }
-    });
+    }).catch(() => {});
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       if (session?.user) {
         const name = session.user.user_metadata?.first_name
           ? `${session.user.user_metadata.first_name} ${session.user.user_metadata.last_name || ""}`.trim()
@@ -223,21 +224,16 @@ export function Header() {
 
 
   return (
-    <header className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6 backdrop-blur-xl z-20 sticky top-0" style={{background: 'rgba(10,15,26,0.85)', borderBottom: '1px solid rgba(30,42,58,0.7)'}}>
-      <div className="flex items-center gap-3">
+    <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-card/85 px-4 md:px-6 backdrop-blur-md z-20 sticky top-0 shadow-sm">
+      <div className="flex items-center">
         {/* Show FINORA branding on mobile (sidebar is hidden) */}
-        <div className="md:hidden flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{background: 'linear-gradient(135deg, #810100, #b01010)'}}>✳</div>
-          <h1 className="text-lg font-bold tracking-tight" style={{color: '#f0f4ff'}}>FINORA</h1>
-        </div>
-
-        {/* Desktop: Pill search bar */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border text-sm text-muted-foreground" style={{background: 'rgba(28,35,51,0.6)', borderColor: 'rgba(30,42,58,0.8)', minWidth: '200px'}}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <span className="text-xs">Search transactions...</span>
-        </div>
+        <h1 className="md:hidden text-xl font-bold tracking-tight text-primary">FINORA</h1>
       </div>
+<<<<<<< Updated upstream
       <div className="flex items-center gap-3">
+=======
+      <div className="flex items-center gap-4">
+>>>>>>> Stashed changes
 
         {/* Needs Review Badge */}
         {needsReviewCount > 0 && (
@@ -299,9 +295,9 @@ export function Header() {
 
                       {/* Icon container */}
                       <div className="flex-shrink-0">
-                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notification.type === 'alert' ? 'bg-red-100 text-red-600' :
-                            notification.type === 'success' ? 'bg-emerald-100 text-emerald-600' :
-                              'bg-primary/20 text-primary-foreground'
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notification.type === 'alert' ? 'bg-red-500/10 text-red-400' :
+                          notification.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' :
+                            'bg-primary/10 text-primary-foreground'
                           }`}>
                           {notification.type === 'alert' && <AlertTriangle className="h-4 w-4" />}
                           {notification.type === 'success' && <CheckCircle className="h-4 w-4" />}

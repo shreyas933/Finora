@@ -132,7 +132,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     async function loadData() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        let user: any = null;
+        try {
+          const { data } = await supabase.auth.getUser();
+          user = data?.user;
+        } catch (authErr) {
+          const { data } = await supabase.auth.getSession();
+          user = data?.session?.user || null;
+        }
+
         if (!user) {
           setIsLoaded(true);
           return;
@@ -231,11 +239,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
-            (payload) => {
+            (payload: any) => {
               console.log("[FINORA] Realtime transaction received:", payload.new);
               setTransactions(prev => {
                 if (prev.some(t => t.id === payload.new.id)) return prev;
-                return [payload.new as Transaction, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                return [payload.new as Transaction, ...prev].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
               });
             }
           )
@@ -251,7 +259,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     loadData();
 
     // Listen for auth changes (e.g. login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (event === "SIGNED_OUT") {
         setUserId(null);
         setTransactions([]);
@@ -526,12 +534,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     // 2. Seed Goals
     const goalsPayload = data.goals.map((g: any) => ({ ...g, user_id: userId }));
     const { data: gData } = await supabase.from("goals").insert(goalsPayload).select();
-    if (gData) setGoals(gData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    if (gData) setGoals(gData.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
     // 3. Seed Investments
     const invPayload = data.investments.map((i: any) => ({ ...i, user_id: userId }));
     const { data: iData } = await supabase.from("investments").insert(invPayload).select();
-    if (iData) setInvestments(iData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    if (iData) setInvestments(iData.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
     // 4. Seed LocalStorage Wealth & Budgets 
     localStorage.setItem("finora_wealth", JSON.stringify(data.wealthHistory));

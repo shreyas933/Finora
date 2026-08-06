@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 
 export function GlobalPermissionHandler() {
   useEffect(() => {
     const requestPermissions = async () => {
-      // Check if running inside Capacitor
-      if (typeof window !== "undefined" && (window as any).Capacitor) {
+      // Check if running inside native platform (Capacitor Android/iOS)
+      if (Capacitor.isNativePlatform()) {
         try {
           const { registerPlugin } = await import("@capacitor/core");
           const UserIdBridge = registerPlugin<any>("UserIdBridge");
@@ -32,3 +33,4 @@ export function GlobalPermissionHandler() {
 
   return null; // This component handles logic only, no UI required.
 }
+

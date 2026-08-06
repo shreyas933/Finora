@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2, Loader2, Zap, Smartphone, Globe, BellRing, RefreshCw, ChevronRight, Wifi, WifiOff } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { Capacitor } from "@capacitor/core";
 
 // ─── Simulated GPay notification strings ──────────────────────────────────────
 const SAMPLE_NOTIFICATIONS = [
@@ -59,7 +60,7 @@ export function PaymentSyncModal({ onClose }: Props) {
 
   useEffect(() => {
     const checkPermission = async () => {
-      if (typeof window !== "undefined" && (window as any).Capacitor) {
+      if (Capacitor.isNativePlatform()) {
         setHasCapacitor(true);
         try {
           const { registerPlugin } = await import("@capacitor/core");
@@ -78,7 +79,7 @@ export function PaymentSyncModal({ onClose }: Props) {
   }, []);
 
   const handleConnectAndroid = async () => {
-    if (typeof window !== "undefined" && (window as any).Capacitor) {
+    if (Capacitor.isNativePlatform()) {
       try {
         const { registerPlugin } = await import("@capacitor/core");
         const UserIdBridge = registerPlugin<any>("UserIdBridge");

@@ -13,6 +13,7 @@ import {
   BrainCircuit, CheckCircle2, Trash2, Plane, TrendingUp,
   Music, Smartphone, Wifi, Shield, Zap, Sparkles, Gamepad2, Activity
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { CsvImportModal } from "@/components/dashboard/CsvImportModal";
 import { AiBudgetModal } from "@/components/dashboard/AiBudgetModal";
 import { AIInsights } from "@/components/dashboard/AIInsights";
@@ -144,9 +145,25 @@ function CircleRing({ percent, color, overBudget }: { percent: number, color: st
   const strokeDashoffset = circumference - (Math.min(percent, 100) / 100) * circumference;
   const displayColor = overBudget ? "#F59E0B" : color;
 
+  // Dynamic glow drop-shadow based on progress % (25% -> subtle, 50% -> medium, 100% -> vibrant)
+  const filterGlow = overBudget
+    ? "drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))"
+    : percent >= 100
+    ? "drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))"
+    : percent >= 50
+    ? "drop-shadow(0 0 5px rgba(255, 255, 255, 0.4))"
+    : percent >= 25
+    ? "drop-shadow(0 0 2px rgba(255, 255, 255, 0.2))"
+    : "none";
+
   return (
+<<<<<<< Updated upstream
     <svg className="w-[84px] h-[84px] transform -rotate-90">
       <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
+=======
+    <svg width="84" height="84" viewBox="0 0 84 84" className="rotate-[-90deg]">
+      <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="8" />
+>>>>>>> Stashed changes
       <circle
         cx="42" cy="42" r={radius}
         fill="none"
@@ -155,7 +172,10 @@ function CircleRing({ percent, color, overBudget }: { percent: number, color: st
         strokeDasharray={circumference}
         strokeDashoffset={strokeDashoffset}
         strokeLinecap="round"
-        style={{ transition: "stroke-dashoffset 0.6s ease" }}
+        style={{
+          transition: "stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease",
+          filter: filterGlow
+        }}
       />
     </svg>
   );
@@ -176,6 +196,7 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
   };
 
   return (
+<<<<<<< Updated upstream
     <div className="flex items-center gap-4 relative overflow-hidden bg-gradient-to-br from-[#1E293B]/75 via-[#0F172A]/75 to-[#1a2744]/75 backdrop-blur-xl border border-white/10 text-white shadow-card hover:border-white/20 transition-all rounded-xl p-4 group">
       <div className="absolute -top-12 -left-12 w-24 h-24 bg-white/5 blur-[30px] rounded-full pointer-events-none"></div>
       
@@ -183,6 +204,18 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
         <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
         <span
           className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold", overBudget ? "text-amber-400" : "text-white")}
+=======
+    <div className={cn(
+      "flex items-center gap-4 bg-gradient-to-br from-primary to-secondary border border-transparent rounded-xl p-4 transition-all duration-300 text-white shadow-md hover:-translate-y-0.5",
+      overBudget
+        ? "hover:border-amber-500/40 hover:shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+        : "hover:border-primary/40 hover:shadow-[0_0_20px_rgba(129,1,0,0.3)]"
+    )}>
+      <div className="relative flex-shrink-0">
+        <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
+        <span
+          className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]", overBudget ? "text-yellow-300" : "text-white")}
+>>>>>>> Stashed changes
           style={{ transform: "rotate(90deg)" }}
         >
           {percent}%
@@ -192,30 +225,51 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
       <div className="flex-1 min-w-0 z-10">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1.5">
+<<<<<<< Updated upstream
             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
             <span className="text-sm font-bold text-white truncate">{cat.name}</span>
+=======
+            <span className="w-2 h-2 rounded-full flex-shrink-0 shadow-[0_0_6px_currentColor]" style={{ backgroundColor: cat.color }} />
+            <span className="text-sm font-semibold text-white truncate">{cat.name}</span>
+>>>>>>> Stashed changes
           </div>
           {editing ? (
             <div className="flex items-center gap-1 z-10 relative">
               <input
+<<<<<<< Updated upstream
                 className="w-20 text-xs bg-black/40 border border-white/10 rounded px-2 py-1 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+=======
+                className="w-20 text-xs bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+>>>>>>> Stashed changes
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 autoFocus
                 onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setEditing(false); }}
               />
+<<<<<<< Updated upstream
               <button onClick={handleSave} className="text-emerald-400 hover:text-emerald-300 p-1"><Check className="h-3.5 w-3.5" /></button>
               <button onClick={() => setEditing(false)} className="text-slate-400 hover:text-slate-200 p-1"><X className="h-3.5 w-3.5" /></button>
             </div>
           ) : (
             <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-slate-400 hover:text-white transition-colors z-10 relative">
+=======
+              <button onClick={handleSave} className="text-emerald-300 hover:text-emerald-200 p-0.5"><Check className="h-3.5 w-3.5" /></button>
+              <button onClick={() => setEditing(false)} className="text-yellow-300 hover:text-yellow-200 p-0.5"><X className="h-3.5 w-3.5" /></button>
+            </div>
+          ) : (
+            <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-white/60 hover:text-white transition-colors p-0.5">
+>>>>>>> Stashed changes
               <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
         <p className="text-xs text-slate-400 font-medium">{formatCurrency(spent, currency)} <span className="text-slate-500">/</span> {formatCurrency(cat.budget, currency)}</p>
         {overBudget ? (
+<<<<<<< Updated upstream
           <p className="text-xs text-amber-400 font-bold mt-0.5">Over by {formatCurrency(-remaining, currency)}</p>
+=======
+          <p className="text-xs text-yellow-300 font-bold mt-0.5 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]">Over by {formatCurrency(-remaining, currency)}</p>
+>>>>>>> Stashed changes
         ) : (
           <p className="text-xs text-emerald-400 font-medium mt-0.5">{formatCurrency(remaining, currency)} remaining</p>
         )}
@@ -537,7 +591,7 @@ export default function TransactionsPage() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // Place the Starting Balance Adjustment at the very beginning of all sorted transactions
-    const allSorted = adjustmentTx 
+    const allSorted = adjustmentTx
       ? [adjustmentTx, ...sortedOthers]
       : sortedOthers;
 
@@ -618,12 +672,12 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="space-y-5 pb-10">
+    <div className="space-y-8 pb-10">
       {/* ── Header ── */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-white/5 pb-6">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{letterSpacing: '-0.02em', color: '#f0f4ff'}}>Transactions</h2>
-          <p className="text-muted-foreground text-sm mt-0.5">Track all your income and expenses</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#EDEBDE]">Transactions</h2>
+          <p className="text-slate-400 text-sm mt-1">Track all your income and expenses</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -631,18 +685,16 @@ export default function TransactionsPage() {
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
             <button
               onClick={() => setShowImportModal(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl font-medium cursor-pointer transition-all active:scale-95"
-              style={{border: '1px solid rgba(30,42,58,0.8)', background: 'rgba(28,35,51,0.6)', color: '#8b9ab0'}}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
             >
-              <Upload className="h-4 w-4" /> Import CSV
+              <Upload className="h-4 w-4 text-slate-400" /> Import CSV
             </button>
 
             <button
               onClick={() => typeof window !== "undefined" && window.print()}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl font-medium cursor-pointer transition-all active:scale-95"
-              style={{border: '1px solid rgba(30,42,58,0.8)', background: 'rgba(28,35,51,0.6)', color: '#8b9ab0'}}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm rounded-xl border border-white/10 bg-[#24201F]/80 hover:bg-[#24201F] text-slate-300 hover:text-white transition-all active:scale-95 font-medium cursor-pointer"
             >
-              <Download className="h-4 w-4" /> Export PDF
+              <Download className="h-4 w-4 text-slate-400" /> Export PDF
             </button>
           </div>
 
@@ -856,6 +908,7 @@ export default function TransactionsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h3 className="text-xl font-bold text-foreground">All Transactions</h3>
           <div className="flex flex-wrap items-center gap-2">
+<<<<<<< Updated upstream
             <Filter className="h-4 w-4 text-slate-400" />
             <select
               className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
@@ -866,6 +919,33 @@ export default function TransactionsPage() {
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
+=======
+            <Filter className="h-4 w-4 text-slate-500" />
+            <div className="flex bg-card p-1 rounded-xl border border-white/10 gap-1">
+              {(["all", "income", "expense"] as const).map((type) => {
+                const isActive = filterType === type;
+                return (
+                  <button
+                    key={type}
+                    onClick={() => setFilterType(type)}
+                    className={cn(
+                      "px-3 py-1 text-xs font-bold rounded-lg capitalize transition-colors relative cursor-pointer",
+                      isActive ? "text-white" : "text-slate-400 hover:text-white"
+                    )}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="filterTypePill"
+                        className="absolute inset-0 bg-primary/25 border border-primary/40 rounded-lg shadow-sm"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{type}</span>
+                  </button>
+                );
+              })}
+            </div>
+>>>>>>> Stashed changes
             <select
               className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
               value={filterCategory}
@@ -903,16 +983,16 @@ export default function TransactionsPage() {
                 const isSaving = inlineSavingId === tx.id;
 
                 const INLINE_CATEGORIES = [
-                  { name: "Food & Dining",  icon: <UtensilsCrossed className="h-3 w-3" /> },
-                  { name: "Shopping",       icon: <ShoppingCart    className="h-3 w-3" /> },
-                  { name: "Transportation", icon: <Car             className="h-3 w-3" /> },
-                  { name: "Entertainment",  icon: <Tv              className="h-3 w-3" /> },
-                  { name: "Health",         icon: <Heart           className="h-3 w-3" /> },
-                  { name: "Travel",         icon: <Plane           className="h-3 w-3" /> },
-                  { name: "Utilities",      icon: <Zap             className="h-3 w-3" /> },
-                  { name: "Income",         icon: <Briefcase       className="h-3 w-3" /> },
-                  { name: "Investment",     icon: <TrendingUp      className="h-3 w-3" /> },
-                  { name: "Other",          icon: <Wallet          className="h-3 w-3" /> },
+                  { name: "Food & Dining", icon: <UtensilsCrossed className="h-3 w-3" /> },
+                  { name: "Shopping", icon: <ShoppingCart className="h-3 w-3" /> },
+                  { name: "Transportation", icon: <Car className="h-3 w-3" /> },
+                  { name: "Entertainment", icon: <Tv className="h-3 w-3" /> },
+                  { name: "Health", icon: <Heart className="h-3 w-3" /> },
+                  { name: "Travel", icon: <Plane className="h-3 w-3" /> },
+                  { name: "Utilities", icon: <Zap className="h-3 w-3" /> },
+                  { name: "Income", icon: <Briefcase className="h-3 w-3" /> },
+                  { name: "Investment", icon: <TrendingUp className="h-3 w-3" /> },
+                  { name: "Other", icon: <Wallet className="h-3 w-3" /> },
                 ];
 
                 const handleInlinePick = async (category: string) => {

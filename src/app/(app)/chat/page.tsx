@@ -1,19 +1,193 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent } from "react";
+import { useState, useRef, useEffect, FormEvent, Fragment } from "react";
 import { useFinance } from "@/context/FinanceContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Bot, Send, User, Sparkles } from "lucide-react";
+import { Sparkles, Send, Search, ChevronDown, ChevronUp, Calculator, ShieldAlert, Target, Lightbulb } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
+import { buildFinancialSnapshot } from "@/lib/ai/financialContextBuilder";
+import { detectIntent, getIntentLabel } from "@/lib/ai/intentDetector";
+import type { FinancialSnapshot, WalletCard, BudgetItem, UserProfile, MemoryItem } from "@/lib/ai/financialContextBuilder";
 
+// ── Types ──────────────────────────────────────────────────────────────────────
 type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
 };
 
+// ── Markdown Renderer ──────────────────────────────────────────────────────────
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("*") && part.endsWith("*") && !part.startsWith("**")) {
+      return <em key={i} className="italic text-white/90">{part.slice(1, -1)}</em>;
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={i} className="px-1.5 py-0.5 rounded bg-white/15 font-mono text-xs text-amber-200">{part.slice(1, -1)}</code>;
+    }
+    return <Fragment key={i}>{part}</Fragment>;
+  });
+}
+
+function MarkdownMessage({ content, isUser }: { content: string; isUser: boolean }) {
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+  let bulletBuffer: string[] = [];
+
+  const flushBullets = () => {
+    if (bulletBuffer.length === 0) return;
+    elements.push(
+      <ul key={`ul-${i}`} className="space-y-1.5 my-2 pl-1">
+        {bulletBuffer.map((item, idx) => (
+          <li key={idx} className="flex items-start gap-2 leading-snug">
+            <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span>{renderInline(item)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    bulletBuffer = [];
+  };
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Horizontal rule
+    if (/^---+$/.test(line.trim())) {
+      flushBullets();
+      elements.push(<hr key={`hr-${i}`} className="border-white/10 my-3" />);
+      i++;
+      continue;
+    }
+
+    // Headings (### or ##)
+    const headingMatch = line.match(/^#{1,3}\s+(.+)/);
+    if (headingMatch) {
+      flushBullets();
+      elements.push(
+        <p key={`h-${i}`} className="text-[13px] font-black uppercase tracking-widest text-amber-300 mt-4 mb-1.5 first:mt-0">
+          {headingMatch[1]}
+        </p>
+      );
+      i++;
+      continue;
+    }
+
+    // Emoji section label
+    const emojiHeadingMatch = line.match(/^([\p{Emoji_Presentation}\p{Emoji}\u200d]+)\s+(.+)/u);
+    if (emojiHeadingMatch && line.trim().length < 60 && !line.startsWith("-") && !line.startsWith("*")) {
+      const isSection = /^(Verdict|Breakdown|Numbers|Watch\s*Out|What\s*to|Best\s*Card|Optimise|Risk|Action|Summary|Analysis|Impact|Recommendation|CFO|Do\s*This)/i.test(emojiHeadingMatch[2]);
+      if (isSection) {
+        flushBullets();
+        elements.push(
+          <p key={`eh-${i}`} className="text-[12px] font-black uppercase tracking-widest text-white/70 mt-3.5 mb-1 first:mt-0 flex items-center gap-1.5">
+            {line}
+          </p>
+        );
+        i++;
+        continue;
+      }
+    }
+
+    // Bullet list (- / * / •)
+    const bulletMatch = line.match(/^[\-\*•]\s+(.+)/);
+    if (bulletMatch) {
+      bulletBuffer.push(bulletMatch[1]);
+      i++;
+      continue;
+    }
+
+    // Numbered list (1. 2.)
+    const numberedMatch = line.match(/^(\d+)\.\s+(.+)/);
+    if (numberedMatch) {
+      bulletBuffer.push(`**${numberedMatch[1]}.** ${numberedMatch[2]}`);
+      i++;
+      continue;
+    }
+
+    // Empty line
+    if (line.trim() === "") {
+      flushBullets();
+      if (elements.length > 0) {
+        elements.push(<div key={`sp-${i}`} className="h-1" />);
+      }
+      i++;
+      continue;
+    }
+
+    // Paragraph
+    flushBullets();
+    elements.push(
+      <p key={`p-${i}`} className="leading-relaxed">
+        {renderInline(line)}
+      </p>
+    );
+    i++;
+  }
+
+  flushBullets();
+  return <div className="space-y-0.5 text-[15px]">{elements}</div>;
+}
+
+// ── Deep Explanation Panel Component ─────────────────────────────────────────
+function DeepExplanationPanel({ message, onAskDetailed }: { message: Message; onAskDetailed: (query: string) => void }) {
+  return (
+    <div className="mt-3 bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/20 text-white shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
+        <div className="flex items-center gap-2">
+          <Calculator className="w-4 h-4 text-amber-300" />
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-200">FINORA Decision Logic & Proof</span>
+        </div>
+        <span className="text-[10px] bg-amber-400/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-400/30">
+          Layer 4 Engine Verified
+        </span>
+      </div>
+
+      <div className="space-y-3 text-xs leading-relaxed">
+        <div className="bg-white/5 p-2.5 rounded-lg border border-white/10">
+          <div className="flex items-center gap-1.5 font-bold text-amber-300 mb-1">
+            <Target className="w-3.5 h-3.5" />
+            <span>Mathematical Safe-To-Spend Matrix</span>
+          </div>
+          <p className="text-white/80">
+            Calculated via <code className="text-amber-200">SafeToSpend = (Balance - RecurringObligations - GoalReservations) / DaysLeft</code>.
+            Ensures emergency funds (3x monthly spend) remain uncompromised.
+          </p>
+        </div>
+
+        <div className="bg-white/5 p-2.5 rounded-lg border border-white/10">
+          <div className="flex items-center gap-1.5 font-bold text-amber-300 mb-1">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>Risk Radar & Credit Utilization Thresholds</span>
+          </div>
+          <p className="text-white/80">
+            Card recommendation factors statement cycle timing (interest-free 45-day window) and keeps individual credit utilization below 30% to guard CIBIL score.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-1.5 text-white/60 text-[11px]">
+            <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+            <span>Need deeper math?</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onAskDetailed("Explain the mathematical calculations and decision logic behind this CFO verdict in full detail")}
+            className="text-[11px] font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer"
+          >
+            Ask CFO to explain math step-by-step →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Quick action buttons ──────────────────────────────────────────────────────
 const quickButtons = [
   { emoji: "🛒", text: "New Phone", query: "Can I afford a new phone?" },
   { emoji: "✈", text: "Goa Trip", query: "Can I afford a Goa trip?" },
@@ -23,131 +197,95 @@ const quickButtons = [
   { emoji: "💳", text: "Which card?", query: "Which credit card should I use?" },
 ];
 
+// ── localStorage helpers ───────────────────────────────────────────────────────
+function loadWalletItems(): WalletCard[] {
+  try {
+    const raw = localStorage.getItem("finora_wallet_items");
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function loadBudgets(): BudgetItem[] {
+  try {
+    const raw = localStorage.getItem("finora_budgets");
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function loadUserProfile(): UserProfile {
+  try {
+    const raw = localStorage.getItem("finora_user_profile");
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function loadMemory(): MemoryItem[] {
+  try {
+    const raw = localStorage.getItem("finora_ai_memory");
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function ChatPage() {
-  const { balance, monthlyIncome, monthlyExpenses, savingsRate, investments, goals, transactions } = useFinance();
-  const [financialContext, setFinancialContext] = useState("");
+  const {
+    balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore,
+    investments, goals, transactions,
+  } = useFinance();
+
+  const [snapshot, setSnapshot] = useState<FinancialSnapshot | null>(null);
+  const [activeIntentLabel, setActiveIntentLabel] = useState<string | null>(null);
+  const [expandedDeepExplains, setExpandedDeepExplains] = useState<Record<string, boolean>>({});
+
+  const toggleDeepExplain = (id: string) => {
+    setExpandedDeepExplains((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
-    // Safely load local storage data
-    const budgetsRaw = localStorage.getItem("finora_budgets");
-    const walletRaw = localStorage.getItem("finora_wallet_items");
+    const walletItems = loadWalletItems();
+    const budgets = loadBudgets();
+    const profile = loadUserProfile();
+    const mem = loadMemory();
 
-    const budgets = budgetsRaw ? JSON.parse(budgetsRaw) : [];
-    const walletItems = walletRaw ? JSON.parse(walletRaw) : [];
-    const creditCards = walletItems.filter((i: any) => i.type === "credit");
+    const built = buildFinancialSnapshot({
+      transactions,
+      goals,
+      investments,
+      balance,
+      monthlyIncome,
+      monthlyExpenses,
+      savingsRate,
+      healthScore,
+      walletItems,
+      budgets,
+      profile,
+      memory: mem,
+      formatCurrency,
+    });
 
-    // Tally current month discretionary safe to spend spendings
-    let safeToSpendVal = 0;
-    if (monthlyIncome > 0) {
-      const discretionary = budgets.filter((b: any) => !["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
-      const discretionaryTarget = discretionary.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
-      
-      const fixed = budgets.filter((b: any) => ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].includes(b.name || b.category));
-      const fixedTarget = fixed.reduce((acc: number, curr: any) => acc + Number(curr.budget || curr.limit || 0), 0);
-      
-      const maxDiscretionary = Math.max(0, monthlyIncome - fixedTarget);
-      const target = budgets.length > 0 ? Math.min(discretionaryTarget, maxDiscretionary) : (monthlyIncome * 0.3);
+    setSnapshot(built);
+  }, [balance, monthlyIncome, monthlyExpenses, savingsRate, healthScore, investments, goals, transactions]);
 
-      const currentMonth = new Date().getMonth();
-      let discretionarySpent = 0;
-      transactions.forEach(t => {
-        if (t.type === "expense") {
-          const txDate = new Date(t.date);
-          if (txDate.getMonth() === currentMonth) {
-            const isFixed = ["Rent & Utilities", "Healthcare", "Savings", "Rent", "Housing", "Medical"].some(k => t.category.includes(k));
-            if (!isFixed) discretionarySpent += t.amount;
-          }
-        }
-      });
-
-      const remaining = Math.max(0, target - discretionarySpent);
-      const now = new Date();
-      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
-      safeToSpendVal = Math.round(remaining / daysLeft);
+  useEffect(() => {
+    if (!snapshot) return;
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    if (query) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      const timer = setTimeout(() => {
+        handleSendMessage(query);
+      }, 400);
+      return () => clearTimeout(timer);
     }
-
-    // Tally income sources
-    const incomeTx = transactions.filter(t => t.type === "income");
-    const incomeSources: Record<string, number> = {};
-    incomeTx.forEach(t => {
-      const cleanName = t.name.includes(" || ") ? t.name.split(" || ")[0] : t.name;
-      const key = cleanName || t.category;
-      incomeSources[key] = (incomeSources[key] ?? 0) + t.amount;
-    });
-    const incomeBreakdownStr = Object.entries(incomeSources)
-      .map(([source, amt]) => `- ${source}: ${formatCurrency(amt)}`)
-      .join("\n    ") || "No transaction-based income sources recorded.";
-
-    // Tally expense categories
-    const expenseTx = transactions.filter(t => t.type === "expense");
-    const categorySpent: Record<string, number> = {};
-    expenseTx.forEach(t => {
-      categorySpent[t.category] = (categorySpent[t.category] ?? 0) + t.amount;
-    });
-    const categorySummaryStr = Object.entries(categorySpent)
-      .map(([cat, amt]) => `- ${cat}: ${formatCurrency(amt)}`)
-      .join("\n    ") || "No expense transactions recorded.";
-
-    // Format top 10 recent transactions for better context depth
-    const recentTx = transactions.slice(0, 10).map(t => {
-      const cleanName = t.name.includes(" || ") ? t.name.split(" || ")[0] : t.name;
-      return `${t.date}: ${cleanName} - ${formatCurrency(t.amount)} (${t.category}) [${t.type}]`;
-    }).join("\n      ");
-
-    const contextStr = `
-    User Financial Context:
-    - Current Balance: ${formatCurrency(balance)}
-    - Monthly Income: ${formatCurrency(monthlyIncome)}
-    - Monthly Expenses: ${formatCurrency(monthlyExpenses)}
-    - Savings Rate: ${savingsRate.toFixed(2)}%
-    - Today's Safe-To-Spend Limit: ${formatCurrency(safeToSpendVal)}
-
-    Income Sources Breakdown:
-    ${incomeBreakdownStr}
-
-    Category Spending Summary:
-    ${categorySummaryStr}
-
-    Budgets:
-    ${budgets.map((b: any) => `- ${b.category || b.name}: Spent ${formatCurrency(b.spent || 0)} / Limit ${formatCurrency(b.limit || b.budget || 0)}`).join("\n    ") || "None set"}
-
-    Credit Cards:
-    ${creditCards.map((card: any) => {
-      const cardLimitNum = card.limit ? Number(card.limit.replace(/,/g, '')) : 0;
-      const cardTx = transactions.filter(tx => {
-        if (tx.type !== "expense") return false;
-        const match = tx.name.match(/\((?:[^)]*?\s*)?([0-9]{4})\)$/);
-        return match ? match[1] === card.number : false;
-      });
-      const outstanding = cardTx.reduce((sum, tx) => sum + tx.amount, 0);
-      const util = cardLimitNum > 0 ? Math.min(100, Math.round((outstanding / cardLimitNum) * 100)) : 0;
-      return `- ${card.name} (${card.network}): Outstanding ${formatCurrency(outstanding)} / Limit ${formatCurrency(cardLimitNum)} (Utilization: ${util}%, Billing Date: ${card.billingDate || "N/A"}th of the month, Perks: ${card.perks?.join(", ") || "None"})`;
-    }).join("\n    ") || "None added"}
-
-    Investments:
-    ${investments.map(i => {
-      const netGain = i.current_value - i.invested;
-      const gainPercent = i.invested > 0 ? ((netGain / i.invested) * 100).toFixed(1) : "0.0";
-      return `- ${i.name} (${i.type}): Value ${formatCurrency(i.current_value)} (Original Invested: ${formatCurrency(i.invested)}, Gain/Loss: ${netGain >= 0 ? "+" : ""}${formatCurrency(netGain)} [${gainPercent}%])`;
-    }).join("\n    ") || "None"}
-
-    Goals:
-    ${goals.map(g => `- ${g.name}: Saved ${formatCurrency(g.current_amount)} of ${formatCurrency(g.target_amount)} (Target Date: ${g.target_date || "Not set"})`).join("\n    ") || "None"}
-
-    Recent Transactions:
-    ${recentTx || "None"}
-    `;
-
-    setFinancialContext(contextStr);
-  }, [balance, monthlyIncome, monthlyExpenses, savingsRate, investments, goals, transactions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot]);
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
       content:
-        "Hello! I am your AI Personal CFO. I have access to your current financial context. How can I help you today? You can ask me things like 'Can I afford a trip?' or 'How can I increase my savings?'",
+        "Hello! I am your AI Personal CFO. I have access to your complete financial profile — balances, budgets, goals, investments, and credit cards. Ask me anything: 'Can I afford this?', 'Which card should I use?', 'How are my goals doing?', or 'Give me my weekly summary.'",
     },
   ]);
   const [input, setInput] = useState("");
@@ -158,86 +296,13 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    if (!financialContext) return;
-    const params = new URLSearchParams(window.location.search);
-    const query = params.get("q");
-    if (query) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      const timer = setTimeout(() => {
-        handleQuickButtonClick(query);
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [financialContext]);
+  const handleSendMessage = async (query: string) => {
+    if (!query.trim() || isLoading) return;
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = input.trim();
-    if (!trimmed || isLoading) return;
+    const intent = detectIntent(query);
+    const label = getIntentLabel(intent);
+    setActiveIntentLabel(label);
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: trimmed,
-    };
-
-    const assistantId = (Date.now() + 1).toString();
-    const assistantMsg: Message = { id: assistantId, role: "assistant", content: "" };
-
-    // Optimistic update — add both messages immediately
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      // Use all current messages (before the new user msg) as history
-      const historyForApi = [...messages, userMsg];
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: historyForApi.map((m) => ({ role: m.role, content: m.content })),
-          financialContext,
-        }),
-      });
-
-      if (!response.ok || !response.body) {
-        const errText = await response.text();
-        throw new Error(errText || "API error");
-      }
-
-      // Stream the response word-by-word into the assistant message
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId ? { ...m, content: m.content + chunk } : m
-          )
-        );
-      }
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : "Unknown error";
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId
-            ? { ...m, content: `⚠️ Error: ${errMsg}. Please try again.` }
-            : m
-        )
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickButtonClick = async (query: string) => {
-    if (isLoading) return;
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -248,6 +313,7 @@ export default function ChatPage() {
     const assistantMsg: Message = { id: assistantId, role: "assistant", content: "" };
 
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setInput("");
     setIsLoading(true);
 
     try {
@@ -258,7 +324,7 @@ export default function ChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: historyForApi.map((m) => ({ role: m.role, content: m.content })),
-          financialContext,
+          financialContext: snapshot ? JSON.stringify(snapshot) : null,
         }),
       });
 
@@ -285,17 +351,24 @@ export default function ChatPage() {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantId
-            ? { ...m, content: `⚠️ Error: ${errMsg}. Please try again.` }
+            ? { ...m, content: `⚠️ ${errMsg}. Please try again.` }
             : m
         )
       );
     } finally {
       setIsLoading(false);
+      setActiveIntentLabel(null);
     }
   };
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    handleSendMessage(input.trim());
+  };
+
   return (
-    <div className="flex flex-col h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto text-foreground font-sans -m-4 md:-m-8 p-4" style={{background: '#06090f'}}>
+    <div className="flex flex-col h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto bg-background text-foreground font-sans -m-4 md:-m-8 p-4">
+
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto space-y-6 pb-4 scrollbar-hide">
         {messages.map((message) => (
@@ -308,36 +381,73 @@ export default function ChatPage() {
           >
             {message.role === "assistant" && (
               <div className="flex items-center gap-2 mb-2">
-                 <div className="p-1">
-                   <Sparkles className="w-4 h-4 text-primary" />
-                 </div>
+                <div className="p-1">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
               </div>
             )}
-            
+
             <div
               className={cn(
-                "rounded-2xl p-4 text-[15px] leading-relaxed shadow-lg bg-gradient-to-br from-primary to-secondary text-white",
-                message.role === "user" ? "rounded-tr-sm" : "rounded-tl-sm"
+                "rounded-2xl p-4 shadow-lg bg-gradient-to-br from-primary to-secondary text-white w-full",
+                message.role === "user" ? "rounded-tr-sm text-[15px] leading-relaxed max-w-[85%] ml-auto" : "rounded-tl-sm"
               )}
             >
               {message.content ? (
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                message.role === "assistant" ? (
+                  <MarkdownMessage content={message.content} isUser={false} />
+                ) : (
+                  <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{message.content}</div>
+                )
               ) : (
-                <div className="flex gap-1.5 items-center h-5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:0.4s]" />
+                /* Loading state */
+                <div className="flex flex-col gap-2">
+                  {activeIntentLabel && (
+                    <div className="text-xs text-white/70 font-semibold tracking-wide mb-1 animate-pulse flex items-center gap-1.5">
+                      {activeIntentLabel}
+                    </div>
+                  )}
+                  <div className="flex gap-1.5 items-center h-5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:0.2s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:0.4s]" />
+                  </div>
                 </div>
               )}
             </div>
 
+            {/* Deep Explanation Button (for Assistant Messages) */}
+            {message.role === "assistant" && message.content && message.id !== "welcome" && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => toggleDeepExplain(message.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-card hover:bg-accent text-card-foreground text-xs font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5 text-primary" />
+                  <span>{expandedDeepExplains[message.id] ? "Hide Deep Explanation" : "🔍 Deep Explanation"}</span>
+                  {expandedDeepExplains[message.id] ? (
+                    <ChevronUp className="w-3.5 h-3.5 opacity-60" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                  )}
+                </button>
+
+                {/* Expanded Deep Explanation Panel */}
+                {expandedDeepExplains[message.id] && (
+                  <DeepExplanationPanel message={message} onAskDetailed={handleSendMessage} />
+                )}
+              </div>
+            )}
+
+            {/* Quick buttons after welcome message */}
             {message.id === "welcome" && messages.length === 1 && (
               <div className="mt-4 flex flex-wrap gap-2.5 max-w-2xl">
                 {quickButtons.map((btn) => (
                   <button
                     key={btn.text}
                     type="button"
-                    onClick={() => handleQuickButtonClick(btn.query)}
+                    onClick={() => handleSendMessage(btn.query)}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-accent text-card-foreground text-sm font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
                   >
                     <span>{btn.emoji}</span>
@@ -347,7 +457,7 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* Example custom interactive cards for assistant (mocked if content includes certain keywords for demo) */}
+            {/* Interactive option cards */}
             {message.role === "assistant" && message.content.includes("approach this:") && (
               <div className="mt-3 bg-card rounded-2xl p-4 border border-border shadow-lg w-full">
                 <div className="space-y-3">
@@ -380,12 +490,12 @@ export default function ChatPage() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about your finances..."
+            placeholder="Ask your CFO anything..."
             className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base min-w-0"
             disabled={isLoading}
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isLoading || !input.trim()}
             className="bg-primary text-primary-foreground p-3 rounded-full shadow-[0_0_15px_rgb(129,1,0,0.5)] hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
           >

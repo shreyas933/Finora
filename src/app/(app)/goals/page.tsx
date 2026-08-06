@@ -56,22 +56,23 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-8 pb-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight" style={{letterSpacing: '-0.02em'}}>Financial Goals</h2>
-          <p className="text-muted-foreground text-sm mt-0.5">Track and manage your savings targets.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Financial Goals</h2>
+          <p className="text-muted-foreground">Track and manage your savings targets.</p>
         </div>
-        <Button onClick={() => setIsAdding(!isAdding)} className="gap-2 bg-primary hover:bg-primary/90">
+        <Button onClick={() => setIsAdding(!isAdding)} className="gap-2">
           <Plus className="h-4 w-4" /> Add Goal
         </Button>
       </div>
 
       {isAdding && (
-        <div className="hero-card p-6">
-          <p className="text-sm font-bold mb-4" style={{color: '#f0f4ff'}}>Create New Goal</p>
-          <div className="relative z-10">
-
+        <Card className="border-transparent bg-gradient-to-br from-primary to-secondary text-white">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">Create New Goal</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-4 sm:grid-cols-4 items-end">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-red-100">Goal Name</label>
@@ -85,13 +86,13 @@ export default function GoalsPage() {
                 <label className="text-sm font-medium text-red-100">Target Date</label>
                 <Input className="bg-white/10 border-white/20 text-white" type="date" value={newGoal.targetDate} onChange={e => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
               </div>
-              <Button className="bg-primary hover:bg-primary/90 text-white" onClick={handleAddGoal}>Save Goal</Button>
+              <Button className="bg-white text-primary hover:bg-white/90" onClick={handleAddGoal}>Save Goal</Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {goals.map((goal) => {
           const progress = Math.min(100, (goal.current_amount / goal.target_amount) * 100);
           const monthsLeft = Math.max(1, differenceInMonths(new Date(goal.target_date), new Date()));
@@ -102,12 +103,14 @@ export default function GoalsPage() {
 
           if (editingGoalId === goal.id) {
             return (
-              <div key={goal.id} className="hero-card p-5">
-                <div className="relative z-10">
-                <p className="text-sm font-bold mb-4 flex justify-between items-center" style={{color: '#f0f4ff'}}>
-                  Edit Goal
-                  <button className="p-1 rounded hover:bg-white/10" onClick={() => setEditingGoalId(null)}><X className="h-4 w-4" /></button>
-                </p>
+              <Card key={goal.id} className="border-transparent bg-gradient-to-br from-primary to-secondary text-white">
+                <CardHeader>
+                  <CardTitle className="text-lg flex justify-between items-center text-white">
+                    Edit Goal
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => setEditingGoalId(null)}><X className="h-4 w-4" /></Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-red-100">Goal Name</label>
@@ -127,82 +130,102 @@ export default function GoalsPage() {
                       <label className="text-sm font-medium text-red-100">Target Date</label>
                       <Input className="bg-white/10 border-white/20 text-white" type="date" value={editGoalData.targetDate} onChange={e => setEditGoalData({ ...editGoalData, targetDate: e.target.value })} />
                     </div>
-                    <Button onClick={handleUpdateGoal} className="w-full gap-2 bg-primary hover:bg-primary/90 text-white"><Check className="h-4 w-4" /> Save Changes</Button>
+                    <Button onClick={handleUpdateGoal} className="w-full gap-2 bg-white text-primary hover:bg-white/90"><Check className="h-4 w-4" /> Save Changes</Button>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           }
 
+          // Calculate dynamic progress glow style (20% -> 50% -> 80% -> 100%)
+          const glowClass = progress >= 100
+            ? "shadow-[0_0_35px_rgba(16,185,129,0.35)] border-emerald-400/60"
+            : progress >= 80
+            ? "shadow-[0_0_28px_rgba(6,182,212,0.3)] border-cyan-500/50"
+            : progress >= 50
+            ? "shadow-[0_0_20px_rgba(6,182,212,0.2)] border-cyan-500/35"
+            : progress >= 20
+            ? "shadow-[0_0_12px_rgba(6,182,212,0.12)] border-cyan-500/20"
+            : "shadow-lg border-transparent";
+
           return (
-            <div key={goal.id} className="navy-card p-5 relative overflow-hidden group">
-              {/* Subtle ambient glow */}
-              <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none opacity-40" style={{background: 'radial-gradient(circle at top right, rgba(59,130,246,0.08) 0%, transparent 70%)'}} />
-              
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{background: 'rgba(129,1,0,0.15)', border: '1px solid rgba(129,1,0,0.2)'}}>
-                    <Target className="h-4 w-4 text-primary" />
+            <Card key={goal.id} className={cn("relative overflow-hidden group bg-gradient-to-br from-primary to-secondary border text-white transition-all duration-300 hover:-translate-y-0.5", glowClass)}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-white/20 rounded-lg text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+                    <Target className="h-5 w-5" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 mr-1">
+                      <button onClick={() => startEditing(goal)} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => deleteGoal(goal.id)} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {progress >= 100 ? (
+                      <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                        <CheckCircle2 className="h-3 w-3" /> Reached
+                      </span>
+                    ) : isOffTrack ? (
+                      <span className="text-[10px] font-bold text-yellow-300 uppercase tracking-wider bg-yellow-500/20 border border-yellow-500/30 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+                        <AlertTriangle className="h-3 w-3" /> Off Track
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-cyan-200 uppercase tracking-wider bg-cyan-500/20 border border-cyan-400/30 px-2.5 py-1 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                        On Track
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  {progress >= 100 ? (
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> Reached
-                    </span>
-                  ) : isOffTrack ? (
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" /> Off Track
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">On Track</span>
+                <CardTitle className="text-xl mt-4 text-white">{goal.name}</CardTitle>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-bold text-white">{formatCurrency(goal.current_amount, currency)}</span>
+                  <span className="text-sm text-red-100">/ {formatCurrency(goal.target_amount, currency)}</span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs mb-1 text-red-100">
+                    <span>Progress</span>
+                    <span className="font-medium">{progress.toFixed(1)}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden bar-ambient-shine">
+                    <div
+                      className={cn(
+                        "h-full transition-all duration-500 rounded-full",
+                        progress >= 100
+                          ? "bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.6)]"
+                          : progress >= 50
+                          ? "bg-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                          : "bg-white"
+                      )}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-red-100">Target Date</span>
+                    <span className="font-medium text-white">{new Date(goal.target_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  {progress < 100 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-red-100">To save monthly</span>
+                      <span className={cn("font-medium text-white", isOffTrack ? "text-yellow-300 font-semibold" : "")}>{formatCurrency(requiredMonthly, currency)}</span>
+                    </div>
                   )}
-                  <button onClick={() => startEditing(goal)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button onClick={() => deleteGoal(goal.id)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
                 </div>
-              </div>
 
-              <p className="text-base font-bold mb-1" style={{color: '#f0f4ff'}}>{goal.name}</p>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-2xl font-bold" style={{color: '#f0f4ff'}}>{formatCurrency(goal.current_amount, currency)}</span>
-                <span className="text-sm text-muted-foreground">/ {formatCurrency(goal.target_amount, currency)}</span>
-              </div>
-
-              {/* Progress bar */}
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="font-semibold" style={{color: '#f0f4ff'}}>{progress.toFixed(1)}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full overflow-hidden" style={{background: 'rgba(30,42,58,0.8)'}}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{ width: `${progress}%`, background: progress >= 100 ? '#22c55e' : progress >= 50 ? '#810100' : '#3b82f6' }}
-                />
-              </div>
-
-              <div className="mt-4 space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Target Date</span>
-                  <span className="font-medium" style={{color: '#f0f4ff'}}>{new Date(goal.target_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
-                </div>
-                {progress < 100 && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Needed/month</span>
-                    <span className={cn("font-medium", isOffTrack ? "text-amber-400" : "text-foreground")}>{formatCurrency(requiredMonthly, currency)}</span>
+                {isOffTrack && progress < 100 && (
+                  <div className="mt-4 p-3 rounded-lg bg-red-900/50 border border-red-800/80 text-xs text-red-100 shadow-[0_0_12px_rgba(239,68,68,0.15)]">
+                    Suggestion: You need to increase your savings rate from {savingsRate.toFixed(1)}% to {monthlyIncome > 0 ? ((requiredMonthly / monthlyIncome) * 100).toFixed(1) : "100"}% to hit this goal on time, or extend the deadline.
                   </div>
                 )}
-              </div>
-
-              {isOffTrack && progress < 100 && (
-                <div className="mt-3 p-2.5 rounded-lg text-xs" style={{background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.15)', color: '#fbbf24'}}>
-                  Increase savings rate to {monthlyIncome > 0 ? ((requiredMonthly / monthlyIncome) * 100).toFixed(1) : "100"}% or extend deadline.
-                </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>

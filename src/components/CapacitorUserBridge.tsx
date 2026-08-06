@@ -59,7 +59,7 @@ export function CapacitorUserBridge() {
     syncUserId();
 
     // Re-sync on all active auth state changes (e.g., login, session refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (event !== "SIGNED_OUT" && session?.user?.id) {
         syncUserId();
       }

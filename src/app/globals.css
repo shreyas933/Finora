@@ -18,19 +18,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  /* ── Finora Brand Palette ── */
-  --color-finora-dark: #06090f;
-  --color-finora-card: #0d1117;
-  --color-finora-red: #810100;
+  --color-finora-dark: #000000;
+  --color-finora-card: #111111;
+  --color-finora-red: #800000;
   --color-finora-red-dark: #660000;
   --color-finora-peach: #ffb9ab;
-  --color-finora-gray: #1c2333;
-  --color-finora-chat-ai: #0f1823;
-  --color-finora-navy: #0d1117;
-  --color-finora-navy-light: #1c2333;
-  --color-finora-blue-accent: #3b82f6;
-
-  /* ── Radius Tokens ── */
+  --color-finora-gray: #1a1a1a;
+  --color-finora-chat-ai: #1f1f1f;
   --radius-lg: var(--radius);
   --radius-md: 0.5rem;
   --radius-sm: 0.25rem;
@@ -43,49 +37,93 @@
   /* ── Typography ── */
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+<<<<<<< Updated upstream
 
   --shadow-level-1: 0px 4px 24px rgba(0, 10, 30, 0.4);
   --shadow-level-2: 0px 8px 40px rgba(0, 10, 30, 0.6);
   --shadow-card: 0px 2px 12px rgba(0, 0, 0, 0.5);
+=======
+  --shadow-level-1: 0px 4px 12px rgba(15, 23, 42, 0.05);
+  --shadow-level-2: 0px 8px 24px rgba(15, 23, 42, 0.08);
+>>>>>>> Stashed changes
 }
 
 :root {
-  /* === FINORA Deep Navy Dark Theme === */
-  --background: #06090f;
-  --foreground: #f0f4ff;
-  --card: #0d1117;
-  --card-foreground: #f0f4ff;
+  /* Global Dark Theme applied to entire app */
+  --background: #000000;
+  --foreground: #FAFAFA;
+  --card: #0A0A0A;
+  --card-foreground: #FAFAFA;
   --primary: #810100;
-  --primary-foreground: #f0f4ff;
-  --secondary: #111827;
-  --secondary-foreground: #f0f4ff;
-  --muted: #1c2333;
-  --muted-foreground: #8b9ab0;
-  --accent: #1c2333;
-  --accent-foreground: #f0f4ff;
+  --primary-foreground: #FAFAFA;
+  --secondary: #171717;
+  --secondary-foreground: #FAFAFA;
+  --muted: #1A1A1A;
+  --muted-foreground: #A3A3A3;
+  --accent: #1A1A1A;
+  --accent-foreground: #FAFAFA;
   --destructive: #810100;
-  --destructive-foreground: #f0f4ff;
-  --border: #1e2a3a;
-  --input: #1c2333;
+  --destructive-foreground: #FAFAFA;
+  --border: #222222;
+  --input: #1A1A1A;
   --ring: #810100;
   --chart-1: #22c55e;
   --chart-2: #810100;
   --chart-3: #3b82f6;
   --chart-4: #eab308;
   --chart-5: #ff8c7a;
-  --radius: 0.875rem;
-  /* Ambient glows */
-  --glow-blue: rgba(59, 130, 246, 0.08);
-  --glow-primary: rgba(129, 1, 0, 0.06);
-  --glow-teal: rgba(20, 184, 166, 0.06);
+  --radius: 0.75rem;
+  /* 12px corners */
 }
 
+html,
 body {
-  background: var(--background);
+  background-color: #000000 !important;
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+<<<<<<< Updated upstream
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+=======
+  color-scheme: dark;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Custom Sleek Dark Scrollbars (No White Arrows or White Tracks) ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 9999px;
+  border: 1px solid #171717;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
+
+::-webkit-scrollbar-corner {
+  background: #000000;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #262626 #000000;
+>>>>>>> Stashed changes
 }
 
 .tabular-nums,
@@ -119,183 +157,102 @@ td,
     background-clip: text;
   }
 
-  /* === FINORA Navy Design System === */
-
-  /* Card surfaces — deep navy with subtle border */
-  .navy-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
+  /* Premium Glow Utilities */
+  .glow-emerald-sm {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.18), inset 0 0 8px rgba(16, 185, 129, 0.08);
+  }
+  .glow-emerald-md {
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.28), inset 0 0 12px rgba(16, 185, 129, 0.12);
+  }
+  .glow-emerald-lg {
+    box-shadow: 0 0 36px rgba(16, 185, 129, 0.4), 0 0 16px rgba(16, 185, 129, 0.2);
   }
 
-  /* Hero balance card — dark gradient surface */
-  .hero-card {
-    background: linear-gradient(135deg, #0d1933 0%, #111827 60%, #0f1623 100%);
-    border: 1px solid rgba(59, 130, 246, 0.12);
-    border-radius: 1.25rem;
-    box-shadow: 0 8px 40px rgba(0, 10, 30, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+  .glow-amber-sm {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.18), inset 0 0 8px rgba(245, 158, 11, 0.08);
+  }
+  .glow-amber-md {
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.28), inset 0 0 12px rgba(245, 158, 11, 0.12);
+  }
+
+  .glow-red-sm {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.2), inset 0 0 8px rgba(239, 68, 68, 0.1);
+  }
+  .glow-red-md {
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.32), inset 0 0 12px rgba(239, 68, 68, 0.15);
+  }
+
+  .glow-indigo-sm {
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.2), inset 0 0 10px rgba(139, 92, 246, 0.08);
+  }
+  .glow-indigo-md {
+    box-shadow: 0 0 28px rgba(139, 92, 246, 0.32), 0 0 10px rgba(139, 92, 246, 0.15);
+  }
+
+  .glow-cyan-subtle {
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.12);
+  }
+  .glow-cyan-md {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.25), inset 0 0 10px rgba(6, 182, 212, 0.1);
+  }
+  .glow-cyan-lg {
+    box-shadow: 0 0 32px rgba(6, 182, 212, 0.38), 0 0 14px rgba(6, 182, 212, 0.2);
+  }
+
+  .glow-gold-sm {
+    box-shadow: 0 0 16px rgba(234, 179, 8, 0.22);
+  }
+
+  .glow-investment {
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.25), 0 0 12px rgba(16, 185, 129, 0.15);
+  }
+
+  /* Shimmer sweep animation for progress bars */
+  .bar-ambient-shine {
     position: relative;
     overflow: hidden;
   }
-
-  .hero-card::before {
+  .bar-ambient-shine::after {
     content: '';
     position: absolute;
-    top: -80px;
-    right: -80px;
-    width: 280px;
-    height: 280px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .hero-card::after {
-    content: '';
-    position: absolute;
-    bottom: -60px;
-    left: -40px;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(129, 1, 0, 0.07) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  /* Quick action pill buttons */
-  .quick-pill {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem 0.75rem;
-    background: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 1rem;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    min-width: 72px;
-  }
-
-  .quick-pill:hover {
-    background: var(--accent);
-    border-color: rgba(129, 1, 0, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 10, 30, 0.4);
-  }
-
-  .quick-pill-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Glass credit card */
-  .credit-card-glass {
-    background: linear-gradient(135deg, #1a3a5c 0%, #0d2040 40%, #050d1a 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1.25rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .credit-card-teal {
-    background: linear-gradient(135deg, #0d4a4a 0%, #0a3540 40%, #071c2a 100%);
-  }
-
-  .credit-card-purple {
-    background: linear-gradient(135deg, #2d1a4a 0%, #1a0d35 40%, #0d0620 100%);
-  }
-
-  .credit-card-gold {
-    background: linear-gradient(135deg, #3a2800 0%, #2a1c00 40%, #1a1000 100%);
-  }
-
-  /* Section dividers */
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-  }
-
-  /* Transaction row */
-  .tx-row {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    padding: 0.875rem 0;
-    border-bottom: 1px solid rgba(30, 42, 58, 0.5);
-    transition: background 0.15s;
-  }
-
-  .tx-row:last-child {
-    border-bottom: none;
-  }
-
-  .tx-row:hover {
-    background: rgba(28, 35, 51, 0.4);
-    margin: 0 -0.5rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    border-radius: 0.5rem;
-    border-bottom-color: transparent;
-  }
-
-  .tx-avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
-
-  /* Sidebar nav item */
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 0.875rem;
-    border-radius: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--muted-foreground);
-    transition: all 0.15s;
-    position: relative;
-  }
-
-  .nav-item:hover {
-    background: rgba(28, 35, 51, 0.6);
-    color: var(--foreground);
-  }
-
-  .nav-item.active {
-    background: rgba(129, 1, 0, 0.12);
-    color: var(--foreground);
-    border: 1px solid rgba(129, 1, 0, 0.2);
-  }
-
-  .nav-item.active::before {
-    content: '';
-    position: absolute;
-    left: -0.875rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 60%;
-    background: var(--primary);
-    border-radius: 0 2px 2px 0;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      transparent 100%
+    );
+    animation: barShine 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
+
+@keyframes barShine {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 140%;
+  }
+}
+
+@keyframes subtleHealthPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15), inset 0 0 10px rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(16, 185, 129, 0.32), inset 0 0 15px rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.55);
+  }
+}
+
+.health-ring-pulse {
+  animation: subtleHealthPulse 3.5s ease-in-out infinite;
+}
+
 
 /* ─── AI Insights Section ─────────────────────────────────────────── */
 .ai-insights-section {
@@ -383,8 +340,12 @@ td,
 }
 
 .ai-insight-card:hover {
+<<<<<<< Updated upstream
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   transform: translateY(-1px);
+=======
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+>>>>>>> Stashed changes
 }
 
 .ai-insight-card-inner {

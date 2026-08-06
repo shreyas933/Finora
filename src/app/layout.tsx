@@ -40,7 +40,7 @@ export default function RootLayout({
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <meta name="theme-color" content="#F0F2F5" />
+        <meta name="theme-color" content="#000000" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="shortcut icon" href="/icons/icon-192.png" />
       </head>
