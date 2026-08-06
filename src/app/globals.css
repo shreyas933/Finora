@@ -37,15 +37,9 @@
   /* ── Typography ── */
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-<<<<<<< Updated upstream
-
   --shadow-level-1: 0px 4px 24px rgba(0, 10, 30, 0.4);
   --shadow-level-2: 0px 8px 40px rgba(0, 10, 30, 0.6);
   --shadow-card: 0px 2px 12px rgba(0, 0, 0, 0.5);
-=======
-  --shadow-level-1: 0px 4px 12px rgba(15, 23, 42, 0.05);
-  --shadow-level-2: 0px 8px 24px rgba(15, 23, 42, 0.08);
->>>>>>> Stashed changes
 }
 
 :root {
