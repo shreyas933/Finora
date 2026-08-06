@@ -157,13 +157,8 @@ function CircleRing({ percent, color, overBudget }: { percent: number, color: st
     : "none";
 
   return (
-<<<<<<< Updated upstream
-    <svg className="w-[84px] h-[84px] transform -rotate-90">
-      <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
-=======
     <svg width="84" height="84" viewBox="0 0 84 84" className="rotate-[-90deg]">
       <circle cx="42" cy="42" r={radius} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="8" />
->>>>>>> Stashed changes
       <circle
         cx="42" cy="42" r={radius}
         fill="none"
@@ -196,26 +191,16 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
   };
 
   return (
-<<<<<<< Updated upstream
-    <div className="flex items-center gap-4 relative overflow-hidden bg-gradient-to-br from-[#1E293B]/75 via-[#0F172A]/75 to-[#1a2744]/75 backdrop-blur-xl border border-white/10 text-white shadow-card hover:border-white/20 transition-all rounded-xl p-4 group">
+    <div className={cn(
+      "flex items-center gap-4 relative overflow-hidden bg-gradient-to-br from-[#1E293B]/75 via-[#0F172A]/75 to-[#1a2744]/75 backdrop-blur-xl border border-white/10 text-white shadow-card hover:border-primary/40 hover:shadow-[0_0_20px_rgba(129,1,0,0.3)] transition-all rounded-xl p-4 group",
+      overBudget && "border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+    )}>
       <div className="absolute -top-12 -left-12 w-24 h-24 bg-white/5 blur-[30px] rounded-full pointer-events-none"></div>
       
       <div className="relative flex-shrink-0 z-10">
         <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
         <span
           className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold", overBudget ? "text-amber-400" : "text-white")}
-=======
-    <div className={cn(
-      "flex items-center gap-4 bg-gradient-to-br from-primary to-secondary border border-transparent rounded-xl p-4 transition-all duration-300 text-white shadow-md hover:-translate-y-0.5",
-      overBudget
-        ? "hover:border-amber-500/40 hover:shadow-[0_0_20px_rgba(245,158,11,0.25)]"
-        : "hover:border-primary/40 hover:shadow-[0_0_20px_rgba(129,1,0,0.3)]"
-    )}>
-      <div className="relative flex-shrink-0">
-        <CircleRing percent={percent} color={cat.ringColor} overBudget={overBudget} />
-        <span
-          className={cn("absolute inset-0 flex items-center justify-center text-sm font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]", overBudget ? "text-yellow-300" : "text-white")}
->>>>>>> Stashed changes
           style={{ transform: "rotate(90deg)" }}
         >
           {percent}%
@@ -225,56 +210,36 @@ function BudgetCard({ cat, spent, onEditBudget, currency }: { cat: BudgetCategor
       <div className="flex-1 min-w-0 z-10">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1.5">
-<<<<<<< Updated upstream
             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
             <span className="text-sm font-bold text-white truncate">{cat.name}</span>
-=======
-            <span className="w-2 h-2 rounded-full flex-shrink-0 shadow-[0_0_6px_currentColor]" style={{ backgroundColor: cat.color }} />
-            <span className="text-sm font-semibold text-white truncate">{cat.name}</span>
->>>>>>> Stashed changes
           </div>
           {editing ? (
             <div className="flex items-center gap-1 z-10 relative">
               <input
-<<<<<<< Updated upstream
                 className="w-20 text-xs bg-black/40 border border-white/10 rounded px-2 py-1 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-=======
-                className="w-20 text-xs bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
->>>>>>> Stashed changes
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 autoFocus
                 onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setEditing(false); }}
               />
-<<<<<<< Updated upstream
               <button onClick={handleSave} className="text-emerald-400 hover:text-emerald-300 p-1"><Check className="h-3.5 w-3.5" /></button>
               <button onClick={() => setEditing(false)} className="text-slate-400 hover:text-slate-200 p-1"><X className="h-3.5 w-3.5" /></button>
             </div>
           ) : (
             <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-slate-400 hover:text-white transition-colors z-10 relative">
-=======
-              <button onClick={handleSave} className="text-emerald-300 hover:text-emerald-200 p-0.5"><Check className="h-3.5 w-3.5" /></button>
-              <button onClick={() => setEditing(false)} className="text-yellow-300 hover:text-yellow-200 p-0.5"><X className="h-3.5 w-3.5" /></button>
-            </div>
-          ) : (
-            <button onClick={() => { setDraft(cat.budget.toString()); setEditing(true); }} className="text-white/60 hover:text-white transition-colors p-0.5">
->>>>>>> Stashed changes
               <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
         <p className="text-xs text-slate-400 font-medium">{formatCurrency(spent, currency)} <span className="text-slate-500">/</span> {formatCurrency(cat.budget, currency)}</p>
         {overBudget ? (
-<<<<<<< Updated upstream
           <p className="text-xs text-amber-400 font-bold mt-0.5">Over by {formatCurrency(-remaining, currency)}</p>
-=======
-          <p className="text-xs text-yellow-300 font-bold mt-0.5 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]">Over by {formatCurrency(-remaining, currency)}</p>
->>>>>>> Stashed changes
         ) : (
           <p className="text-xs text-emerald-400 font-medium mt-0.5">{formatCurrency(remaining, currency)} remaining</p>
         )}
       </div>
     </div>
+  );
   );
 }
 
