@@ -75,10 +75,8 @@ body {
   background-color: #000000 !important;
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
-<<<<<<< Updated upstream
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-=======
   color-scheme: dark;
   margin: 0;
   padding: 0;
@@ -117,7 +115,6 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: #262626 #000000;
->>>>>>> Stashed changes
 }
 
 .tabular-nums,
@@ -334,12 +331,7 @@ td,
 }
 
 .ai-insight-card:hover {
-<<<<<<< Updated upstream
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  transform: translateY(-1px);
-=======
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
->>>>>>> Stashed changes
 }
 
 .ai-insight-card-inner {
