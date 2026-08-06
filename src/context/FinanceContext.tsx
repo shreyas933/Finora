@@ -232,22 +232,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (goalsRes.data) setGoals(goalsRes.data);
         if (invRes.data) setInvestments(invRes.data);
 
-        // Setup realtime subscription for new SMS/API transactions
-        if (txChannel) supabase.removeChannel(txChannel);
-        txChannel = supabase
-          .channel('public:transactions')
-          .on(
-            'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
-            (payload: any) => {
-              console.log("[FINORA] Realtime transaction received:", payload.new);
-              setTransactions(prev => {
-                if (prev.some(t => t.id === payload.new.id)) return prev;
-                return [payload.new as Transaction, ...prev].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-              });
-            }
-          )
-          .subscribe();
+        // Setup realtime subscription for new SMS/API transactions if not already subscribed
+        if (!txChannel) {
+          const channelName = `tx-realtime-${user.id}-${Date.now()}`;
+          txChannel = supabase
+            .channel(channelName)
+            .on(
+              'postgres_changes',
+              { event: 'INSERT', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
+              (payload: any) => {
+                console.log("[FINORA] Realtime transaction received:", payload.new);
+                setTransactions(prev => {
+                  if (prev.some(t => t.id === payload.new.id)) return prev;
+                  return [payload.new as Transaction, ...prev].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                });
+              }
+            )
+            .subscribe();
+        }
 
       } catch (err) {
         console.error("[FINORA] Error loading data:", err);
@@ -261,6 +263,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes (e.g. login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (event === "SIGNED_OUT") {
+        if (txChannel) {
+          supabase.removeChannel(txChannel);
+          txChannel = null;
+        }
         setUserId(null);
         setTransactions([]);
         setGoals([]);
